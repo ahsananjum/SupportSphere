@@ -2,7 +2,7 @@
 
 | Requirement | Automated proof | Manual proof | Status | Notes |
 | --- | --- | --- | --- | --- |
-| Fresh install/start | `pnpm install --frozen-lockfile` passed; `pnpm test:e2e` started local app | Fresh clone check pending | PARTIAL | Exact lockfile installed. |
+| Fresh install/start | Temporary local clone: `pnpm install --frozen-lockfile` and `pnpm test:e2e` passed | Fresh clone on port 3100 | PASS | Clone cleaned up after verification. |
 | Strict typecheck | `pnpm typecheck` passed | n/a | PASS | `strict: true`. |
 | Lint and format | `pnpm lint`, `pnpm format:check` passed | n/a | PASS | Zero lint warnings. |
 | Unit smoke | `pnpm test` passed | n/a | PASS | 4 environment tests. |
@@ -38,5 +38,8 @@
 - Direct dependency license inspection: Next/React/Zod/server-only/Tailwind/ESLint/Prettier/Vitest MIT; TypeScript and Playwright Apache-2.0.
 - `git diff --cached --check`: passed after preserving seven supplied Markdown hard breaks with `<br>`.
 - Staged credential scan: no matches; only `.env.example` tracked; `node_modules`, `.next`, `tsconfig.tsbuildinfo`, and `test-results` ignored.
+- `git clone` fresh-check attempt 1: failed because the elevated user did not trust the sandbox-owned source `.git` path. Exact safe-directory exceptions for `C:/SupportSphere` and `C:/SupportSphere/.git` resolved it.
+- Temporary local clone: `pnpm install --frozen-lockfile` passed (381 packages reused from store); `pnpm test:e2e` passed (1 test, six viewport widths). Temporary clone was removed after verifying its resolved path stayed inside `C:\tmp`.
+- Final review found tracked `next-env.d.ts` changed between `next dev` and `next build`. Installed Next.js 16 TypeScript guide says to ignore this generated file. Applied `.gitignore` and changed `typecheck` to `next typegen && tsc --noEmit`; source checkout typecheck passed. Updated fresh-clone and full gate are pending.
 
-Only executed checks count as proof. A fresh clone and final gate remain.
+Only executed checks count as proof. Repeat the final gate after this generated-file repair.
