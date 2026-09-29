@@ -1,0 +1,1 @@
+-- P00 has no schema or demo records. Add real seed records only in a phase that owns them.
