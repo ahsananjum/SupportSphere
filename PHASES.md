@@ -42,16 +42,16 @@ Create a clean, reproducible, agent-safe foundation before feature code spreads.
 
 ## Acceptance
 
-- [ ] Fresh clone can install and start.
-- [ ] Typecheck passes.
-- [ ] Lint passes.
-- [ ] Unit smoke test passes.
-- [ ] Playwright smoke test passes.
-- [ ] Production build passes.
-- [ ] No secrets tracked.
-- [ ] `.agent` files exist and contain current state.
-- [ ] No nested duplicate applications or junk scaffolds.
-- [ ] No fake feature data introduced.
+- [x] Fresh clone can install and start.
+- [x] Typecheck passes.
+- [x] Lint passes.
+- [x] Unit smoke test passes.
+- [x] Playwright smoke test passes.
+- [x] Production build passes.
+- [x] No secrets tracked.
+- [x] `.agent` files exist and contain current state.
+- [x] No nested duplicate applications or junk scaffolds.
+- [x] No fake feature data introduced.
 
 ---
 

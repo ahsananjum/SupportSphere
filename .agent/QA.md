@@ -3,12 +3,12 @@
 | Requirement | Automated proof | Manual proof | Status | Notes |
 | --- | --- | --- | --- | --- |
 | Fresh install/start | Temporary local clone: `pnpm install --frozen-lockfile` and `pnpm test:e2e` passed | Fresh clone on port 3100 | PASS | Clone cleaned up after verification. |
-| Strict typecheck | `pnpm typecheck` passed | n/a | PASS | `strict: true`. |
+| Strict typecheck | Fresh clone and source `pnpm typecheck` passed | n/a | PASS | `next typegen && tsc --noEmit`; `strict: true`. |
 | Lint and format | `pnpm lint`, `pnpm format:check` passed | n/a | PASS | Zero lint warnings. |
 | Unit smoke | `pnpm test` passed | n/a | PASS | 4 environment tests. |
 | Playwright smoke | `pnpm test:e2e` passed | 320, 360, 390, 768, 1024, 1440px checked | PASS | 1 Chromium test, no page overflow. |
 | Production build | `pnpm build` passed | n/a | PASS | Static `/` and `/_not-found`. |
-| Secret and junk review | Staged credential scan clean; `.env.example` has 0 filled assignments | Staged tree reviewed | PASS | Direct dependency licenses reviewed. |
+| Secret and junk review | Tracked credential scan clean; `.env.example` has 0 filled assignments | Tracked tree reviewed | PASS | Generated files ignored; direct dependency licenses reviewed. |
 | One application | One root `package.json`; no nested manifests | Tree reviewed | PASS | Generated `AGENTS.md` and `CLAUDE.md` read. |
 | No fake feature data | Source tree inspected | No feature data or provider implementation | PASS | Only foundation page and empty future directories. |
 | MCP availability | Tool inventory inspected | Supabase/Vercel project connection not proven | DOCUMENTED | App plugins listed, project tools not exposed. |
@@ -40,6 +40,9 @@
 - Staged credential scan: no matches; only `.env.example` tracked; `node_modules`, `.next`, `tsconfig.tsbuildinfo`, and `test-results` ignored.
 - `git clone` fresh-check attempt 1: failed because the elevated user did not trust the sandbox-owned source `.git` path. Exact safe-directory exceptions for `C:/SupportSphere` and `C:/SupportSphere/.git` resolved it.
 - Temporary local clone: `pnpm install --frozen-lockfile` passed (381 packages reused from store); `pnpm test:e2e` passed (1 test, six viewport widths). Temporary clone was removed after verifying its resolved path stayed inside `C:\tmp`.
-- Final review found tracked `next-env.d.ts` changed between `next dev` and `next build`. Installed Next.js 16 TypeScript guide says to ignore this generated file. Applied `.gitignore` and changed `typecheck` to `next typegen && tsc --noEmit`; source checkout typecheck passed. Updated fresh-clone and full gate are pending.
+- Final review found tracked `next-env.d.ts` changed between `next dev` and `next build`. Installed Next.js 16 TypeScript guide says to ignore this generated file. Applied `.gitignore` and changed `typecheck` to `next typegen && tsc --noEmit`.
+- Updated commit `5c3972d` fresh-clone gate: `pnpm install --frozen-lockfile` passed (381 packages); `pnpm typecheck` passed after `next typegen`; `pnpm test:e2e` passed (1 test, six widths). Temporary clone cleanup completed with exit 0.
+- Final VERIFYING gate on source checkout: `pnpm install --frozen-lockfile` passed; `pnpm peers check` passed; `pnpm typecheck` passed; `pnpm lint` passed with no warnings; `pnpm format:check` passed; `pnpm test` passed (1 file, 4 tests); `pnpm test:e2e` passed (1 test at 320, 360, 390, 768, 1024, 1440px); `pnpm build` passed (static `/` and `/_not-found`).
+- Final hygiene: `git diff --check` passed; tracked credential pattern scan found no matches; only `.env.example` tracked among env files; 0 nested package manifests; 0 nonempty `.env.example` assignments; `next-env.d.ts`, `node_modules`, `.next`, `tsconfig.tsbuildinfo`, and `test-results` ignored.
 
-Only executed checks count as proof. Repeat the final gate after this generated-file repair.
+P00 acceptance is complete. Hosted CI has not run because this new local repository has no remote.
