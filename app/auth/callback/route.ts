@@ -26,10 +26,13 @@ export async function GET(request: NextRequest) {
       token_hash: tokenHash,
       type: 'recovery',
     }));
-  } else if (tokenHash && url.searchParams.get('type') === 'signup') {
+  } else if (
+    tokenHash &&
+    ['email', 'signup'].includes(url.searchParams.get('type') ?? '')
+  ) {
     ({ error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
-      type: 'signup',
+      type: 'email',
     }));
   } else {
     return NextResponse.redirect(new URL(fallback, url.origin));

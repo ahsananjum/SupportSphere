@@ -114,18 +114,18 @@ Remain in P01 while blocked.
 
 ## Acceptance
 
-- [ ] Cross-tenant RLS tests pass.
-- [ ] Sign up/login/logout works.
-- [ ] Forgot/reset works through real configured mail path.
-- [ ] OAuth works end-to-end.
-- [ ] Invitation email arrives and link works.
-- [ ] Expired/revoked invitation UX works.
-- [ ] User cannot elevate own role from client.
-- [ ] Last-owner safety works.
-- [ ] Mobile auth pages complete.
-- [ ] Form loading/error states complete.
-- [ ] Membership/role mutations create audit events.
-- [ ] Build/test suite passes.
+- [x] Cross-tenant RLS tests pass.
+- [x] Sign up/login/logout works.
+- [x] Forgot/reset works through real configured mail path.
+- [x] OAuth works end-to-end.
+- [x] Invitation email arrives and link works.
+- [x] Expired/revoked invitation UX works.
+- [x] User cannot elevate own role from client.
+- [x] Last-owner safety works.
+- [x] Mobile auth pages complete.
+- [x] Form loading/error states complete.
+- [x] Membership/role mutations create audit events.
+- [x] Build/test suite passes.
 
 ---
 

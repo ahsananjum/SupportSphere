@@ -2,12 +2,19 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
 
-const url = process.env.P01_TEST_SUPABASE_URL;
-const publishableKey = process.env.P01_TEST_SUPABASE_PUBLISHABLE_KEY;
-const serviceKey = process.env.P01_TEST_SUPABASE_SERVICE_ROLE_KEY;
+const url =
+  process.env.P01_TEST_SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const publishableKey =
+  process.env.P01_TEST_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const serviceKey =
+  process.env.P01_TEST_SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
+const remoteProjectRef = process.env.P01_LIVE_TEST_PROJECT_REF;
 const ready = Boolean(
   url &&
-  /^http:\/\/(?:127\.0\.0\.1|localhost):\d+$/.test(url) &&
+  (/^http:\/\/(?:127\.0\.0\.1|localhost):\d+$/.test(url) ||
+    (remoteProjectRef && url === `https://${remoteProjectRef}.supabase.co`)) &&
   publishableKey &&
   serviceKey,
 );
@@ -47,6 +54,7 @@ describe('P01 live tenant attacks', () => {
         const a = await makeUser('a');
         const b = await makeUser('b');
         const viewer = await makeUser('viewer');
+        const workspaceAdmin = await makeUser('admin');
         const outsider = await makeUser('outsider');
 
         const aCreated = await a.client.rpc('create_workspace', {
@@ -60,10 +68,11 @@ describe('P01 live tenant attacks', () => {
           p_timezone: 'UTC',
         });
         expect(aCreated.error).toBeNull();
+        if (aCreated.data) workspaceIds.push(String(aCreated.data));
         expect(bCreated.error).toBeNull();
+        if (bCreated.data) workspaceIds.push(String(bCreated.data));
         const aId = String(aCreated.data);
         const bId = String(bCreated.data);
-        workspaceIds.push(aId, bId);
 
         expect(
           (await b.client.from('workspaces').select('id').eq('id', aId)).data,
@@ -159,6 +168,49 @@ describe('P01 live tenant attacks', () => {
             })
           ).error?.message,
         ).toContain('FORBIDDEN');
+        const adminHash = randomBytes(32).toString('hex');
+        const adminInvite = await a.client.rpc('create_invitation', {
+          p_workspace_id: aId,
+          p_email: workspaceAdmin.email,
+          p_role: 'admin',
+          p_token_hash: adminHash,
+        });
+        expect(adminInvite.error).toBeNull();
+        expect(
+          (
+            await workspaceAdmin.client.rpc('accept_invitation', {
+              p_token_hash: adminHash,
+            })
+          ).data,
+        ).toBe('accepted');
+        expect(
+          (
+            await workspaceAdmin.client.rpc('change_member_role', {
+              p_workspace_id: aId,
+              p_user_id: workspaceAdmin.id,
+              p_role: 'owner',
+            })
+          ).error?.message,
+        ).toContain('FORBIDDEN');
+        expect(
+          (
+            await workspaceAdmin.client.rpc('change_member_role', {
+              p_workspace_id: aId,
+              p_user_id: a.id,
+              p_role: 'viewer',
+            })
+          ).error?.message,
+        ).toContain('FORBIDDEN');
+        expect(
+          (
+            await workspaceAdmin.client.rpc('create_invitation', {
+              p_workspace_id: aId,
+              p_email: outsider.email,
+              p_role: 'owner',
+              p_token_hash: randomBytes(32).toString('hex'),
+            })
+          ).error?.message,
+        ).toContain('INVALID_INPUT');
         expect(
           (
             await a.client.rpc('remove_member', {
@@ -211,6 +263,23 @@ describe('P01 live tenant attacks', () => {
             })
           ).data,
         ).toBe('expired');
+        expect(
+          (
+            await a.client.rpc('change_member_role', {
+              p_workspace_id: aId,
+              p_user_id: viewer.id,
+              p_role: 'agent',
+            })
+          ).error,
+        ).toBeNull();
+        expect(
+          (
+            await a.client.rpc('remove_member', {
+              p_workspace_id: aId,
+              p_user_id: viewer.id,
+            })
+          ).error,
+        ).toBeNull();
         const audits = await a.client
           .from('audit_logs')
           .select('action')
@@ -218,6 +287,12 @@ describe('P01 live tenant attacks', () => {
         expect(audits.data?.some((row) => row.action === 'member.joined')).toBe(
           true,
         );
+        expect(
+          audits.data?.some((row) => row.action === 'member.role_changed'),
+        ).toBe(true);
+        expect(
+          audits.data?.some((row) => row.action === 'member.removed'),
+        ).toBe(true);
         expect(
           (
             await b.client

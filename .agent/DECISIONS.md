@@ -37,8 +37,8 @@ Status: accepted
 Context: Browser-provided workspace IDs and roles cannot authorize tenant mutations; membership transitions require last-owner and audit invariants.
 Decision: Expose read-only tenant tables through RLS. Authenticated public SQL wrappers call private SECURITY DEFINER functions that recheck auth.uid() and current membership, mutate atomically, and write audit rows. Keep invitation tokens as SHA-256 hashes and use a server-only Supabase credential for invitation capability inspection and Brevo delivery recording.
 Alternatives considered: client-side role checks, broad table DML policies, and plaintext invitation tokens.
-Consequences: The migration must be applied and attacked against the actual SupportSphere project before P01 can complete. Service credentials remain server-only.
-Files affected: supabase/migrations/20260930182341_p01_identity_tenancy.sql, lib/workspaces, app/app.
+Consequences: Both P01 migrations were applied and attacked against the actual SupportSphere project. Service credentials remain server-only.
+Files affected: supabase/migrations/20260930201144_p01_identity_tenancy.sql, supabase/migrations/20260930201423_restrict_rls_event_trigger.sql, lib/workspaces, app/app.
 
 ## ADR-005 — Auth mail and provider boundary
 
@@ -47,5 +47,15 @@ Status: accepted
 Context: Supabase Auth owns signup/recovery mail while workspace invitations require custom transactional delivery.
 Decision: Use Supabase Auth with Brevo custom SMTP for confirmation/recovery, and the Brevo Transactional API for invitation text+HTML mail. Use one trusted environment origin and a narrow post-auth redirect allowlist.
 Alternatives considered: fake email success or provider-specific browser code.
-Consequences: Sender/DNS, SMTP, Google OAuth, and project credentials are owner gates; P01 remains BLOCKED_MANUAL until verified.
+Consequences: Sender/DNS, SMTP, Google OAuth, and project credentials were owner gates; all four manual actions were verified in P01.
 Files affected: app/(auth), lib/email/brevo.ts, lib/auth/redirect.ts, .agent/MANUAL_ACTIONS.md.
+
+## ADR-006 — Cross-browser Supabase Auth email callbacks
+
+Date: 2026-10-01
+Status: accepted
+Context: Confirmation and recovery links opened in a different browser cannot rely on the PKCE verifier stored in the signup browser.
+Decision: Configure the provider templates to send a token hash and type to the trusted callback, then verify the OTP server-side. Keep post-auth redirects on the application allowlist.
+Alternatives considered: code-only callback tied to the originating browser.
+Consequences: Fresh-browser confirmation and recovery links now pass live Brevo delivery and Supabase Auth checks; reused recovery links are rejected.
+Files affected: app/auth/callback/route.ts, .agent/MANUAL_ACTIONS.md.

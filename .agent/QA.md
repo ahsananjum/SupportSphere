@@ -1,24 +1,24 @@
 # P01 verification matrix
 
-P01 is BLOCKED_MANUAL. Local build success does not prove hosted identity, mail, or RLS behavior.
+P01 live acceptance and full phase gate passed against SupportSphere project `xviumgygixcklrbuynoh`. The only remaining security advisor warning is provider-level leaked password protection, which Supabase documents as a Pro-plan feature.
 
 | Requirement | Automated proof | Manual/live proof | Status | Notes |
 | --- | --- | --- | --- | --- |
-| Versioned schema, RLS, constraints, indexes | Migration authored and statically reviewed | Apply to SupportSphere; inspect tables, policies, grants, advisors | PENDING LIVE | No SupportSphere project is connected. |
-| Generated TypeScript database types | No generation possible without database | Generate from actual project after migration | BLOCKED | No handwritten types are being presented as generated. |
-| Cross-tenant SELECT and mutation | tests/security/p01-attacks.test.ts authored | Run against a dedicated local/test Supabase project | BLOCKED | Test skipped because local Docker/Supabase endpoint is unavailable. |
-| Forged workspace ID, viewer/admin escalation | Attack test authored; RPC guards statically reviewed | Execute live attack test | BLOCKED | Draft SQL NULL-role bypass found in review and fixed before application. |
-| Expired/revoked/reused invitations, last owner | Attack test authored; UI invalid-link state browser tested | Execute live test with real users | BLOCKED | Database not running. |
-| Sign up/login/logout and protected route | Actions, callback, proxy, and app guard compile/build | Real accounts/session refresh/logout | BLOCKED | SupportSphere Auth project unavailable. |
-| Forgot/reset and invalid state | Recovery callback and short-lived recovery cookie compile; invalid state code reviewed | Real Brevo SMTP mail and expired link | BLOCKED | Sender/SMTP unconfigured. |
-| Google OAuth | Provider action and safe callback compile | Complete provider sign-in, callback, logout | BLOCKED | Owner OAuth credentials/config required. |
-| Invitation email | Brevo API adapter builds text+HTML links with verified-origin configuration, timeout, safe failure state | Receive and click real message | BLOCKED | Verified sender/API key absent. |
-| Membership/role audit | Atomic SQL inserts are in migration | Query audit rows after live mutations | BLOCKED | Migration unapplied. |
-| Safe redirects | 13 redirect/validation unit cases pass | OAuth and recovery callback with malicious next | PARTIAL | Server allowlist tested locally; provider callback pending. |
-| Auth mobile, labels, validation, focus | Playwright 3 tests pass at 320, 360, 390, 768, 1024, 1280, 1440; native/server validation exercised | Real reset/active invite visual check | PARTIAL | Provider dependent screens pending. |
-| Typecheck/lint/format | All pass | n/a | PASS | See exact commands below. |
-| Unit/security tests | 19 passed, 1 live security test skipped | Local/test Supabase required | PARTIAL | Skip is not an RLS pass. |
-| Production build | Passed | n/a | PASS | Dynamic app/auth routes produced. |
+| Versioned schema, RLS, constraints, indexes | Two versioned migrations match remote history | Five tables have RLS; policy/grant query and live attack suite passed | PASS | Platform event-trigger execute grant fixed. |
+| Generated TypeScript database types | Generated from live schema; all Supabase clients typed | `pnpm typecheck` passed | PASS | `lib/supabase/database.types.ts`. |
+| Cross-tenant SELECT and mutation | Live attack suite passed | Separate real users/workspaces; direct DML blocked; cleanup verified | PASS | Explicit remote project-ref guard. |
+| Forged workspace ID, viewer/admin escalation | Live attack suite passed | RPC role checks rejected all attempts | PASS | Includes admin self-promotion and owner mutation attempts. |
+| Expired/revoked/reused invitations, last owner | Live attack suite and invite UI script passed | Active/revoked/expired/used/resend UI, already-member, last-owner checked | PASS | Active invite had no overflow at 320/390/768/1440. |
+| Sign up/login/logout and protected route | Real browser and live Auth project | Confirmation, login, workspace creation, logout, and unauthenticated redirect passed | PASS | Test accounts/workspace cleaned. |
+| Forgot/reset and invalid state | `tests/live/p01-auth-mail.mjs` passed | Brevo SMTP delivered; cross-browser link, update, new login, reused-link rejection | PASS | Exact mail tokens never printed; temporary account cleaned. |
+| Google OAuth | Real owner browser sign-in | Provider callback succeeded; Google user created and protected app reached | PASS | Google account retained, with no test workspace. |
+| Invitation email | Real app action and Brevo events | Message delivered; owner opened it, accepted through Google; DB status accepted | PASS | Brevo sender active and audit recorded. |
+| Membership/role audit | Live attack and owner invite flows | `workspace.created`, `invitation.created`, `member.joined`, `member.role_changed`, `member.removed` observed | PASS | Audit isolation also tested. |
+| Safe redirects | Unit allowlist cases pass | OAuth callback kept invite path; unsafe paths rejected in unit tests | PASS | Trusted origin and narrow post-login path allowlist. |
+| Auth mobile, labels, validation, focus | Browser auth widths 320–1440; active invite and valid reset at 320/390/768/1440 | Field labels/errors/aria/focus and no overflow | PASS | Loading/error/success states inspected in code and exercised where applicable. |
+| Typecheck/lint/format | Final full gate passed | n/a | PASS | See command log below. |
+| Unit/security tests | 19 unit tests passed; live security test passed separately | Temporary rows and users removed | PASS | General `pnpm test` safely skips remote test without explicit opt-in. |
+| Production build | Final full gate passed | n/a | PASS | Next.js 16.3.7 compiled and generated all app routes. |
 
 ## Exact command log — 2026-10-01
 
@@ -31,3 +31,27 @@ P01 is BLOCKED_MANUAL. Local build success does not prove hosted identity, mail,
 - git diff --check — PASS.
 - docker info and supabase start — no response from local daemon, interrupted; no database migration was applied.
 - Supabase MCP list_projects — only BookPro visible. No SupportSphere migration/advisor/type generation attempted against BookPro.
+
+## Live command and provider log — 2026-10-01
+
+- Supabase MCP project ref `xviumgygixcklrbuynoh`: applied migrations `20260930201144` and `20260930201423`; five RLS tables/policies inspected; generated types from live schema.
+- Live `tests/security/p01-attacks.test.ts` — PASS (twice, including role-change/removal audit assertions). Remote test requires the exact project-ref opt-in; all temporary rows/users cleaned.
+- Brevo sender API — active. Brevo event API — signup confirmation, invitation, and recovery delivered.
+- Real browser — login, workspace create, invitation send, logout, protected-route redirect passed. Owner accepted delivered invitation via Google; provider callback, member row and audit verified.
+- `tests/live/p01-auth-mail.mjs` — PASS: confirmation/recovery delivered; each link opened in a fresh browser context; password update/login, reused-link rejection, valid reset mobile/focus; temporary account cleaned.
+- `tests/live/p01-invite-ui.mjs` — PASS: already-member, active/revoked/expired/used/resend states and active invite mobile; test rows/users cleaned.
+- Verification workspace/test owner removed. Live project now has zero workspaces/members/invitations/audit rows, one Google user, and zero test users.
+- Supabase security advisor — only `auth_leaked_password_protection` WARN remains ([Supabase remediation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)); feature is documented for Pro plans and above. No app schema/RLS findings.
+
+## Final phase gate — 2026-10-01
+
+- `pnpm typecheck` — PASS.
+- `pnpm lint` — PASS.
+- `pnpm format:check` — PASS.
+- `pnpm test` — PASS, 19 unit tests; remote security test intentionally skipped without explicit project-ref opt-in.
+- Live `tests/security/p01-attacks.test.ts` with `P01_LIVE_TEST_PROJECT_REF=xviumgygixcklrbuynoh` — PASS, 1 live test executed; cleanup verified.
+- `pnpm test:e2e` — PASS, 4 browser tests, including public link and keyboard skip-link smoke checks.
+- `pnpm build` — PASS.
+- `git diff --check` — PASS.
+- Final Supabase MCP SQL — five RLS tables, five tenant policies, zero workspaces and temporary test users. One real Google user remains without a workspace.
+- Supabase performance advisor — INFO for unused `workspace_invitations_expiry_idx` on the now-empty project; retained for expiry queries.

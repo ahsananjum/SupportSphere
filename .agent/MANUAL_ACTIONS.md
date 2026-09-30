@@ -2,7 +2,7 @@
 
 ## MANUAL-001 — Connect SupportSphere Supabase
 
-Status: PENDING
+Status: VERIFIED — project `xviumgygixcklrbuynoh` connected, two P01 migrations applied, tables/RLS/advisors inspected.
 
 Why: MCP lists only BookPro; applying SupportSphere migrations there would change an unrelated project.
 
@@ -23,7 +23,7 @@ Blocking phase: P01
 
 ## MANUAL-002 — Configure Google OAuth
 
-Status: PENDING
+Status: VERIFIED — Google OAuth callback succeeded, created the real user, and led to an accepted workspace invitation.
 
 Why: A real Google OAuth client requires owner credentials.
 
@@ -43,7 +43,7 @@ Blocking phase: P01
 
 ## MANUAL-003 — Verify Brevo and configure SMTP
 
-Status: PENDING
+Status: VERIFIED — Brevo sender active; signup, invitation, and recovery messages delivered; links worked through confirmation, invitation acceptance, and password reset.
 
 Why: Invitation and password reset delivery require a verified sender and owner-held credentials.
 
@@ -59,5 +59,27 @@ Do NOT paste: Brevo API/SMTP key, Supabase secrets, or DNS account credentials i
 Store result in: Brevo/Supabase dashboards, ignored .env.local, and server-only deployment secrets.
 
 Agent verification: receive real invitation and password recovery messages, open both links, and confirm resulting app state.
+
+Blocking phase: P01
+
+## MANUAL-004 — Use token-hash links for cross-browser auth mail
+
+Status: VERIFIED — both complete template bodies saved and live token-hash confirmation/recovery links worked in separate browser sessions. Earlier backtick parser errors were resolved.
+
+Why: A real confirmation email opened in a different browser confirmed the Supabase user but the app callback failed with `AuthPKCECodeVerifierMissingError`. Supabase's documented SSR flow uses `TokenHash` links that the server verifies directly. Recovery links need the same treatment.
+
+Steps:
+
+1. Open Supabase Dashboard → project `xviumgygixcklrbuynoh` → Authentication → Email Templates (also shown as Authentication → Emails → Templates).
+2. Open **Confirm signup**. Select **all** content in its HTML body editor and replace it with exactly: `<p>Confirm your email:</p><p><a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=email">Confirm your email</a></p>`. Save.
+3. Open **Reset password**. Select **all** content in its HTML body editor and replace it with exactly: `<p>Reset your password:</p><p><a href="{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery">Reset your password</a></p>`. Save.
+4. The backticks enclosing examples here are Markdown formatting, not part of the HTML. No literal backtick may remain anywhere in either body. Each `href` must have its double quotes.
+5. Confirm Authentication → URL Configuration still allows `http://localhost:3000/auth/callback` and uses the correct site origin. Do not use the Supabase-hosted `{{ .ConfirmationURL }}` in these two templates.
+
+Non-secret values to copy: the two link target strings above. Do NOT paste any email link, token hash, OAuth secret, SMTP credential, or API key into chat/source.
+
+Store result in: Supabase Email Templates for this project. No new secret or local environment variable is needed.
+
+Agent verification: send confirmation to a new alias and recovery to a confirmed account, open each in a separate browser session, confirm callback and protected/reset state, and verify no PKCE error in app logs.
 
 Blocking phase: P01

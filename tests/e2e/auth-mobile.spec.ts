@@ -22,6 +22,7 @@ test('auth forms show associated validation errors and invalid invitation state'
 }) => {
   await page.goto('/signup');
   await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page.getByLabel('Your name')).toBeFocused();
   const clientRejectedEmptyEmail = await page
     .getByLabel('Email address')
     .evaluate((element) => (element as HTMLInputElement).validity.valueMissing);
@@ -46,4 +47,28 @@ test('auth forms show associated validation errors and invalid invitation state'
   await expect(
     page.getByText('This invitation link is invalid.'),
   ).toBeVisible();
+});
+
+test('public auth links resolve and keyboard skip link receives focus', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/login');
+  await page.keyboard.press('Tab');
+  await expect(
+    page.getByRole('link', { name: 'Skip to content' }),
+  ).toBeFocused();
+  for (const path of ['/', '/login', '/signup', '/forgot-password']) {
+    await page.goto(path);
+    const hrefs = await page
+      .locator('a[href^="/"]')
+      .evaluateAll((links) =>
+        links.map((link) => (link as HTMLAnchorElement).getAttribute('href')),
+      );
+    for (const href of hrefs) {
+      if (!href) continue;
+      const response = await request.get(href);
+      expect(response.status(), `${path} links to ${href}`).toBeLessThan(400);
+    }
+  }
 });

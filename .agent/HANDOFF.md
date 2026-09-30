@@ -1,35 +1,30 @@
 # P01 handoff
 
-Status: BLOCKED_MANUAL (2026-10-01). P01 has not exited.
+Status: COMPLETE (2026-10-01). P01 acceptance and full phase gate passed against Supabase project `xviumgygixcklrbuynoh`.
 
-## Changed
+## Implemented
 
-- Added pinned Supabase SSR/SDK/CLI dependencies and versioned identity/tenancy SQL migration.
-- Added real Supabase auth/session/callback, Google OAuth entry, password recovery state, protected app routes, workspace/team/invitation actions and UI, and Brevo invitation adapter.
-- Added invite lifecycle and role/last-owner rules in atomic database functions, with RLS and audit rows.
-- Added security unit/live attack tests and responsive auth Playwright coverage.
-- Recorded owner actions and QA evidence. No production mock data or credentials added.
+- Real Supabase authentication: signup, login, logout, confirmation, recovery/reset, Google OAuth, protected routes, callback, and safe redirects.
+- Five tenant tables, RLS policies, read-only grants, atomic membership and invitation RPCs, last-owner protection, and audit logs. Applied migrations `20260930201144_p01_identity_tenancy.sql` and `20260930201423_restrict_rls_event_trigger.sql`.
+- Live-generated database types and typed Supabase clients.
+- Workspace creation/switching, role controls, onboarding foundation, invitation send/accept/resend/revoke/expiry, and Brevo delivery.
+- Responsive forms and states for auth and invitations, with labels, validation, keyboard and focus behavior.
 
-## Migration
+## Verified
 
-supabase/migrations/20260930182341_p01_identity_tenancy.sql is local only and unverified against Postgres. Do not apply it to BookPro. Review and apply it only to the designated SupportSphere project. Generate actual TS types afterward.
+- `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (19 unit tests), `pnpm test:e2e` (4 browser tests), `pnpm build`, and `git diff --check` passed.
+- Hosted live security suite passed cross-tenant read/write, forged workspace ID, viewer/admin escalation, last-owner, invitation reuse, and audit isolation checks. Temporary data was removed.
+- Brevo SMTP delivered confirmation and recovery mail. Fresh-browser links, password update/login, and reused-link rejection passed. Brevo invitation mail was delivered and accepted through real Google OAuth.
+- Supabase MCP confirmed two migration versions, five RLS tables, five tenant policies, and no remaining app schema/RLS security advisor findings.
+- Active invite and valid reset screens passed mobile widths 320/390/768/1440; browser suite covered auth widths 320–1440, keyboard skip link, and public navigation.
+- MANUAL-001 through MANUAL-004 are VERIFIED. The verification workspace and temporary users were removed. One real Google user remains with no workspace.
 
-## Verification
+Detailed evidence is in `.agent/QA.md`.
 
-Local typecheck, lint, format, 19 unit tests, three Playwright tests, build, and git diff check pass. One live security test is skipped because a dedicated local Supabase endpoint is unavailable. No real auth, mail, OAuth, or RLS claim has been made.
+## Remaining provider note
 
-## Manual steps pending
+Supabase security advisor reports provider-level leaked password protection disabled. Supabase documents this control for Pro plans and above; it is outside P01 acceptance. Performance advisor reports the invitation expiry index unused on the now-empty project; retain it for future expiry queries.
 
-See MANUAL-001 to MANUAL-003 in .agent/MANUAL_ACTIONS.md: connect SupportSphere Supabase, configure Google OAuth, verify Brevo sender/API and custom SMTP. Store keys in ignored .env.local/server-only deployment secrets. Never paste them into chat/source.
+## Next phase
 
-## Next commands/actions
-
-1. Verify SupportSphere project ref through Supabase MCP and inspect current migrations/tables.
-2. Apply the reviewed migration, generate lib/supabase/database.types.ts from that actual schema, and type all Supabase clients.
-3. Run security advisors and a dedicated local/test instance with P01_TEST_SUPABASE_URL, P01_TEST_SUPABASE_PUBLISHABLE_KEY, and P01_TEST_SUPABASE_SERVICE_ROLE_KEY; run pnpm test and confirm the security test executes.
-4. Test real signup, login, logout, reset mail, Google OAuth, invitation delivery/accept/revoke/resend, audit, and mobile reset/invite screens.
-5. Repair findings, rerun full P01 gate, then set VERIFYING and COMPLETE only if every acceptance criterion is proven.
-
-## Unresolved risks
-
-Migration syntax/policy behavior, email delivery, OAuth configuration, and database-generated types are unverified. Docker Desktop process exists but its daemon did not respond during this session.
+Load P02 requirements and current repository/provider state before any P02 work. No P01 owner action remains pending.
