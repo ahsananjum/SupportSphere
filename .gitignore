@@ -12,3 +12,4 @@ test-results/
 pnpm-debug.log*
 *.log
 !.agent/*.md
+supabase/.temp/

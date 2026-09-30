@@ -1,48 +1,33 @@
-# P00 verification
+# P01 verification matrix
 
-| Requirement | Automated proof | Manual proof | Status | Notes |
+P01 is BLOCKED_MANUAL. Local build success does not prove hosted identity, mail, or RLS behavior.
+
+| Requirement | Automated proof | Manual/live proof | Status | Notes |
 | --- | --- | --- | --- | --- |
-| Fresh install/start | Temporary local clone: `pnpm install --frozen-lockfile` and `pnpm test:e2e` passed | Fresh clone on port 3100 | PASS | Clone cleaned up after verification. |
-| Strict typecheck | Fresh clone and source `pnpm typecheck` passed | n/a | PASS | `next typegen && tsc --noEmit`; `strict: true`. |
-| Lint and format | `pnpm lint`, `pnpm format:check` passed | n/a | PASS | Zero lint warnings. |
-| Unit smoke | `pnpm test` passed | n/a | PASS | 4 environment tests. |
-| Playwright smoke | `pnpm test:e2e` passed | 320, 360, 390, 768, 1024, 1440px checked | PASS | 1 Chromium test, no page overflow. |
-| Production build | `pnpm build` passed | n/a | PASS | Static `/` and `/_not-found`. |
-| Secret and junk review | Tracked credential scan clean; `.env.example` has 0 filled assignments | Tracked tree reviewed | PASS | Generated files ignored; direct dependency licenses reviewed. |
-| One application | One root `package.json`; no nested manifests | Tree reviewed | PASS | Generated `AGENTS.md` and `CLAUDE.md` read. |
-| No fake feature data | Source tree inspected | No feature data or provider implementation | PASS | Only foundation page and empty future directories. |
-| MCP availability | Tool inventory inspected | Supabase/Vercel project connection not proven | DOCUMENTED | App plugins listed, project tools not exposed. |
+| Versioned schema, RLS, constraints, indexes | Migration authored and statically reviewed | Apply to SupportSphere; inspect tables, policies, grants, advisors | PENDING LIVE | No SupportSphere project is connected. |
+| Generated TypeScript database types | No generation possible without database | Generate from actual project after migration | BLOCKED | No handwritten types are being presented as generated. |
+| Cross-tenant SELECT and mutation | tests/security/p01-attacks.test.ts authored | Run against a dedicated local/test Supabase project | BLOCKED | Test skipped because local Docker/Supabase endpoint is unavailable. |
+| Forged workspace ID, viewer/admin escalation | Attack test authored; RPC guards statically reviewed | Execute live attack test | BLOCKED | Draft SQL NULL-role bypass found in review and fixed before application. |
+| Expired/revoked/reused invitations, last owner | Attack test authored; UI invalid-link state browser tested | Execute live test with real users | BLOCKED | Database not running. |
+| Sign up/login/logout and protected route | Actions, callback, proxy, and app guard compile/build | Real accounts/session refresh/logout | BLOCKED | SupportSphere Auth project unavailable. |
+| Forgot/reset and invalid state | Recovery callback and short-lived recovery cookie compile; invalid state code reviewed | Real Brevo SMTP mail and expired link | BLOCKED | Sender/SMTP unconfigured. |
+| Google OAuth | Provider action and safe callback compile | Complete provider sign-in, callback, logout | BLOCKED | Owner OAuth credentials/config required. |
+| Invitation email | Brevo API adapter builds text+HTML links with verified-origin configuration, timeout, safe failure state | Receive and click real message | BLOCKED | Verified sender/API key absent. |
+| Membership/role audit | Atomic SQL inserts are in migration | Query audit rows after live mutations | BLOCKED | Migration unapplied. |
+| Safe redirects | 13 redirect/validation unit cases pass | OAuth and recovery callback with malicious next | PARTIAL | Server allowlist tested locally; provider callback pending. |
+| Auth mobile, labels, validation, focus | Playwright 3 tests pass at 320, 360, 390, 768, 1024, 1280, 1440; native/server validation exercised | Real reset/active invite visual check | PARTIAL | Provider dependent screens pending. |
+| Typecheck/lint/format | All pass | n/a | PASS | See exact commands below. |
+| Unit/security tests | 19 passed, 1 live security test skipped | Local/test Supabase required | PARTIAL | Skip is not an RLS pass. |
+| Production build | Passed | n/a | PASS | Dynamic app/auth routes produced. |
 
-## Exact command log
+## Exact command log — 2026-10-01
 
-- `git status --short --branch` before initialization: failed, no Git repository existed.
-- `git -c safe.directory=C:/SupportSphere status --short --branch`: passed after initialization; no commits yet and only new source files.
-- `node --version`: 24.19.0.
-- `pnpm --version`: 11.25.0.
-- `pnpm view next version`: 16.3.7.
-- `pnpm view react version`: 19.3.0.
-- `pnpm view tailwindcss version`: 4.3.3.
-- `pnpm view typescript version`: 7.0.2; project will pin TypeScript 5.9 for conservative Next.js compatibility.
-- `pnpm view vitest version`: 5.0.2.
-- `pnpm view @playwright/test version`: 1.63.0.
-- `pnpm install --frozen-lockfile`: passed, already up to date.
-- `pnpm peers check`: passed, no peer dependency issues.
-- `pnpm typecheck`: passed after replacing `NodeJS.ProcessEnv` test input typing with a narrow record.
-- `pnpm lint`: passed without warnings after config repair.
-- `pnpm format:check`: passed.
-- `pnpm test`: passed, 1 file / 4 tests.
-- `pnpm exec playwright install chromium`: passed.
-- `pnpm test:e2e`: passed, 1 test across six viewport widths; Playwright started `next dev` on port 3100.
-- `pnpm build`: passed, Next.js 16.3.7 optimized static build.
-- Secret pattern scan (filenames only) found no matches; `.env.example` had 0 non-empty assignments; nested package manifests: 0.
-- Direct dependency license inspection: Next/React/Zod/server-only/Tailwind/ESLint/Prettier/Vitest MIT; TypeScript and Playwright Apache-2.0.
-- `git diff --cached --check`: passed after preserving seven supplied Markdown hard breaks with `<br>`.
-- Staged credential scan: no matches; only `.env.example` tracked; `node_modules`, `.next`, `tsconfig.tsbuildinfo`, and `test-results` ignored.
-- `git clone` fresh-check attempt 1: failed because the elevated user did not trust the sandbox-owned source `.git` path. Exact safe-directory exceptions for `C:/SupportSphere` and `C:/SupportSphere/.git` resolved it.
-- Temporary local clone: `pnpm install --frozen-lockfile` passed (381 packages reused from store); `pnpm test:e2e` passed (1 test, six viewport widths). Temporary clone was removed after verifying its resolved path stayed inside `C:\tmp`.
-- Final review found tracked `next-env.d.ts` changed between `next dev` and `next build`. Installed Next.js 16 TypeScript guide says to ignore this generated file. Applied `.gitignore` and changed `typecheck` to `next typegen && tsc --noEmit`.
-- Updated commit `5c3972d` fresh-clone gate: `pnpm install --frozen-lockfile` passed (381 packages); `pnpm typecheck` passed after `next typegen`; `pnpm test:e2e` passed (1 test, six widths). Temporary clone cleanup completed with exit 0.
-- Final VERIFYING gate on source checkout: `pnpm install --frozen-lockfile` passed; `pnpm peers check` passed; `pnpm typecheck` passed; `pnpm lint` passed with no warnings; `pnpm format:check` passed; `pnpm test` passed (1 file, 4 tests); `pnpm test:e2e` passed (1 test at 320, 360, 390, 768, 1024, 1440px); `pnpm build` passed (static `/` and `/_not-found`).
-- Final hygiene: `git diff --check` passed; tracked credential pattern scan found no matches; only `.env.example` tracked among env files; 0 nested package manifests; 0 nonempty `.env.example` assignments; `next-env.d.ts`, `node_modules`, `.next`, `tsconfig.tsbuildinfo`, and `test-results` ignored.
-
-P00 acceptance is complete. Hosted CI has not run because this new local repository has no remote.
+- pnpm typecheck — PASS.
+- pnpm lint — PASS.
+- pnpm format:check — PASS.
+- pnpm test — PASS, 19 tests; one live security test SKIPPED for missing local Supabase test environment.
+- pnpm test:e2e — PASS, 3 tests. Auth widths 320/360/390/768/1024/1280/1440; foundation 320/360/390/768/1024/1440.
+- pnpm build — PASS, Next.js 16.3.7 production build.
+- git diff --check — PASS.
+- docker info and supabase start — no response from local daemon, interrupted; no database migration was applied.
+- Supabase MCP list_projects — only BookPro visible. No SupportSphere migration/advisor/type generation attempted against BookPro.

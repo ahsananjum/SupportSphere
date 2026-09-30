@@ -1,6 +1,9 @@
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
+    <main
+      id="main-content"
+      className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16"
+    >
       <p className="mb-4 text-sm font-semibold tracking-wide text-sky-700">
         SupportSphere
       </p>

@@ -1,33 +1,35 @@
-# P00 handoff
+# P01 handoff
 
-Status: COMPLETE
+Status: BLOCKED_MANUAL (2026-10-01). P01 has not exited.
 
 ## Changed
 
-- Moved the five project source documents to the repository root.
-- Initialized Git and committed a single root Next.js 16, React 19, strict TypeScript, and Tailwind foundation.
-- Added central server-side environment validation, blank `.env.example`, provider adapter directories without fake behavior, pinned pnpm lockfile, ESLint/Prettier, Vitest, Playwright, and initial GitHub Actions CI.
-- Added agent memory, minimal developer setup, DesignMD source reference, and MCP availability record.
-- Ignored Next-generated `next-env.d.ts`; typecheck regenerates it with `next typegen`.
+- Added pinned Supabase SSR/SDK/CLI dependencies and versioned identity/tenancy SQL migration.
+- Added real Supabase auth/session/callback, Google OAuth entry, password recovery state, protected app routes, workspace/team/invitation actions and UI, and Brevo invitation adapter.
+- Added invite lifecycle and role/last-owner rules in atomic database functions, with RLS and audit rows.
+- Added security unit/live attack tests and responsive auth Playwright coverage.
+- Recorded owner actions and QA evidence. No production mock data or credentials added.
 
-## Migrations
+## Migration
 
-None in P00.
+supabase/migrations/20260930182341_p01_identity_tenancy.sql is local only and unverified against Postgres. Do not apply it to BookPro. Review and apply it only to the designated SupportSphere project. Generate actual TS types afterward.
 
 ## Verification
 
-See `.agent/QA.md` for exact commands. Fresh local clone frozen install, typecheck, and Playwright start passed. Final source checkout frozen install, peer check, typecheck, lint, format, 4 unit tests, 1 Playwright test across six widths, production build, tracked credential scan, and duplicate-app review passed.
+Local typecheck, lint, format, 19 unit tests, three Playwright tests, build, and git diff check pass. One live security test is skipped because a dedicated local Supabase endpoint is unavailable. No real auth, mail, OAuth, or RLS claim has been made.
 
-## Manual steps
+## Manual steps pending
 
-None for P00. No provider project or credential was claimed.
+See MANUAL-001 to MANUAL-003 in .agent/MANUAL_ACTIONS.md: connect SupportSphere Supabase, configure Google OAuth, verify Brevo sender/API and custom SMTP. Store keys in ignored .env.local/server-only deployment secrets. Never paste them into chat/source.
 
-## Next actions
+## Next commands/actions
 
-1. Start the next session by reading `RULES.md`, current `.agent` files, P01, and relevant architecture/PRD/design sections.
-2. Verify the actual Supabase project and MCP access before P01 schema work; follow the manual owner protocol if connection or credentials require owner action.
-3. Keep provider credentials out of source and chat. Use `.env.local` or provider secret storage when P01 requires them.
+1. Verify SupportSphere project ref through Supabase MCP and inspect current migrations/tables.
+2. Apply the reviewed migration, generate lib/supabase/database.types.ts from that actual schema, and type all Supabase clients.
+3. Run security advisors and a dedicated local/test instance with P01_TEST_SUPABASE_URL, P01_TEST_SUPABASE_PUBLISHABLE_KEY, and P01_TEST_SUPABASE_SERVICE_ROLE_KEY; run pnpm test and confirm the security test executes.
+4. Test real signup, login, logout, reset mail, Google OAuth, invitation delivery/accept/revoke/resend, audit, and mobile reset/invite screens.
+5. Repair findings, rerun full P01 gate, then set VERIFYING and COMPLETE only if every acceptance criterion is proven.
 
-## Risk
+## Unresolved risks
 
-Supabase/Vercel app plugins are visible, but project MCP access has not been verified in this session. GitHub Actions CI is configured but has not run remotely because this local repository has no remote.
+Migration syntax/policy behavior, email delivery, OAuth configuration, and database-generated types are unverified. Docker Desktop process exists but its daemon did not respond during this session.
