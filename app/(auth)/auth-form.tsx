@@ -226,6 +226,7 @@ export function AuthForm({
                     </span>
                     <input
                       id="email"
+                      suppressHydrationWarning
                       name="email"
                       type="email"
                       autoComplete="email"

@@ -1,4 +1,4 @@
-# Owner actions for P01
+# Owner actions
 
 ## MANUAL-001 — Connect SupportSphere Supabase
 
@@ -20,6 +20,43 @@ Store result in: Supabase connection and ignored .env.local.
 Agent verification: list project by ref; inspect migrations/tables; apply reviewed migration; query RLS/advisors.
 
 Blocking phase: P01
+
+## MANUAL-005 — Choose and configure the public production origin
+
+Status: PENDING; blocks P02 completion and production indexing.
+
+Why: The owner has not chosen a production domain. `RULES.md` requires one before launch. The app deliberately omits canonical URLs and disallows indexing until `NEXT_PUBLIC_APP_URL` is a public HTTPS origin. Local builds cannot prove the deployed canonical, OAuth callback, or live contact path.
+
+Steps for the owner:
+
+1. Deploy this repository in **Vercel Dashboard → Add New → Project** on the intended free-plan account. In **Project → Settings → Domains**, choose the exact production hostname. The assigned `*.vercel.app` hostname is acceptable if it is the hostname you intend to publish; a custom domain is optional. Copy the exact public HTTPS origin (scheme and hostname, no trailing path) back to the agent. Do not guess the URL before Vercel assigns it.
+2. In **Project → Settings → Environment Variables**, set `NEXT_PUBLIC_APP_URL` to that exact origin for Production, plus the existing Supabase/Brevo variables from the ignored local environment. Public Supabase URL/publishable key use their `NEXT_PUBLIC_` names; `SUPABASE_SERVICE_ROLE_KEY`, `BREVO_API_KEY`, and any SMTP credential remain server-only. Use the verified `BREVO_SENDER_EMAIL` and `BREVO_SENDER_NAME`. Redeploy after setting variables.
+3. In **Supabase Dashboard → SupportSphere project → Authentication → URL Configuration**, set the Site URL to the production origin and allow the exact `https://<host>/auth/callback` redirect. Preserve local development redirects only if still used. In the Google OAuth client's **Authorized JavaScript origins**, add the production origin if required by that client configuration; preserve Supabase's callback URI. Update any provider redirect setting that still points only to localhost.
+4. Tell the agent the non-secret Vercel project name and exact production HTTPS origin. Keep the deployment accessible for live smoke checks.
+
+Do NOT paste into chat or source: Supabase service/secret key, Brevo API/SMTP key, OAuth secret, database password, or Vercel account token. Store secrets only in Vercel environment variables and their provider dashboards; local copies belong in ignored `.env`/`.env.local`.
+
+Agent verification: inspect the actual Vercel project when a connector is available; visit the production origin; confirm each public canonical, `robots.txt`, and `sitemap.xml` uses the chosen host; confirm auth callback and real contact submission; inspect the corresponding Supabase row and Brevo event. Keep P02 active until these pass.
+
+Blocking phase: P02
+
+## MANUAL-006 — Confirm public mailing details and review legal text
+
+Status: PENDING; blocks P02 completion for commercial launch.
+
+Why: The owner supplied **Ahsan Anjum**, **ahsananjum170@gmail.com**, and **Lahore, Pakistan**. The owner explicitly asked to keep the city-level location in the site for now. It is a real location but not a deliverable postal address. `RULES.md` requires a real contact mailing address before production launch, and `PRD.md` requires owner/legal review of generated legal templates before commercial use.
+
+Steps for the owner:
+
+1. Decide whether to publish a deliverable street/office/PO-box mailing address. If so, provide the exact non-secret address text to the agent. If you prefer to publish only “Lahore, Pakistan,” obtain legal advice that this is sufficient for your intended launch and tell the agent that review is complete. The site currently displays exactly the city-level location you chose.
+2. Review the actual **`/privacy`**, **`/terms`**, and **`/cookies`** pages in the deployed or local app. Check operator identity, public email, location/address, service-provider statements, data-handling statements, and product availability. Send exact edits, or explicitly confirm the pages are approved for the intended use. The operator privacy export/deletion procedure is in `docs/privacy-operations.md`.
+3. If the public support/legal email should change, provide only the new public address. Keep provider credentials in the dashboards/ignored environment as described above.
+
+Do NOT paste into chat or source: personal account credentials, provider API keys, private legal documents, or customer data. Store any legal-review notes and private address evidence outside the repository; only the approved public facts belong in source.
+
+Agent verification: compare the approved facts with `lib/marketing/facts.ts` and all three rendered legal pages; check the deployed contact/footer facts and email link; record the owner's approval or requested edits in `.agent/QA.md`. Re-run link, metadata, and production checks.
+
+Blocking phase: P02
 
 ## MANUAL-002 — Configure Google OAuth
 

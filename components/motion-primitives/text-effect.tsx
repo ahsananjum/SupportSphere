@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type {
   TargetAndTransition,
   Transition,
@@ -220,6 +220,7 @@ export function TextEffect({
   segmentTransition,
   style,
 }: TextEffectProps) {
+  const reduceMotion = useReducedMotion();
   const segments = splitText(children, per);
   const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
 
@@ -241,24 +242,50 @@ export function TextEffect({
         ?.delayChildren
     : undefined;
 
-  const computedVariants = {
-    container: createVariantsWithTransition(
-      variants?.container || baseVariants.container,
-      {
-        staggerChildren: customStagger ?? stagger,
-        delayChildren: customDelay ?? delay,
-        ...containerTransition,
-        exit: {
-          staggerChildren: customStagger ?? stagger,
-          staggerDirection: -1,
+  const computedVariants = reduceMotion
+    ? {
+        container: {
+          hidden: { opacity: 1 },
+          visible: {
+            opacity: 1,
+            transition: { duration: 0, staggerChildren: 0 },
+          },
+          exit: { opacity: 1 },
         },
-      },
-    ),
-    item: createVariantsWithTransition(variants?.item || baseVariants.item, {
-      duration: baseDuration,
-      ...segmentTransition,
-    }),
-  };
+        item: {
+          hidden: { opacity: 1, x: 0, y: 0, scale: 1, filter: 'none' },
+          visible: {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            scale: 1,
+            filter: 'none',
+            transition: { duration: 0 },
+          },
+          exit: { opacity: 1 },
+        },
+      }
+    : {
+        container: createVariantsWithTransition(
+          variants?.container || baseVariants.container,
+          {
+            staggerChildren: customStagger ?? stagger,
+            delayChildren: customDelay ?? delay,
+            ...containerTransition,
+            exit: {
+              staggerChildren: customStagger ?? stagger,
+              staggerDirection: -1,
+            },
+          },
+        ),
+        item: createVariantsWithTransition(
+          variants?.item || baseVariants.item,
+          {
+            duration: baseDuration,
+            ...segmentTransition,
+          },
+        ),
+      };
 
   return (
     <AnimatePresence mode="popLayout">

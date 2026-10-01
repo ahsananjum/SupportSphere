@@ -12,11 +12,7 @@ test('marketing navigation, mobile menu, and SEO files are coherent', async ({
     'content',
     /SupportSphere is building/,
   );
-  const canonical = await page
-    .locator('link[rel="canonical"]')
-    .getAttribute('href');
-  expect(canonical).toBeTruthy();
-  expect(new URL(canonical!).pathname).toBe('/');
+  await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
     'content',
     /noindex/,
@@ -53,7 +49,7 @@ test('marketing navigation, mobile menu, and SEO files are coherent', async ({
     .getByRole('navigation', { name: 'Mobile navigation' })
     .getByRole('link', { name: 'Security' })
     .click();
-  await expect(page).toHaveURL(/#security$/);
+  await expect(page).toHaveURL(/\/security$/);
   await expect(page.locator('.mobile-menu')).not.toHaveAttribute('open', '');
 
   const robots = await request.get('/robots.txt');

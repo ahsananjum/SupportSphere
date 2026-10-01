@@ -4,10 +4,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRef } from 'react';
 
+const navigation = [
+  { href: '/features', label: 'Features' },
+  { href: '/ai-support', label: 'AI support' },
+  { href: '/knowledge-base', label: 'Knowledge' },
+  { href: '/integrations', label: 'Integrations' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/security', label: 'Security' },
+] as const;
+
 export function SiteHeader() {
   const pathname = usePathname();
   const menu = useRef<HTMLDetailsElement>(null);
-  const anchor = (id: string) => (pathname === '/' ? `#${id}` : `/#${id}`);
   const closeMenu = () => {
     if (menu.current) menu.current.open = false;
   };
@@ -21,10 +29,15 @@ export function SiteHeader() {
         SupportSphere
       </Link>
       <nav className="marketing-nav" aria-label="Primary navigation">
-        <a href={anchor('approach')}>Approach</a>
-        <a href={anchor('workflow')}>Workflow</a>
-        <a href={anchor('security')}>Security</a>
-        <a href={anchor('faq')}>FAQ</a>
+        {navigation.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            aria-current={pathname === href ? 'page' : undefined}
+          >
+            {label}
+          </Link>
+        ))}
       </nav>
       <div className="marketing-account">
         <Link href="/login" className="quiet-link">
@@ -44,22 +57,26 @@ export function SiteHeader() {
           }
         }}
       >
-        <summary aria-label="Open navigation menu">
+        <summary>
           Menu <span aria-hidden="true">＋</span>
         </summary>
         <nav aria-label="Mobile navigation">
-          <a href={anchor('approach')} onClick={closeMenu}>
-            Approach
-          </a>
-          <a href={anchor('workflow')} onClick={closeMenu}>
-            Workflow
-          </a>
-          <a href={anchor('security')} onClick={closeMenu}>
-            Security
-          </a>
-          <a href={anchor('faq')} onClick={closeMenu}>
-            FAQ
-          </a>
+          {navigation.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={closeMenu}
+              aria-current={pathname === href ? 'page' : undefined}
+            >
+              {label}
+            </Link>
+          ))}
+          <Link href="/about" onClick={closeMenu}>
+            About
+          </Link>
+          <Link href="/contact" onClick={closeMenu}>
+            Contact
+          </Link>
           <Link href="/login" onClick={closeMenu}>
             Sign in
           </Link>

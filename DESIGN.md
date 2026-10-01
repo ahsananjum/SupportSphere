@@ -1,6 +1,6 @@
 # SupportSphere — Design system
 
-Status: active for the current-page design refinement; P02 implementation is deferred by the owner. This document is the visual and interaction source of truth for marketing, authentication, invitations, and the authenticated workspace. Every page uses the same tokens and component vocabulary. Product claims must describe implemented behavior or clearly identify a planned capability.
+Status: active for P02 public product implementation. This document is the visual and interaction source of truth for marketing, authentication, invitations, and the authenticated workspace. Every page uses the same tokens and component vocabulary. Product claims describe implemented behavior or clearly identify a planned capability.
 
 ## Intent
 
@@ -37,7 +37,9 @@ Display: Bricolage Grotesque, upright, 600–700, tight but legible. Body and co
 
 ## Motion selection
 
-Motion Primitives documentation was reviewed for Text Effect, Animated Group, In View, Animated Background, Disclosure, Glow Effect, Animated Number, Toolbar Dynamic, and advanced dialog effects. Use **Text Effect** once on the marketing hero, **In View** for a few static product-story reveals, **Animated Group** for a short workflow sequence, and **Animated Background** for selected workspace navigation. FAQ uses native disclosure semantics. The other candidates are deferred: animated numbers need real changing metrics, a dynamic toolbar has no real actions yet, and morphing dialogs or glow add complexity without improving the current auth/team tasks.
+Motion Primitives documentation was reviewed for Text Effect, Animated Group, In View, Animated Background, Disclosure, Glow Effect, Animated Number, Toolbar Dynamic, and advanced dialog effects. Use **Text Effect** once on the marketing hero, **In View** for a few static product-story reveals, **Animated Group** for the interactive support flow, and **Animated Background** for selected workspace navigation. The support-flow SVG marker moves to the selected stage and respects reduced motion. FAQ uses native disclosure semantics. Animated numbers require real changing metrics; a dynamic toolbar has no real actions yet; morphing dialogs and glow do not clarify current tasks.
+
+P02 public pages use a compact editorial hero and ruled two-column sections. Security, integrations, and about use distinct schematic illustrations based on actual or explicitly planned state. Pricing is driven by one plan configuration and does not invent a price. The contact form uses an elevated paper panel with visible field errors. A concise essential-cookie notice sits above the mobile CTA and links to the cookie policy; no optional analytics runs.
 
 Motion is never required to understand content. Marketing reveals use opacity and a small transform for 350–500ms; app transitions use 120–220ms. No looping cursor effect, layout shift, scrolling trap, or animation of long live lists. `prefers-reduced-motion: reduce` removes spatial motion and limits any fade to 150ms.
 

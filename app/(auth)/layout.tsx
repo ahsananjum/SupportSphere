@@ -36,38 +36,34 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
               </span>
             </Link>
 
-            <div className="auth-live-pill" aria-label="System status">
+            <div className="auth-live-pill" aria-label="Available foundation">
               <span className="auth-live-dot" aria-hidden="true" />
-              <span>Live Workbench</span>
+              <span>Workspace foundation</span>
             </div>
           </div>
 
-          {/* Live Support Dispatch Preview Card */}
           <div className="auth-showcase-card" aria-hidden="true">
             <div className="auth-showcase-badge">
-              <span>● Active Triage Dispatch</span>
-              <span className="auth-showcase-time">⚡ Realtime</span>
+              <span>Available now</span>
+              <span className="auth-showcase-time">Team access</span>
             </div>
             <h2 className="auth-showcase-title">
-              “Priority inquiry #1042: SLA guarantee &amp; workspace routing”
+              A workspace with clear team boundaries.
             </h2>
             <p className="auth-showcase-desc">
-              Automated triage matched inquiry with agent workbench in 180ms.
+              Create a workspace, invite members, and manage roles with
+              server-side checks.
             </p>
             <div className="auth-showcase-tags">
-              <span className="showcase-tag tag-urgent">Priority: Urgent</span>
+              <span className="showcase-tag">Workspace isolation</span>
               <span className="showcase-tag tag-mint">
-                Auto-routed to Agent
+                Expiring invitations
               </span>
-            </div>
-            <div className="auth-showcase-progress">
-              <div className="auth-progress-fill" />
             </div>
           </div>
 
           <div className="auth-quote">
-            <p>“One secure workspace for the people behind every answer.”</p>
-            <cite>— SupportSphere Workbench</cite>
+            <p>One secure workspace for the people behind every answer.</p>
           </div>
         </div>
 

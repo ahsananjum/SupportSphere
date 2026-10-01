@@ -55,6 +55,66 @@ export type Database = {
           },
         ];
       };
+      contact_rate_limits: {
+        Row: {
+          attempts: number;
+          expires_at: string;
+          key_hash: string;
+          window_start: string;
+        };
+        Insert: {
+          attempts?: number;
+          expires_at: string;
+          key_hash: string;
+          window_start: string;
+        };
+        Update: {
+          attempts?: number;
+          expires_at?: string;
+          key_hash?: string;
+          window_start?: string;
+        };
+        Relationships: [];
+      };
+      contact_submissions: {
+        Row: {
+          company: string | null;
+          created_at: string;
+          delivery_status: string;
+          email_normalized: string;
+          full_name: string;
+          id: string;
+          last_error_code: string | null;
+          message: string;
+          processed_at: string | null;
+          topic: string;
+        };
+        Insert: {
+          company?: string | null;
+          created_at?: string;
+          delivery_status?: string;
+          email_normalized: string;
+          full_name: string;
+          id?: string;
+          last_error_code?: string | null;
+          message: string;
+          processed_at?: string | null;
+          topic: string;
+        };
+        Update: {
+          company?: string | null;
+          created_at?: string;
+          delivery_status?: string;
+          email_normalized?: string;
+          full_name?: string;
+          id?: string;
+          last_error_code?: string | null;
+          message?: string;
+          processed_at?: string | null;
+          topic?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -250,6 +310,10 @@ export type Database = {
           role: string;
           workspace_id: string;
         }[];
+      };
+      reserve_contact_attempt: {
+        Args: { p_key_hash: string; p_max_attempts: number };
+        Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
     };

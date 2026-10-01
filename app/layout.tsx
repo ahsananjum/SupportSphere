@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Bricolage_Grotesque, DM_Sans } from 'next/font/google';
 import { isPublicOrigin, siteOrigin } from '../lib/seo';
 import './globals.css';
+import './marketing.css';
 
 const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],

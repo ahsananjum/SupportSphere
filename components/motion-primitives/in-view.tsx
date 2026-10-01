@@ -6,6 +6,7 @@ import {
   Variant,
   Transition,
   UseInViewOptions,
+  useReducedMotion,
 } from 'motion/react';
 
 export type InViewProps = {
@@ -37,6 +38,7 @@ export function InView({
   const isInView = useInView(ref, viewOptions);
 
   const [isViewed, setIsViewed] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   const MotionComponent = motion[as as keyof typeof motion] as typeof as;
 
@@ -47,9 +49,13 @@ export function InView({
       onAnimationComplete={() => {
         if (once) setIsViewed(true);
       }}
-      animate={isInView || isViewed ? 'visible' : 'hidden'}
-      variants={variants}
-      transition={transition}
+      animate={reduceMotion || isInView || isViewed ? 'visible' : 'hidden'}
+      variants={
+        reduceMotion
+          ? { hidden: { opacity: 1, y: 0 }, visible: { opacity: 1, y: 0 } }
+          : variants
+      }
+      transition={reduceMotion ? { duration: 0 } : transition}
     >
       {children}
     </MotionComponent>

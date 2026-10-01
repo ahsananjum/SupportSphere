@@ -90,4 +90,14 @@ Alternatives considered: Maintaining dark blue zebra stripes across the landing 
 Consequences: Cohesive, premium editorial light aesthetic across landing, auth, and workbench app; AAA text contrast; 0 dark blue blocks; all 8 Playwright E2E tests and 19 Vitest unit tests pass cleanly across 320px–1440px viewports.
 Files affected: `DESIGN.md`, `tokens.css`, `app/globals.css`, `app/page.tsx`, `.agent/STATE.md`, `.agent/DECISIONS.md`.
 
+## ADR-010 — P02 contact intake, public indexing, and analytics
+
+Date: 2026-10-02
+Status: accepted for local implementation; launch verification pending owner actions.
+Context: P02 needs a real public contact path, truthful product pages, and search metadata without a chosen production origin. The owner provided public identity/email and a city-level location and elected to keep that location visible for now.
+Decision: Persist contact submissions in service-role-only Supabase tables, reserve hourly hashed IP/email rate buckets through an atomic RPC, send an operator notification through the configured Brevo Transactional API, and display a signed-receipt thank-you state. Public pages use route-specific metadata; canonical URLs and indexing activate only for a configured public HTTPS origin. Optional analytics remains off, with an essential-cookie notice; no analytics property is invented.
+Alternatives considered: browser-only forms, unbounded email delivery, fabricated pricing/usage figures, and a guessed canonical domain.
+Consequences: Local P02 checks pass, including a real persisted contact submission and Brevo API acceptance. P02 stays BLOCKED_MANUAL until a production origin, legally sufficient public contact address, and owner/legal review are verified. See `MANUAL-005`, `MANUAL-006`, and `docs/privacy-operations.md`.
+Files affected: `app`, `components/marketing`, `lib/contact`, `lib/marketing`, `lib/email/brevo.ts`, `supabase/migrations/20261001210202_p02_contact_intake.sql`, `docs/privacy-operations.md`, and P02 tests.
+
 

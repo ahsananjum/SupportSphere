@@ -3,19 +3,18 @@ import Link from 'next/link';
 import { TextEffect } from '../components/motion-primitives/text-effect';
 import { InView } from '../components/motion-primitives/in-view';
 import { WorkflowVisual } from '../components/marketing/workflow-visual';
-import { SiteHeader } from '../components/marketing/site-header';
-import { SiteFooter } from '../components/marketing/site-footer';
+import { PublicShell } from '../components/marketing/public-shell';
 import { isPublicOrigin, siteOrigin } from '../lib/seo';
 
 export const metadata: Metadata = {
   title: { absolute: 'SupportSphere — a calmer way to run customer support' },
   description:
     'SupportSphere is building a connected support workspace for teams, knowledge, and responsible AI assistance. Secure workspaces and team access are available now.',
-  alternates: { canonical: '/' },
+  alternates: isPublicOrigin() ? { canonical: `${siteOrigin()}/` } : undefined,
   robots: { index: isPublicOrigin(), follow: isPublicOrigin() },
   openGraph: {
     type: 'website',
-    url: siteOrigin(),
+    url: isPublicOrigin() ? siteOrigin() : undefined,
     title: 'SupportSphere — a calmer way to run customer support',
     description:
       'One connected support workspace, built around clear human ownership and useful context.',
@@ -42,9 +41,7 @@ const questions = [
 
 export default function HomePage() {
   return (
-    <div className="marketing-site">
-      <SiteHeader />
-
+    <PublicShell>
       <main id="main-content">
         <section
           className="hero-section"
@@ -262,8 +259,6 @@ export default function HomePage() {
           </Link>
         </section>
       </main>
-
-      <SiteFooter />
-    </div>
+    </PublicShell>
   );
 }

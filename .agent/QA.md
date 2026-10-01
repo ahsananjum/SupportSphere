@@ -71,3 +71,26 @@ The owner requested a visual, motion, and SEO upgrade to the routes already pres
 | Unit/browser/build | PASS | `pnpm test`: 19 passed, one remote security test skipped without explicit opt-in. `pnpm test:e2e`: 8 passed. `pnpm build`: Next.js 16.3.7 production build passed. |
 
 Production domain is pending, so the canonical production origin and public indexing require launch configuration. Analytics remain deferred by owner choice. P02 acceptance is not claimed.
+
+## P02 local verification — 2026-10-02
+
+Status: **BLOCKED_MANUAL**. All local implementation checks below pass. Production-origin and legal/mailing gates remain open in `MANUAL-005` and `MANUAL-006`; P02 is not complete.
+
+| P02 criterion | Evidence | Result |
+| --- | --- | --- |
+| Required public routes and custom 404 | Production build generated home, six story routes, pricing, contact, three legal pages, thank-you, and custom 404. Browser visited each public route and the missing-page state. | PASS locally |
+| Public navigation/logo/CTAs | Per-route internal-link scan returned no 4xx; logo/home and mobile menu flow checked; hero CTA, secondary links, footer legal/contact navigation inspected. | PASS locally |
+| Design and motion | Editorial paper/ink/mint system follows `DESIGN.md`; illustrative workflow and route-specific schematics are truthful; source-owned Motion Primitives use reduced-motion guards. Screenshots inspected at desktop/mobile. | PASS locally |
+| Responsive, keyboard, focus | Playwright inspected 320, 360, 390, 768, 1024, and 1440 px with no document overflow. Cookie notice sits above sticky mobile CTA. Skip link, menu Escape/focus, workflow buttons, form error focus checked. | PASS locally |
+| SEO and icons | Every public route has unique title, description, H1, Open Graph defaults, and explicit noindex on localhost; local canonical omitted. `robots.txt` disallows localhost indexing; `sitemap.xml` returns no local public URLs. Favicon and Open Graph image resolve. Auth/app utility routes are noindex. Informative images/ALT and decorative SVG hiding audited. | PASS locally; production host pending |
+| Contact validation and safety | Browser client errors and server 422/cross-origin 403 checked. Server enforces payload cap, honeypot, hourly atomic Supabase rate buckets, service-role-only tables, signed receipt, and durable submission. | PASS |
+| Real contact delivery | Direct API POST and opt-in `tests/live/p02-contact-ui.mjs` browser submit reached the true thank-you state; live Supabase rows recorded `delivery_status='sent'` after Brevo API accepted. Both QA rows were removed. No inbox-delivery claim beyond API acceptance. | PASS for configured local path |
+| Schema, RLS, types | Applied remote migration `20261001210202`; generated types from live project. Both contact tables have RLS; anon/auth lack DML and RPC execute; service role can insert/call. Atomic rate-limit RPC tested and cleanup verified. | PASS |
+| Legal/contact facts and privacy process | Owner facts appear on contact/footer/legal pages. Optional analytics is off, cookie notice describes essential behavior. `docs/privacy-operations.md` documents export/deletion handling. | PASS locally; owner review/address pending |
+| Console/build/static gate | `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (19 pass, one opt-in remote test skipped), `pnpm test:e2e` (13 pass), `pnpm build`, and `git diff --check` pass. Browser suite captured page/console errors for all public routes: none. | PASS |
+
+Supabase security advisor reports only the existing provider-level leaked password protection warning (Pro-plan feature). New service-role-only contact tables receive informational `rls_enabled_no_policy` notices by design; no anon/auth access is granted. No Vercel MCP capability was available, and no production deployment was inspected. The owner chose to show “Lahore, Pakistan” for now; that city-level location is not a deliverable mailing address under the launch rule. The exact production origin and owner review of legal templates remain pending.
+
+The live browser submit initially exposed a same-origin mismatch in local Next.js: `request.url` used `localhost` while the browser and Host header used `127.0.0.1`. The route now compares Origin with the incoming Host and forwarded protocol; a same-origin regression assertion was added. The repeated live browser submit passed and its QA row was deleted.
+
+Final gate after that repair: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 19 PASS and one opt-in remote suite SKIPPED; `pnpm test:e2e` 13 PASS; `pnpm build` PASS (27 generated pages); `git diff --check` PASS. A final source scan found no placeholder customer, metric, integration, or AI response content in the public implementation. The production-origin and owner/legal gates still require verification before phase completion.
