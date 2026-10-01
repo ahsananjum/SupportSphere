@@ -59,3 +59,13 @@ Decision: Configure the provider templates to send a token hash and type to the 
 Alternatives considered: code-only callback tied to the originating browser.
 Consequences: Fresh-browser confirmation and recovery links now pass live Brevo delivery and Supabase Auth checks; reused recovery links are rejected.
 Files affected: app/auth/callback/route.ts, .agent/MANUAL_ACTIONS.md.
+
+## ADR-007 — Current-page visual system, motion, and conditional indexing
+
+Date: 2026-10-01
+Status: accepted
+Context: The owner requested a premium design and SEO upgrade for the existing site, then deferred P02. Current pages must accurately distinguish live P01 features from planned product workflows.
+Decision: Use one portable `tokens.css` map for paper, ink, and mint; Bricolage Grotesque and DM Sans via Next fonts; source-owned, MIT-noticed Motion Primitives only where content stays readable and reduced motion is respected. Describe planned workflows as illustrative. Index only the existing home route when `NEXT_PUBLIC_APP_URL` names a public origin; keep local/private routes out of search. Defer analytics and P02-only routes.
+Alternatives considered: animated statistics without real data, demo customer stories, a new P02 route set, and indexing localhost or auth pages.
+Consequences: Current pages share a consistent visual language and verified browser behavior. Production canonical URLs and indexing await the owner's domain configuration.
+Files affected: `DESIGN.md`, `tokens.css`, `app`, `components`, `lib/seo.ts`, `tests/e2e`.

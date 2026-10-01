@@ -5,7 +5,8 @@ import { cookies } from 'next/headers';
 import { AuthForm } from '../auth-form';
 
 export const metadata: Metadata = {
-  title: 'Choose a password | SupportSphere',
+  title: 'Choose a password',
+  description: 'Choose a new password for your SupportSphere account.',
   robots: { index: false, follow: false },
 };
 

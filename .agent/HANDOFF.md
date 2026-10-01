@@ -27,4 +27,10 @@ Supabase security advisor reports provider-level leaked password protection disa
 
 ## Next phase
 
-Load P02 requirements and current repository/provider state before any P02 work. No P01 owner action remains pending.
+The owner explicitly deferred P02. Do not begin P02 public routes, legal/contact backend, pricing, or analytics until asked. The owner supplied `ahsananjum170@gmail.com` as a future public contact email; production domain is pending. No P01 owner action remains pending.
+
+## Current-page design refinement — 2026-10-01
+
+`DESIGN.md` and `tokens.css` now define the paper, ink, and mint visual system. Existing home, auth, invite, workspace, and team surfaces were refreshed; real P01 logic was preserved. Source-owned Motion Primitives provide text, group, view, and navigation motion with a local MIT notice and reduced-motion behavior. SEO now includes metadata, canonical home URL, local noindex, private-route exclusions, sitemap, robots, favicon, Open Graph image, and custom 404. Only the current home route is eligible for indexing when a public domain is configured.
+
+Verification: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (19 passed; one opt-in remote test skipped), `pnpm test:e2e` (8 passed), and `pnpm build` passed. Browser checks include mobile navigation, public links, SEO files, responsive auth/invite, and reduced-motion hydration. Reviewed full-page home screenshots at desktop and 390px mobile plus auth/invite screenshots. See `.agent/QA.md` for details.

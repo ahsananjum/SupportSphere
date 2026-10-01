@@ -6,7 +6,8 @@ import { acceptInvitation } from './actions';
 import { SubmitButton } from '../../../components/shared/submit-button';
 
 export const metadata: Metadata = {
-  title: 'Workspace invitation | SupportSphere',
+  title: 'Workspace invitation',
+  description: 'Review and accept your SupportSphere workspace invitation.',
   robots: { index: false, follow: false },
 };
 
@@ -35,9 +36,15 @@ export default async function InvitePage({
   if (invitation.status !== 'active')
     return (
       <main id="main-content" className="invite-shell workspace-card">
+        <Link href="/" className="invite-brand">
+          SupportSphere <span aria-hidden="true">✳</span>
+        </Link>
+        <p className="eyebrow">INVITATION STATUS</p>
         <h1>Invitation unavailable</h1>
         <p role="alert">{messages[result] ?? messages.invalid}</p>
-        <Link href="/app">Go to your workspace</Link>
+        <Link href="/app" className="secondary-button inline-button">
+          Go to your workspace
+        </Link>
       </main>
     );
   const supabase = await createClient();
@@ -45,6 +52,9 @@ export default async function InvitePage({
   const signedInEmail = data.user?.email?.toLowerCase();
   return (
     <main id="main-content" className="invite-shell workspace-card">
+      <Link href="/" className="invite-brand">
+        SupportSphere <span aria-hidden="true">✳</span>
+      </Link>
       <p className="eyebrow">INVITATION</p>
       <h1>Join {invitation.workspaceName}</h1>
       <p className="page-intro">

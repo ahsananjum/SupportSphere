@@ -5,9 +5,11 @@ import { getWorkspaceContext } from '../../lib/workspaces/context';
 import { logOut } from '../(auth)/actions';
 import { switchWorkspace } from './actions';
 import { SubmitButton } from '../../components/shared/submit-button';
+import { AppNavigation } from '../../components/shared/app-navigation';
 
 export const metadata: Metadata = {
-  title: 'Workspace | SupportSphere',
+  title: 'Workspace',
+  description: 'Your private SupportSphere workspace.',
   robots: { index: false, follow: false },
 };
 
@@ -22,12 +24,9 @@ export default async function AppLayout({
     <div className="app-shell">
       <header className="app-header">
         <Link href="/app" className="app-logo">
-          SupportSphere<span aria-hidden="true"> ●</span>
+          SupportSphere<span aria-hidden="true"> ✳</span>
         </Link>
-        <nav aria-label="Workspace navigation" className="app-nav">
-          <Link href="/app">Overview</Link>
-          {active && <Link href="/app/team">Team</Link>}
-        </nav>
+        <AppNavigation hasWorkspace={Boolean(active)} />
         <form action={logOut}>
           <SubmitButton
             idle="Sign out"

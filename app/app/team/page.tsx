@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { InviteForm } from './invite-form';
 import {
@@ -8,6 +9,12 @@ import {
   revokeInvitation,
 } from '../actions';
 import { SubmitButton } from '../../../components/shared/submit-button';
+
+export const metadata: Metadata = {
+  title: 'Team',
+  description: 'Manage workspace members and invitations in SupportSphere.',
+  robots: { index: false, follow: false },
+};
 
 const notices: Record<string, string> = {
   resent: 'Invitation sent again.',
@@ -89,6 +96,11 @@ export default async function TeamPage({
         <h1>Team</h1>
         <p className="page-intro">
           Invite colleagues and manage access to this workspace.
+        </p>
+        <p className="team-summary">
+          {membersResult.data?.length ?? 0}{' '}
+          {membersResult.data?.length === 1 ? 'member' : 'members'} in this
+          workspace
         </p>
       </div>
       {params.notice && notices[params.notice] && (

@@ -55,3 +55,19 @@ P01 live acceptance and full phase gate passed against SupportSphere project `xv
 - `git diff --check` — PASS.
 - Final Supabase MCP SQL — five RLS tables, five tenant policies, zero workspaces and temporary test users. One real Google user remains without a workspace.
 - Supabase performance advisor — INFO for unused `workspace_invitations_expiry_idx` on the now-empty project; retained for expiry queries.
+
+## Current-page design refinement — 2026-10-01
+
+The owner requested a visual, motion, and SEO upgrade to the routes already present, then explicitly deferred P02. This pass changes no P01 database, auth, membership, invitation, or mail behavior and does not implement P02-only routes.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Visual system | PASS | `DESIGN.md` and `tokens.css` define paper, ink, mint, Bricolage Grotesque, DM Sans, spacing, focus, and motion tokens. |
+| Current-page UI | PASS | Home, auth shell/pages, invitation state, workspace overview, and team page use the same system; screenshots of home, login, and invalid invite reviewed at desktop/mobile sizes. |
+| Motion and accessibility | PASS | Source-owned Motion Primitives with MIT notice; first-paint content remains readable; reduced-motion browser test verifies legibility and zero hydration errors. |
+| SEO foundation | PASS | Home canonical/title/description/OG, favicon, robots, sitemap, 404, and private-route noindex. Localhost disallows indexing; only the existing home is listed when a public origin is configured. Browser checks resolve public links and SEO resources. |
+| Mobile/keyboard | PASS | Existing P01 auth width/label/focus tests and new mobile navigation checks pass; screenshots reviewed for home, login, invalid invite. |
+| Typecheck/lint/format | PASS | `pnpm typecheck`, `pnpm lint`, and `pnpm format:check`. |
+| Unit/browser/build | PASS | `pnpm test`: 19 passed, one remote security test skipped without explicit opt-in. `pnpm test:e2e`: 8 passed. `pnpm build`: Next.js 16.3.7 production build passed. |
+
+Production domain is pending, so the canonical production origin and public indexing require launch configuration. Analytics remain deferred by owner choice. P02 acceptance is not claimed.

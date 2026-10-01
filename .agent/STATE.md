@@ -4,46 +4,33 @@ Active phase: P01
 Status: COMPLETE
 Last updated: 2026-10-01
 Current branch: master
-Last known good commit: P01 completion commit (see Git HEAD)
+P01 verification baseline commit: 1a57652
 
-## Objective
+## Phase truth
 
-Prove real Supabase authentication, tenant isolation, membership, Google OAuth, and Brevo invitation/password mail end to end.
+P01 authentication, tenancy, Google OAuth, Brevo delivery, invitation lifecycle, and live tenant attack checks completed against Supabase project `xviumgygixcklrbuynoh`. Two versioned migrations are applied; five tenant tables have RLS and generated TypeScript types. MANUAL-001 through MANUAL-004 remain VERIFIED. The real Google user remains without a workspace; temporary test users and workspaces were removed.
 
-## Completed in this phase
+## Current user request
 
-- [x] Loaded binding documents, all agent records, installed Next.js guides, current Supabase guidance, recent commits, and initial clean Git status.
-- [x] Confirmed SupportSphere project `xviumgygixcklrbuynoh`; no changes were made to the unrelated BookPro project.
-- [x] Created versioned P01 identity/tenancy migration with profiles, workspaces, members, invitations, audit, private helpers, read RLS, atomic RPCs, last-owner safety, invite expiry/revoke/reuse logic, and bounded invitation creation.
-- [x] Added Supabase SSR session handling, auth pages/actions/callback, Google OAuth entry, password recovery state, protected routes, and safe redirects.
-- [x] Added workspace creation/switching, member roles/removal, invitation send/resend/revoke/accept, server-only Brevo adapter, and delivery recording.
-- [x] Added responsive forms, loading/error/empty/success states, labels, focus/keyboard support, and security/browser tests.
-- [x] Local gates pass: typecheck, lint, format, 19 unit tests, 4 Playwright tests, production build, diff whitespace.
-- [x] Applied two P01 migrations to SupportSphere, aligned local filenames to remote history, enabled RLS on all five tables, generated live database types, and cleared the security advisor warning on a platform event trigger.
-- [x] Live attack suite passed with real temporary accounts and cleanup: tenant reads/writes, forged IDs, viewer/admin escalation, invitation states, last-owner safety, and audit isolation.
-- [x] Verified Brevo sender active, SMTP confirmation delivered, real login/workspace creation/logout/protected route, Brevo invitation delivered, Google OAuth callback, invitation acceptance, agent membership, and audit events.
+Refresh `DESIGN.md`, every currently implemented page, motion, typography, color system, and SEO foundation. The owner explicitly said **do not implement P02 yet**. P02 public route expansion, contact backend, legal pages, pricing, production domain, and analytics are deferred. The owner supplied `ahsananjum170@gmail.com` as a future public contact email; operator name and mailing address were not supplied. Domain is pending and analytics are deferred.
 
-## Remaining acceptance and verification
+## Design refinement checklist
 
-- [x] Repaired Supabase Auth confirmation and recovery email templates per MANUAL-004 and verified fresh cross-browser links.
-- [x] Verified recovery delivery, reset/login, reused-link rejection, active/expired/revoked/used/resend invitation UI, mobile reset/invite states, and keyboard focus with live data.
-- [x] Ran the full P01 phase gate, repaired findings, and updated QA and HANDOFF.
+- [x] Read binding project documents, every agent record, Hallmark flow, installed Next.js guides, Motion Primitives docs, current pages, and Git state.
+- [x] Updated `DESIGN.md` and portable `tokens.css`; introduced a consistent paper, ink, and mint visual system.
+- [x] Redesigned the existing home, auth, invitation, workspace, and team surfaces without changing real auth/tenant logic.
+- [x] Added selected source-owned Motion Primitives with reduced-motion support; made content readable before animation.
+- [x] Added metadata, conditional index strategy, robots, sitemap, favicon, Open Graph image, and custom 404 for current routes.
+- [x] Desktop/mobile visual review of home, login, and invalid-invite pages; repaired first-paint motion visibility.
+- [x] Completed typecheck, lint, format, 19 unit tests, 8 browser tests, build, SEO link, responsive, and reduced-motion gate.
+- [x] Recorded design refinement QA, handoff, and ADR.
+- [x] Final source and phase-record diff reviewed for the design refinement.
 
-## Current schema/migrations
+## Known limits
 
-Applied remote versions: `20260930201144_p01_identity_tenancy.sql` and `20260930201423_restrict_rls_event_trigger.sql`. Local files match remote history. `lib/supabase/database.types.ts` was generated from the live project. Five public P01 tables have RLS and the security advisor has no findings.
-
-## Current integrations
-
-SupportSphere Supabase, local ignored `.env`, Google provider, and Brevo sender/API/custom SMTP are configured. A real Google user accepted a delivered invitation. MANUAL-001 through MANUAL-004 are verified. Test workspace and temporary users were removed; the Google user remains without a workspace.
-
-## Known failures
-
-- Initial cross-browser confirmation failed with `AuthPKCECodeVerifierMissingError`; token-hash callback and corrected provider templates were verified end to end afterward.
-- The security advisor reports only provider-level leaked password protection disabled. Supabase documents that control as available on Pro plans and above; no app schema/RLS advisor findings remain. The performance advisor reports the invitation expiry index unused while the database is empty.
-- Local command sandbox setup fails; approved outside-sandbox commands worked.
+Only the existing home route is indexable when a real public origin is configured. Localhost is deliberately noindex. The pending production domain must be configured before launch. No P02-only contact/legal/pricing/analytics work has begun. Supabase's provider-level leaked-password-protection warning from P01 remains as documented in the P01 QA record.
 
 ## Next exact actions
 
-1. Start P02 only after loading its binding documents and inspecting the current Git and provider state.
-2. Keep the verified P01 migrations and real provider configuration intact; use the existing Google user to create a real workspace when needed.
+1. Keep P02 deferred until the owner asks to begin it.
+2. When a public domain is chosen, configure `NEXT_PUBLIC_APP_URL` and verify canonical, robots, and sitemap on the deployed origin in the appropriate phase.

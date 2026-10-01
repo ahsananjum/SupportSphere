@@ -5,7 +5,8 @@ import { AuthForm } from '../auth-form';
 import { SubmitButton } from '../../../components/shared/submit-button';
 
 export const metadata: Metadata = {
-  title: 'Sign in | SupportSphere',
+  title: 'Sign in',
+  description: 'Sign in securely to your SupportSphere workspace.',
   robots: { index: false, follow: false },
 };
 

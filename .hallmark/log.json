@@ -1,0 +1,10 @@
+[
+  {
+    "date": "2026-10-01",
+    "scope": "app",
+    "macrostructure": "asymmetric product story / split auth / workbench",
+    "theme": "editorial utility",
+    "enrichment": "workflow diagram",
+    "brief": "Redesign SupportSphere's current pages and SEO around a coherent system"
+  }
+]

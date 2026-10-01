@@ -1,6 +1,13 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getWorkspaceContext } from '../../lib/workspaces/context';
 import { CreateWorkspaceForm } from './create-workspace-form';
+
+export const metadata: Metadata = {
+  title: 'Overview',
+  description: 'Manage your private SupportSphere workspace.',
+  robots: { index: false, follow: false },
+};
 
 export default async function AppPage({
   searchParams,
@@ -11,8 +18,8 @@ export default async function AppPage({
   const params = await searchParams;
   if (!active)
     return (
-      <section className="workspace-card">
-        <p className="eyebrow">GET STARTED</p>
+      <section className="workspace-card onboarding-card">
+        <p className="eyebrow">YOUR SUPPORT DESK BEGINS HERE</p>
         <h1>Create your workspace</h1>
         <p className="page-intro">
           Your workspace keeps your team and support data separate from every
@@ -28,9 +35,10 @@ export default async function AppPage({
       </section>
     );
   return (
-    <section className="workspace-card">
+    <section className="workspace-card overview-card">
       <p className="eyebrow">WORKSPACE</p>
       <h1>{active.name}</h1>
+      <span className="overview-role">Your role · {active.role}</span>
       <p className="page-intro">
         You are signed in as a {active.role}. Manage your team or switch
         workspaces from the menu.
@@ -51,7 +59,7 @@ export default async function AppPage({
         </p>
       )}
       <Link className="primary-button inline-button" href="/app/team">
-        View team
+        Manage team <span aria-hidden="true">↗</span>
       </Link>
     </section>
   );
