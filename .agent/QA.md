@@ -94,3 +94,33 @@ Supabase security advisor reports only the existing provider-level leaked passwo
 The live browser submit initially exposed a same-origin mismatch in local Next.js: `request.url` used `localhost` while the browser and Host header used `127.0.0.1`. The route now compares Origin with the incoming Host and forwarded protocol; a same-origin regression assertion was added. The repeated live browser submit passed and its QA row was deleted.
 
 Final gate after that repair: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 19 PASS and one opt-in remote suite SKIPPED; `pnpm test:e2e` 13 PASS; `pnpm build` PASS (27 generated pages); `git diff --check` PASS. A final source scan found no placeholder customer, metric, integration, or AI response content in the public implementation. The production-origin and owner/legal gates still require verification before phase completion.
+
+## P02 production verification — 2026-10-02
+
+The owner supplied Vercel project `support-sphere`, origin `https://support-sphere-psi.vercel.app`, approved public “Lahore, Pakistan” contact detail, and approved the legal pages as-is. GitHub `origin/master` initially held pre-P02 commit `43eb828`, which explained live 404s on all new routes. Commit `7681bd5` was pushed; GitHub deployment `6796535046` reported Production success, and the public alias then served the new routes. Vercel MCP and authenticated Vercel CLI were unavailable; GitHub deployment status and live HTTP/browser behavior are the provider evidence.
+
+| Production criterion | Actual proof | Result |
+| --- | --- | --- |
+| Routes, links, and 404 | `tests/live/p02-production.mjs` visited all 12 indexable pages, checked 14 internal targets, and asserted the branded 404 and thank-you/auth utility pages. | PASS |
+| Metadata and indexing | Every indexable route had a unique title/description, one H1, exact production canonical, OG title/description, and index/follow. Live robots excludes utility/API paths; sitemap contains all 12 indexable routes and excludes thank-you. Favicon resolved. | PASS |
+| Responsive/accessibility/console | Live browser checked 320, 360, 390, 768, 1024, and 1440 px, no document overflow, cookie/sticky CTA noncollision, keyboard skip link and mobile-menu Escape behavior, and no unexpected console/page errors. | PASS |
+| Owner legal/contact facts | Live `/contact`, `/privacy`, `/terms`, and `/cookies` contain Ahsan Anjum, owner-approved “Lahore, Pakistan,” and `ahsananjum170@gmail.com`. Owner approved pages as-is on 2026-10-02. | PASS by owner decision |
+| Contact vertical slice | Browser submitted a real request on the production origin, reached signed-receipt thank-you state, and live Supabase row showed Brevo API acceptance (`sent`). QA row `b5a4483e-e5cc-4105-af77-cc2e13229e4a` was deleted after verification. | PASS |
+| Production OAuth origin | `tests/live/p02-auth-origin.mjs` triggered Google OAuth from live login, asserted the exact production `/auth/callback?next=%2Fapp` redirect, and received Supabase 302 to Google. No personal login was performed in this P02 check; real Google sign-in was verified in P01. | PASS for production callback initiation |
+| Database/migrations/advisors | Supabase project `xviumgygixcklrbuynoh` is ACTIVE_HEALTHY; migration history includes `20261001210202`. Security advisor only reports expected INFO for service-role-only no-policy contact tables and preexisting provider-level leaked password protection WARN. Performance advisor only reports unused-index INFO on the nearly empty project. | PASS for P02 schema |
+
+Production smoke command: `P02_PRODUCTION_ORIGIN=https://support-sphere-psi.vercel.app node tests/live/p02-production.mjs` — PASS. Production contact command: set `P02_LIVE_BASE_URL` to that origin plus exact Supabase project-ref/email opt-ins and run `node --env-file=.env tests/live/p02-contact-ui.mjs` — PASS. Production OAuth command: set the production origin/project-ref opt-ins and run `node tests/live/p02-auth-origin.mjs` — PASS. No provider secret was printed or committed. The required final local gate follows below.
+
+## P02 final phase gate — 2026-10-02
+
+- `pnpm typecheck` — PASS.
+- `pnpm lint` — PASS.
+- `pnpm format:check` — PASS.
+- `pnpm test` — PASS, 19 tests; one intentionally skipped opt-in remote security suite already verified in P01.
+- `pnpm test:e2e` — PASS, 13 browser tests, including required widths, links, metadata, keyboard, reduced motion, 404, and contact validation.
+- `pnpm build` — PASS, Next.js 16.3.7 production build generated 27 pages.
+- `git diff --check` — PASS.
+- Live P02 production smoke, real contact submit, and OAuth origin probes — PASS; QA contact row removed.
+- Supabase MCP migration/RLS/advisor check — PASS for P02; contact tables are RLS-enabled, anon/auth DML denied, service-role insert allowed. Advisor notices are informational for intentionally service-role-only tables and unused indexes; the preexisting provider-level [leaked-password protection warning](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remains outside P02.
+
+All P02 acceptance criteria in `PHASES.md` are checked. The owner explicitly approved the city-level “Lahore, Pakistan” public address choice and legal pages as-is; this decision is recorded in ADR-011 and the verified manual-action entries. Optional analytics remains off, so no analytics property or non-essential tracking consent is required in P02. P02 is complete; no P03 work is claimed.

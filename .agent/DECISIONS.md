@@ -100,4 +100,14 @@ Alternatives considered: browser-only forms, unbounded email delivery, fabricate
 Consequences: Local P02 checks pass, including a real persisted contact submission and Brevo API acceptance. P02 stays BLOCKED_MANUAL until a production origin, legally sufficient public contact address, and owner/legal review are verified. See `MANUAL-005`, `MANUAL-006`, and `docs/privacy-operations.md`.
 Files affected: `app`, `components/marketing`, `lib/contact`, `lib/marketing`, `lib/email/brevo.ts`, `supabase/migrations/20261001210202_p02_contact_intake.sql`, `docs/privacy-operations.md`, and P02 tests.
 
+## ADR-011 — Production origin and owner-approved contact/legal facts
+
+Date: 2026-10-02
+Status: accepted by owner for P02.
+Context: Production indexing requires a real deployment origin. The public legal pages require owner-approved identity and contact details, and the owner chose to publish city-level location text.
+Decision: Use `https://support-sphere-psi.vercel.app` as the current production origin for Vercel project `support-sphere`. Continue displaying the exact owner-provided “Lahore, Pakistan” contact/mailing text; the owner explicitly approved that choice and the legal pages as-is. Do not infer or append a street address. Keep optional analytics off.
+Alternatives considered: guessing a custom domain or a more specific address, and changing approved legal text without owner direction.
+Consequences: The site’s canonical URLs, robots, and sitemap are now live on the chosen host. GitHub deployment and application smoke checks verify the P02 public surface, contact delivery, and production OAuth initiation. If the operator later chooses a deliverable postal address or a custom domain, update the central fact/origin settings and reverify legal pages and canonical URLs.
+Files affected: `.agent/STATE.md`, `.agent/MANUAL_ACTIONS.md`, `.agent/QA.md`, `.agent/HANDOFF.md`, `tests/live/p02-production.mjs`, `tests/live/p02-auth-origin.mjs`.
+
 

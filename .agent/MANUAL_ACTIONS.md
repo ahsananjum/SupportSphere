@@ -23,9 +23,9 @@ Blocking phase: P01
 
 ## MANUAL-005 — Choose and configure the public production origin
 
-Status: PENDING; blocks P02 completion and production indexing.
+Status: VERIFIED — owner supplied project `support-sphere` and origin `https://support-sphere-psi.vercel.app`; commit `7681bd5` deployed to Production as GitHub deployment `6796535046`. Live canonical URLs, robots, sitemap, routes, auth OAuth initiation, and contact delivery passed on 2026-10-02.
 
-Why: The owner has not chosen a production domain. `RULES.md` requires one before launch. The app deliberately omits canonical URLs and disallows indexing until `NEXT_PUBLIC_APP_URL` is a public HTTPS origin. Local builds cannot prove the deployed canonical, OAuth callback, or live contact path.
+Why: `RULES.md` requires a production domain before launch. The app omits canonical URLs and disallows indexing until `NEXT_PUBLIC_APP_URL` is a public HTTPS origin. Local builds cannot prove the deployed canonical, OAuth callback, or live contact path.
 
 Steps for the owner:
 
@@ -42,9 +42,9 @@ Blocking phase: P02
 
 ## MANUAL-006 — Confirm public mailing details and review legal text
 
-Status: PENDING; blocks P02 completion for commercial launch.
+Status: VERIFIED by owner decision — on 2026-10-02 the owner explicitly approved publishing “Lahore, Pakistan” as the mailing-address choice and approved `/privacy`, `/terms`, and `/cookies` as-is. The city-level detail remains exactly owner supplied, with no invented street address. Deployed contact/legal pages show the approved identity, location, and email.
 
-Why: The owner supplied **Ahsan Anjum**, **ahsananjum170@gmail.com**, and **Lahore, Pakistan**. The owner explicitly asked to keep the city-level location in the site for now. It is a real location but not a deliverable postal address. `RULES.md` requires a real contact mailing address before production launch, and `PRD.md` requires owner/legal review of generated legal templates before commercial use.
+Why: The owner supplied **Ahsan Anjum**, **ahsananjum170@gmail.com**, and **Lahore, Pakistan**. The owner explicitly chose this city-level public address text and approved it for the intended launch. `RULES.md` requires owner-supplied contact details, and `PRD.md` requires owner/legal review of generated legal templates before commercial use. The site must not infer a street address.
 
 Steps for the owner:
 

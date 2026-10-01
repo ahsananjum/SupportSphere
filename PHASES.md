@@ -194,21 +194,21 @@ Build a complete public product surface using `DESIGN.md`, DesignMD reference, a
 
 ## Acceptance
 
-- [ ] Every public nav link works.
-- [ ] Logo returns home.
-- [ ] CTA visible above fold.
-- [ ] Mobile menu opens/closes/accessibly traps behavior as needed.
-- [ ] No unintended horizontal scrolling at required widths.
-- [ ] Every public page has metadata.
-- [ ] `robots.txt` and `sitemap.xml` valid.
-- [ ] Image ALT audit complete.
-- [ ] Custom 404 works.
-- [ ] Contact form truly sends/persists according to design.
-- [ ] Legal pages contain owner-provided factual identity/contact fields.
-- [ ] Cookie banner correctly controls analytics if required.
-- [ ] Motion respects reduced motion.
-- [ ] Broken-link check clean.
-- [ ] Production build passes.
+- [x] Every public nav link works.
+- [x] Logo returns home.
+- [x] CTA visible above fold.
+- [x] Mobile menu opens/closes/accessibly traps behavior as needed.
+- [x] No unintended horizontal scrolling at required widths.
+- [x] Every public page has metadata.
+- [x] `robots.txt` and `sitemap.xml` valid.
+- [x] Image ALT audit complete.
+- [x] Custom 404 works.
+- [x] Contact form truly sends/persists according to design.
+- [x] Legal pages contain owner-provided factual identity/contact fields.
+- [x] Cookie banner correctly controls analytics if required.
+- [x] Motion respects reduced motion.
+- [x] Broken-link check clean.
+- [x] Production build passes.
 
 ---
 

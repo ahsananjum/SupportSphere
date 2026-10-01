@@ -7,6 +7,8 @@ import { chromium } from '@playwright/test';
 const email = process.env.P02_LIVE_TEST_EMAIL;
 const projectRef = process.env.P02_LIVE_TEST_PROJECT_REF;
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const appOrigin = process.env.P02_LIVE_BASE_URL ?? 'http://127.0.0.1:3100';
+assert.equal(new URL(appOrigin).origin, appOrigin);
 assert(email, 'Set P02_LIVE_TEST_EMAIL to an owner-controlled address.');
 assert(projectRef && supabaseUrl === `https://${projectRef}.supabase.co`);
 assert(process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -19,7 +21,7 @@ const marker = `P02 live UI verification ${randomUUID()}`;
 
 try {
   const page = await browser.newPage();
-  await page.goto('http://127.0.0.1:3100/contact');
+  await page.goto(`${appOrigin}/contact`);
   await page
     .getByRole('textbox', { name: 'Your name' })
     .fill('SupportSphere QA');
