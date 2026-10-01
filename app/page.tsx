@@ -51,10 +51,15 @@ export default function HomePage() {
           aria-label="SupportSphere introduction"
         >
           <div className="hero-copy">
-            <p className="hero-status">
-              <span className="status-pulse" aria-hidden="true" /> A better
-              support desk is taking shape
-            </p>
+            <div className="hero-status-row">
+              <p className="hero-status">
+                <span className="status-pulse" aria-hidden="true" /> A better
+                support desk is taking shape
+              </p>
+              <span className="hero-index" aria-hidden="true">
+                SS / 01
+              </span>
+            </div>
             <TextEffect
               as="h1"
               per="word"
@@ -86,9 +91,6 @@ export default function HomePage() {
             </p>
           </div>
           <WorkflowVisual />
-          <div className="hero-index" aria-hidden="true">
-            SS / 01
-          </div>
         </section>
 
         <section

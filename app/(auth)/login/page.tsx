@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { safeNextPath } from '../../../lib/auth/redirect';
-import { signInWithGoogle } from '../actions';
 import { AuthForm } from '../auth-form';
-import { SubmitButton } from '../../../components/shared/submit-button';
 
 export const metadata: Metadata = {
   title: 'Sign in',
@@ -30,20 +28,5 @@ export default async function LoginPage({
         : params.error
           ? 'Sign-in could not be completed. Please try again.'
           : undefined;
-  return (
-    <>
-      <AuthForm mode="login" next={next} notice={notice} />
-      <div className="auth-divider">
-        <span>or</span>
-      </div>
-      <form action={signInWithGoogle}>
-        <input type="hidden" name="next" value={next} />
-        <SubmitButton
-          idle="Continue with Google"
-          busy="Connecting…"
-          className="secondary-button"
-        />
-      </form>
-    </>
-  );
+  return <AuthForm mode="login" next={next} notice={notice} />;
 }

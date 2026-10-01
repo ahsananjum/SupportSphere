@@ -6,10 +6,10 @@
   --color-surface: oklch(0.991 0.004 85);
   --color-ink: oklch(0.215 0.025 250);
   --color-ink-soft: oklch(0.405 0.018 245);
-  --color-shell: oklch(0.18 0.034 245);
-  --color-shell-raised: oklch(0.24 0.031 245);
+  --color-shell: oklch(0.955 0.012 85);
+  --color-shell-raised: oklch(0.982 0.005 85);
   --color-rule: oklch(0.848 0.015 85);
-  --color-rule-dark: oklch(0.39 0.027 245);
+  --color-rule-dark: oklch(0.81 0.015 85);
   --color-accent: oklch(0.865 0.128 158);
   --color-accent-deep: oklch(0.72 0.13 158);
   --color-signal: oklch(0.38 0.08 179);

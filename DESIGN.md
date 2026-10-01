@@ -15,7 +15,7 @@ Genre: modern editorial utility. Structural families: asymmetric product-story m
 - Paper `--color-paper`: warm off-white, not pure white.
 - Surface `--color-surface`: raised off-white for forms and data.
 - Ink `--color-ink`: very dark blue-black; `--color-ink-soft` for supporting copy.
-- Shell `--color-shell`: dark mineral blue for product chrome.
+- Shell `--color-shell`: calm elevated light surface for workbench chrome and structural panels; `--color-shell-raised` for active/hover states.
 - Accent `--color-accent`: clear mint, used for selection, progress, and a few CTAs.
 - Signal `--color-signal`: deep teal for readable links on paper.
 - Danger, warning, and success tokens keep their ordinary meanings.
@@ -27,9 +27,9 @@ Display: Bricolage Grotesque, upright, 600–700, tight but legible. Body and co
 
 ## Layout and components
 
-- Marketing: asymmetric hero with short copy and an illustrative **product workflow**, followed by prose-led capability sections with varied width and background. No invented screenshots, customers, counts, analytics, testimonials, or compliance marks.
+- Marketing: asymmetric hero with short copy and an illustrative **product workflow**, followed by prose-led capability sections with varied width and background. Sections avoid stark dark blocks; highlighted sections use subtle ambient radial mesh gradients (5–15% mint/teal undertones on warm paper) and elevated frosted paper cards, maintaining 100% color consistency. No invented screenshots, customers, counts, analytics, testimonials, or compliance marks.
 - Auth: consistent split layout with one calm brand field and one focused form. The form remains fully readable at 320px; error and success notices live by the action.
-- App: dark navigation frame around a warm light work surface. Use real workspace and membership data only. Team rows remain list items with readable controls on mobile.
+- App: calm elevated light navigation frame around a warm light work surface. Use real workspace and membership data only. Team rows remain list items with readable controls on mobile.
 - Controls: 44px minimum target, 16px mobile input text, visible labels and field errors, immediate focus ring, quiet hover/pressed states. Primary is ink or mint according to surface; secondary is outlined.
 - Cards group actions or evidence. Do not nest cards or fill the interface with decorative tiles.
 - Navigation has a clickable wordmark, working links, visible current location, and a mobile disclosure that never hides the primary action.
@@ -91,4 +91,4 @@ The complete portable token map is maintained at [tokens.css](tokens.css). The l
 
 ## References and license
 
-The earlier Command Center DesignMD remains a conceptual reference for dark chrome around a light work surface. Motion Primitives is MIT licensed; source-owned components require its notice if copied. Its patterns are adapted for reduced motion, focus behavior, and SupportSphere's existing architecture. No external demo data is production data.
+The earlier Command Center DesignMD remains a conceptual reference for calm workbench utility around an editorial light work surface. Motion Primitives is MIT licensed; source-owned components require its notice if copied. Its patterns are adapted for reduced motion, focus behavior, and SupportSphere's existing architecture. No external demo data is production data.

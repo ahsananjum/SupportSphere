@@ -7,7 +7,7 @@ test('auth and invitation surfaces retain legibility and noindex behavior', asyn
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/login');
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Welcome back' }),
+      page.getByRole('heading', { level: 1, name: 'Sign In or Join Now!' }),
     ).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
       'content',

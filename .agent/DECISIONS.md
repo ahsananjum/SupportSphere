@@ -69,3 +69,25 @@ Decision: Use one portable `tokens.css` map for paper, ink, and mint; Bricolage 
 Alternatives considered: animated statistics without real data, demo customer stories, a new P02 route set, and indexing localhost or auth pages.
 Consequences: Current pages share a consistent visual language and verified browser behavior. Production canonical URLs and indexing await the owner's domain configuration.
 Files affected: `DESIGN.md`, `tokens.css`, `app`, `components`, `lib/seo.ts`, `tests/e2e`.
+
+## ADR-008 — Split dark authentication surface with progressive email flow
+
+Date: 2026-10-01
+Status: accepted
+Context: The user requested the sign-in screen match a modern dark split-screen reference layout, respecting DESIGN.md, real Supabase workflows, zero mocks, and robust mobile responsiveness.
+Decision: Adopt the dark split-screen layout using project tokens (`--color-shell`, `--color-shell-raised`, `--color-paper`, `--color-accent`); provide generative SVG wave curve art on the brand showcase; present verified Google OAuth in a high-contrast pill card; implement a progressive two-step email auth flow without page reloads; and place a distinct `< Home` navigation link at the top of the auth panel. Omit mock Apple/GitHub buttons until real Supabase credentials exist.
+Alternatives considered: Dead mock buttons for Apple/GitHub, synthetic customer quotes, single-step static forms.
+Consequences: High visual fidelity matching the reference aesthetic; 100% real authentication with zero mocks; all 8 Playwright E2E and 19 Vitest unit tests pass without regression.
+Files affected: `app/(auth)/layout.tsx`, `app/(auth)/login/page.tsx`, `app/(auth)/auth-form.tsx`, `components/marketing/auth-wave-art.tsx`, `app/globals.css`, `tests/e2e/design-surfaces.spec.ts`.
+
+## ADR-009 — Application-wide light/gradient theme and landing page polish
+
+Date: 2026-10-01
+Status: accepted
+Context: The user requested eliminating the dark blue blocks (`--color-shell` / `#101b29` / `#192736`) across the complete application and replacing them with a calm editorial light theme and subtle ambient gradients (as established on the login screen). In addition, empty space, card alignments, and UI/UX rhythm on the landing page (`/`) needed refinement.
+Decision: Retire the dark blue shell tokens; redefine `--color-shell` and `--color-shell-raised` as calm, elevated light paper surfaces in `tokens.css` and `DESIGN.md`; illuminate the Hero, Security, and Closing CTA sections with multi-stop radial mesh gradients on warm paper; convert all text in affected sections to `--color-ink` and `--color-ink-soft`; transform the 3 workflow stages into structured elevated cards; dock `WorkflowVisual` without awkward 1° rotation; and replace dark app chrome (`.app-header` / `.app-sidebar`) with elevated light surfaces (`--color-surface` and `--color-paper-2`).
+Alternatives considered: Maintaining dark blue zebra stripes across the landing page, introducing arbitrary bright gradients that break color consistency.
+Consequences: Cohesive, premium editorial light aesthetic across landing, auth, and workbench app; AAA text contrast; 0 dark blue blocks; all 8 Playwright E2E tests and 19 Vitest unit tests pass cleanly across 320px–1440px viewports.
+Files affected: `DESIGN.md`, `tokens.css`, `app/globals.css`, `app/page.tsx`, `.agent/STATE.md`, `.agent/DECISIONS.md`.
+
+
