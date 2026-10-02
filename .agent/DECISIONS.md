@@ -110,4 +110,14 @@ Alternatives considered: guessing a custom domain or a more specific address, an
 Consequences: The site’s canonical URLs, robots, and sitemap are now live on the chosen host. GitHub deployment and application smoke checks verify the P02 public surface, contact delivery, and production OAuth initiation. If the operator later chooses a deliverable postal address or a custom domain, update the central fact/origin settings and reverify legal pages and canonical URLs.
 Files affected: `.agent/STATE.md`, `.agent/MANUAL_ACTIONS.md`, `.agent/QA.md`, `.agent/HANDOFF.md`, `tests/live/p02-production.mjs`, `tests/live/p02-auth-origin.mjs`.
 
+## ADR-012 — P03 persisted setup and role-checked workbench
+
+Date: 2026-10-03
+Status: accepted
+Context: P03 requires refresh-safe onboarding, one responsive application navigation, real settings/notifications, and role parity between UI and direct server requests.
+Decision: Persist setup stage and settings on the workspace; advance stages through owner-only database RPCs; authorize all tenant writes using current membership in the database. Keep a single navigation component in the sidebar/mobile drawer with only available routes. Source-owned Animated Background marks the active route, while other motion stays short and respects a hydration-safe reduced-motion preference. Store a future AI policy choice but explicitly keep AI execution unavailable until its later phase. Notifications are real, member-scoped records with read-state RPCs; viewers remain read-only.
+Alternatives considered: local-storage onboarding, client-controlled workspace/role state, dead future navigation, fabricated notification counts, animated numbers without live metrics, and a dynamic toolbar without real actions.
+Consequences: Five P03 migrations are applied to SupportSphere; generated types, live security tests, browser journey, and agent documentation cover the new surfaces. P08 can extend notification kinds and delivery behavior when its producers exist.
+Files affected: `supabase/migrations`, `lib/workspaces`, `lib/validation/workspace.ts`, `app/app`, `components/shared/app-navigation.tsx`, `components/motion-primitives`, `tests`.
+
 

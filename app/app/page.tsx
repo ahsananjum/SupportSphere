@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getWorkspaceContext } from '../../lib/workspaces/context';
 import { CreateWorkspaceForm } from './create-workspace-form';
 
@@ -34,6 +35,7 @@ export default async function AppPage({
         <CreateWorkspaceForm />
       </section>
     );
+  if (!active.onboardingCompletedAt) redirect('/app/onboarding');
   return (
     <section className="workspace-card overview-card">
       <p className="eyebrow">WORKSPACE</p>
@@ -59,7 +61,8 @@ export default async function AppPage({
         </p>
       )}
       <Link className="primary-button inline-button" href="/app/team">
-        Manage team <span aria-hidden="true">↗</span>
+        {['owner', 'admin'].includes(active.role) ? 'Manage team' : 'View team'}{' '}
+        <span aria-hidden="true">↗</span>
       </Link>
     </section>
   );

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
 import { AnimatedGroup } from '../motion-primitives/animated-group';
+import { usePrefersReducedMotion } from '../motion-primitives/reduced-motion';
 
 const stages = [
   {
@@ -33,7 +34,7 @@ const stages = [
 export function WorkflowVisual() {
   const [active, setActive] =
     useState<(typeof stages)[number]['id']>('question');
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const marker =
     active === 'question' ? 90 : active === 'knowledge' ? 260 : 430;
   return (

@@ -6,8 +6,8 @@ import {
   Variant,
   Transition,
   UseInViewOptions,
-  useReducedMotion,
 } from 'motion/react';
+import { usePrefersReducedMotion } from './reduced-motion';
 
 export type InViewProps = {
   children: ReactNode;
@@ -38,7 +38,7 @@ export function InView({
   const isInView = useInView(ref, viewOptions);
 
   const [isViewed, setIsViewed] = useState(false);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
 
   const MotionComponent = motion[as as keyof typeof motion] as typeof as;
 

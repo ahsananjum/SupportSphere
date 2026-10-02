@@ -1,7 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { motion } from 'motion/react';
+import { usePrefersReducedMotion } from './reduced-motion';
 
 type AnimatedGroupProps = {
   children: ReactNode;
@@ -14,7 +15,7 @@ export function AnimatedGroup({
   className,
   preset = 'fade',
 }: AnimatedGroupProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const item = reduceMotion
     ? { hidden: { opacity: 1, y: 0 }, visible: { opacity: 1, y: 0 } }
     : preset === 'slide'

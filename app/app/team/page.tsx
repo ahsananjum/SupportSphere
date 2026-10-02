@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { InviteForm } from './invite-form';
 import {
@@ -62,6 +63,7 @@ export default async function TeamPage({
         <Link href="/app">Create workspace</Link>
       </section>
     );
+  if (!active.onboardingCompletedAt) redirect('/app/onboarding');
 
   const [membersResult, invitesResult] = await Promise.all([
     supabase
@@ -88,6 +90,8 @@ export default async function TeamPage({
       </section>
     );
   const canManage = active.role === 'owner' || active.role === 'admin';
+  const ownerCount =
+    membersResult.data?.filter((member) => member.role === 'owner').length ?? 0;
 
   return (
     <div className="team-page">
@@ -129,6 +133,7 @@ export default async function TeamPage({
                 : member.profiles;
               const canEdit =
                 canManage &&
+                (member.role !== 'owner' || ownerCount > 1) &&
                 (active.role === 'owner' ||
                   !['owner', 'admin'].includes(member.role));
               return (
@@ -144,6 +149,11 @@ export default async function TeamPage({
                       {member.role}
                       {member.user_id === user.id ? ' · you' : ''}
                     </span>
+                    {member.role === 'owner' && ownerCount === 1 && (
+                      <p className="field-help">
+                        The last owner cannot change role or be removed.
+                      </p>
+                    )}
                   </div>
                   {canEdit && (
                     <div className="record-actions">

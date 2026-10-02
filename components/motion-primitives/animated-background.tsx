@@ -2,7 +2,8 @@
 
 import { Children, cloneElement, useId, useState } from 'react';
 import type { HTMLAttributes, ReactElement } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import { usePrefersReducedMotion } from './reduced-motion';
 
 type Item = ReactElement<
   HTMLAttributes<HTMLElement> & { 'data-id': string; 'data-checked'?: string }
@@ -20,7 +21,7 @@ export function AnimatedBackground({
   const [clickedId, setClickedId] = useState<string | null>(null);
   const selectedId = defaultValue ?? clickedId;
   const uniqueId = useId();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
 
   return Children.map(children, (child) => {
     const id = child.props['data-id'];

@@ -115,6 +115,47 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          read_at: string | null;
+          title: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          read_at?: string | null;
+          title: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          read_at?: string | null;
+          title?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -242,6 +283,8 @@ export type Database = {
       };
       workspaces: {
         Row: {
+          ai_mode: string;
+          company_name: string | null;
           created_at: string;
           id: string;
           name: string;
@@ -249,10 +292,15 @@ export type Database = {
           onboarding_step: string;
           owner_user_id: string;
           slug: string;
+          support_email: string | null;
+          support_name: string | null;
           timezone: string;
           updated_at: string;
+          website_origin: string | null;
         };
         Insert: {
+          ai_mode?: string;
+          company_name?: string | null;
           created_at?: string;
           id?: string;
           name: string;
@@ -260,10 +308,15 @@ export type Database = {
           onboarding_step?: string;
           owner_user_id: string;
           slug: string;
+          support_email?: string | null;
+          support_name?: string | null;
           timezone?: string;
           updated_at?: string;
+          website_origin?: string | null;
         };
         Update: {
+          ai_mode?: string;
+          company_name?: string | null;
           created_at?: string;
           id?: string;
           name?: string;
@@ -271,8 +324,11 @@ export type Database = {
           onboarding_step?: string;
           owner_user_id?: string;
           slug?: string;
+          support_email?: string | null;
+          support_name?: string | null;
           timezone?: string;
           updated_at?: string;
+          website_origin?: string | null;
         };
         Relationships: [];
       };
@@ -282,6 +338,10 @@ export type Database = {
     };
     Functions: {
       accept_invitation: { Args: { p_token_hash: string }; Returns: string };
+      advance_onboarding: {
+        Args: { p_expected: string; p_next: string; p_workspace_id: string };
+        Returns: undefined;
+      };
       change_member_role: {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
@@ -299,6 +359,11 @@ export type Database = {
         Args: { p_name: string; p_slug: string; p_timezone: string };
         Returns: string;
       };
+      finish_onboarding: {
+        Args: { p_ai_mode: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      mark_notification_read: { Args: { p_id: string }; Returns: undefined };
       remove_member: {
         Args: { p_user_id: string; p_workspace_id: string };
         Returns: undefined;
@@ -316,6 +381,19 @@ export type Database = {
         Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      update_workspace_general: {
+        Args: {
+          p_company_name: string;
+          p_name: string;
+          p_slug: string;
+          p_support_email: string;
+          p_support_name: string;
+          p_timezone: string;
+          p_website_origin: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

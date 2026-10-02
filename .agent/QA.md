@@ -124,3 +124,39 @@ Production smoke command: `P02_PRODUCTION_ORIGIN=https://support-sphere-psi.verc
 - Supabase MCP migration/RLS/advisor check — PASS for P02; contact tables are RLS-enabled, anon/auth DML denied, service-role insert allowed. Advisor notices are informational for intentionally service-role-only tables and unused indexes; the preexisting provider-level [leaked-password protection warning](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remains outside P02.
 
 All P02 acceptance criteria in `PHASES.md` are checked. The owner explicitly approved the city-level “Lahore, Pakistan” public address choice and legal pages as-is; this decision is recorded in ADR-011 and the verified manual-action entries. Optional analytics remains off, so no analytics property or non-essential tracking consent is required in P02. P02 is complete; no P03 work is claimed.
+
+## P03 verification — 2026-10-03
+
+Status: COMPLETE. Final gate passed after the last owner-control polish.
+
+| P03 criterion | Evidence | Result |
+| --- | --- | --- |
+| Persisted onboarding and direct routes | Production-build `tests/live/p03-app-ui.mjs`: refresh at identity, origin/sender, team, knowledge, and AI stages; incomplete team/settings/notifications routes return to setup; completed setup route returns to app. | PASS |
+| Workspace context and switching | `getWorkspaceContext` resolves active workspace from current RLS-visible membership; switch action rechecks membership server-side. Live browser switched to an incomplete second workspace and back. | PASS |
+| Viewer/agent/admin/owner permissions | Opt-in live `tests/security/p03-attacks.test.ts` passed forged/cross-tenant settings, step, member, and notification writes. Viewer and agent self-removal denied; admin settings allowed, owner-only setup/security enforced. Browser checked all four role surfaces. | PASS |
+| Member and invitation management | Existing P01 invite/role/remove RPCs and team forms reused; last owner protection retained and unusable controls hidden. P03 denies agent/viewer self-removal; opt-in P01 live regression suite passed after the RPC change. | PASS |
+| Settings, security, notifications | General settings persist with validation, audit and save feedback; security page shows real member count/audit; notification table has RLS, real completion event, and read RPC. Live browser saved/reloaded settings and read notification. | PASS |
+| Loading/empty/error/success | App loading/error boundaries retained; onboarding/settings forms show field and server errors/pending; team/invitation and notification pages show empty/error/success states. | PASS by code and browser |
+| Mobile/accessibility/visual | Live browser checked 320, 360, 390, 768, 1024, 1280, 1440 widths with no overflow; Escape/focus in drawer. Screenshots inspected for 320 setup, 390 team/general/security, 1280 team. | PASS |
+| Motion and reduced motion | Motion Primitives Animated Background highlights active navigation; native/CSS drawer motion stays short. Shared `useSyncExternalStore` preference fixed server/client mismatch; focused and full reduced-motion browser test passed. | PASS |
+| Schema/RLS/advisors | P03 migration versions `20261002205848`, `20261002211804`, `20261002214802`, `20261002215444`, `20261002220242` applied. Generated types updated. Supabase advisor reports no P03 security or performance finding. | PASS |
+
+Initial full gate: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 21 PASS/2 opt-in SKIPPED; `pnpm test:e2e` 13 PASS; `pnpm build` PASS; `git diff --check` PASS. The production-build live browser journey and P03 live security suite passed after the initial gate. A final repeat follows the last team/security UI wording changes.
+
+### P03 final phase gate — 2026-10-03
+
+- `pnpm typecheck` — PASS.
+- `pnpm lint` — PASS.
+- `pnpm format:check` — PASS.
+- `pnpm test` — PASS, 21 tests; P01/P03 remote suites intentionally skipped in ordinary run and each passed separately with the exact SupportSphere project-ref opt-in.
+- `pnpm test:e2e` — PASS, 13 browser tests against the final production build, including reduced-motion hydration and public-route regression checks.
+- `pnpm build` — PASS, Next.js 16.3.7; authenticated `/app`, `/app/onboarding`, `/app/team`, `/app/notifications`, `/app/settings/general`, `/app/settings/security` routes generated.
+- `git diff --check` — PASS; source scan found no P03 TODO, fake data, or console-only actions.
+- Opt-in live `tests/security/p03-attacks.test.ts` — PASS after strict viewer/agent permission migration. Existing `tests/security/p01-attacks.test.ts` — PASS after membership RPC change.
+- `tests/live/p03-app-ui.mjs` against final production build — PASS: refresh every setup step, completed/incomplete direct-route redirects, two-workspace switching, settings persistence, notification read, owner/admin/agent/viewer UI, last-owner control, drawer Escape/focus, no overflow at 320/360/390/768/1024/1280/1440.
+- Screenshot review — PASS for 320 onboarding, 390 team/general/security, and 1280 team. Screenshots are ignored under `test-results/p03-visual/`.
+- Supabase MCP — P03 migration history and generated types match; `notifications` has RLS and one select policy, workspace FK index exists, no P03 advisor findings. Test cleanup query returned zero `p03-%` workspaces and users.
+
+No new owner action is required. P03 source is not yet deployed to Vercel; deployment is a separate release step, and the local production build plus live Supabase behavior are the phase gate evidence.
+
+Existing advisor notices: [service-role-only contact tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) INFO, [unused older indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO, and [provider leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN. These predate P03 and do not represent a new tenant policy gap.

@@ -1,6 +1,7 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import { usePrefersReducedMotion } from './reduced-motion';
 import type {
   TargetAndTransition,
   Transition,
@@ -220,7 +221,7 @@ export function TextEffect({
   segmentTransition,
   style,
 }: TextEffectProps) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const segments = splitText(children, per);
   const MotionTag = motion[as as keyof typeof motion] as typeof motion.div;
 
