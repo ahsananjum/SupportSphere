@@ -4,7 +4,7 @@ Active phase: P03
 Status: COMPLETE
 Last updated: 2026-10-03
 Current branch: master
-Last known good implementation commit: b0fef5a
+Last known good implementation commit: 9fb2ae9
 
 ## Objective
 
@@ -42,6 +42,5 @@ Supabase is connected. P01 verified Brevo auth/invitation delivery; P02 verified
 
 ## Next exact actions
 
-1. Commit the coherent P03 implementation and verification records.
-2. Deploy P03 app code in a future release step if requested; the database migrations are already applied.
-3. Start P04 only on owner request.
+1. No P03 work remains. Deploy P03 app code in a future release step if requested; the database migrations are already applied.
+2. Start P04 only on owner request.

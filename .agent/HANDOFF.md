@@ -55,7 +55,7 @@ Final local gate: `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test
 
 ## P03 handoff — 2026-10-03
 
-Status: **COMPLETE**. P03 acceptance and the final phase gate passed; see `.agent/QA.md` for exact commands and evidence.
+Status: **COMPLETE**. Implementation commit `9fb2ae9` contains P03; acceptance and the final phase gate passed. See `.agent/QA.md` for exact commands and evidence.
 
 Implemented a persisted setup sequence (workspace creation, identity, origin/sender status, team invitation, explicit knowledge skip, AI policy preference), a single desktop/mobile app navigation with a focus-managed drawer, server-validated workspace switching, role-aware team/settings routes, real general settings, owner security/audit view, and a member-scoped notification read surface. Existing P01 invitation/member actions remain the real team backend. Last-owner controls are hidden when unusable, and database RPCs now deny agent/viewer self-removal and viewer notification writes. Source-owned Motion Primitives use a hydration-safe reduced-motion hook.
 
