@@ -284,16 +284,16 @@ Build the support operating core before AI.
 
 ## Acceptance
 
-- [ ] Everything uses real DB records.
-- [ ] No fake counters.
-- [ ] Message failure/retry UX works.
-- [ ] Ticket number unique per workspace.
-- [ ] Ticket timeline persists.
-- [ ] Cross-tenant security tests pass.
-- [ ] Search/filter/pagination work.
-- [ ] Mobile inbox is usable.
-- [ ] Empty/loading/error states complete.
-- [ ] Foreign direct IDs do not leak another tenant.
+- [x] Everything uses real DB records.
+- [x] No fake counters.
+- [x] Message failure/retry UX works.
+- [x] Ticket number unique per workspace.
+- [x] Ticket timeline persists.
+- [x] Cross-tenant security tests pass.
+- [x] Search/filter/pagination work.
+- [x] Mobile inbox is usable.
+- [x] Empty/loading/error states complete.
+- [x] Foreign direct IDs do not leak another tenant.
 
 ---
 

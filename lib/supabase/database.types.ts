@@ -115,6 +115,309 @@ export type Database = {
         };
         Relationships: [];
       };
+      conversation_tags: {
+        Row: {
+          conversation_id: string;
+          tag_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          tag_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          tag_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversation_tags_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversation_tags_tag_id_fkey';
+            columns: ['tag_id'];
+            isOneToOne: false;
+            referencedRelation: 'tags';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversation_tags_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      conversations: {
+        Row: {
+          assignee_user_id: string | null;
+          channel: string;
+          created_at: string;
+          customer_id: string;
+          id: string;
+          last_message_at: string | null;
+          priority: string;
+          status: string;
+          subject: string;
+          unread_count: number;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          assignee_user_id?: string | null;
+          channel?: string;
+          created_at?: string;
+          customer_id: string;
+          id?: string;
+          last_message_at?: string | null;
+          priority?: string;
+          status?: string;
+          subject?: string;
+          unread_count?: number;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          assignee_user_id?: string | null;
+          channel?: string;
+          created_at?: string;
+          customer_id?: string;
+          id?: string;
+          last_message_at?: string | null;
+          priority?: string;
+          status?: string;
+          subject?: string;
+          unread_count?: number;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'conversations_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'conversations_customer_workspace_fk';
+            columns: ['workspace_id', 'customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'conversations_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      customer_identities: {
+        Row: {
+          created_at: string;
+          customer_id: string;
+          id: string;
+          identity_key: string;
+          provider: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          customer_id: string;
+          id?: string;
+          identity_key: string;
+          provider: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          customer_id?: string;
+          id?: string;
+          identity_key?: string;
+          provider?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'customer_identities_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customer_identities_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      customer_tags: {
+        Row: {
+          customer_id: string;
+          tag_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          customer_id: string;
+          tag_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          customer_id?: string;
+          tag_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'customer_tags_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customer_tags_tag_id_fkey';
+            columns: ['tag_id'];
+            isOneToOne: false;
+            referencedRelation: 'tags';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'customer_tags_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      customers: {
+        Row: {
+          company: string | null;
+          created_at: string;
+          email: string | null;
+          first_seen_at: string;
+          id: string;
+          last_seen_at: string;
+          locale: string | null;
+          metadata: Json;
+          name: string;
+          phone: string | null;
+          timezone: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          company?: string | null;
+          created_at?: string;
+          email?: string | null;
+          first_seen_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          locale?: string | null;
+          metadata?: Json;
+          name?: string;
+          phone?: string | null;
+          timezone?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          company?: string | null;
+          created_at?: string;
+          email?: string | null;
+          first_seen_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          locale?: string | null;
+          metadata?: Json;
+          name?: string;
+          phone?: string | null;
+          timezone?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'customers_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      messages: {
+        Row: {
+          body: string;
+          client_id: string | null;
+          conversation_id: string;
+          created_at: string;
+          delivery_status: string;
+          id: string;
+          sender_type: string;
+          sender_user_id: string | null;
+          workspace_id: string;
+        };
+        Insert: {
+          body: string;
+          client_id?: string | null;
+          conversation_id: string;
+          created_at?: string;
+          delivery_status?: string;
+          id?: string;
+          sender_type: string;
+          sender_user_id?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          body?: string;
+          client_id?: string | null;
+          conversation_id?: string;
+          created_at?: string;
+          delivery_status?: string;
+          id?: string;
+          sender_type?: string;
+          sender_user_id?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'messages_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_conversation_workspace_fk';
+            columns: ['workspace_id', 'conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'messages_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       notifications: {
         Row: {
           body: string;
@@ -182,6 +485,217 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      tags: {
+        Row: {
+          color: string;
+          created_at: string;
+          id: string;
+          name: string;
+          workspace_id: string;
+        };
+        Insert: {
+          color?: string;
+          created_at?: string;
+          id?: string;
+          name: string;
+          workspace_id: string;
+        };
+        Update: {
+          color?: string;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tags_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ticket_events: {
+        Row: {
+          actor_user_id: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          payload: Json;
+          ticket_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          payload?: Json;
+          ticket_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          actor_user_id?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          payload?: Json;
+          ticket_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ticket_events_ticket_id_fkey';
+            columns: ['ticket_id'];
+            isOneToOne: false;
+            referencedRelation: 'tickets';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ticket_events_ticket_workspace_fk';
+            columns: ['workspace_id', 'ticket_id'];
+            isOneToOne: false;
+            referencedRelation: 'tickets';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'ticket_events_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ticket_tags: {
+        Row: {
+          tag_id: string;
+          ticket_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          tag_id: string;
+          ticket_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          tag_id?: string;
+          ticket_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ticket_tags_tag_id_fkey';
+            columns: ['tag_id'];
+            isOneToOne: false;
+            referencedRelation: 'tags';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ticket_tags_ticket_id_fkey';
+            columns: ['ticket_id'];
+            isOneToOne: false;
+            referencedRelation: 'tickets';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ticket_tags_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tickets: {
+        Row: {
+          assignee_user_id: string | null;
+          category: string | null;
+          conversation_id: string | null;
+          created_at: string;
+          customer_id: string | null;
+          description: string;
+          id: string;
+          priority: string;
+          resolved_at: string | null;
+          status: string;
+          ticket_number: number;
+          title: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          assignee_user_id?: string | null;
+          category?: string | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          customer_id?: string | null;
+          description?: string;
+          id?: string;
+          priority?: string;
+          resolved_at?: string | null;
+          status?: string;
+          ticket_number: number;
+          title: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          assignee_user_id?: string | null;
+          category?: string | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          customer_id?: string | null;
+          description?: string;
+          id?: string;
+          priority?: string;
+          resolved_at?: string | null;
+          status?: string;
+          ticket_number?: number;
+          title?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tickets_conversation_id_fkey';
+            columns: ['conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tickets_conversation_workspace_fk';
+            columns: ['workspace_id', 'conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'tickets_customer_id_fkey';
+            columns: ['customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tickets_customer_workspace_fk';
+            columns: ['workspace_id', 'customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'tickets_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       workspace_invitations: {
         Row: {
@@ -346,11 +860,45 @@ export type Database = {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      create_conversation: {
+        Args: {
+          p_channel?: string;
+          p_customer_id: string;
+          p_subject: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       create_invitation: {
         Args: {
           p_email: string;
           p_role: string;
           p_token_hash: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      create_or_get_customer: {
+        Args: {
+          p_company: string;
+          p_email: string;
+          p_identity_key: string;
+          p_name: string;
+          p_phone: string;
+          p_provider: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      create_ticket: {
+        Args: {
+          p_assignee_user_id: string;
+          p_category: string;
+          p_conversation_id: string;
+          p_customer_id: string;
+          p_description: string;
+          p_priority: string;
+          p_title: string;
           p_workspace_id: string;
         };
         Returns: string;
@@ -381,6 +929,39 @@ export type Database = {
         Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      send_message: {
+        Args: {
+          p_body: string;
+          p_client_id?: string;
+          p_conversation_id: string;
+          p_internal?: boolean;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      update_conversation: {
+        Args: {
+          p_assignee_user_id?: string;
+          p_conversation_id: string;
+          p_priority?: string;
+          p_status?: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_ticket: {
+        Args: {
+          p_assignee_user_id?: string;
+          p_category?: string;
+          p_description?: string;
+          p_priority?: string;
+          p_status?: string;
+          p_ticket_id: string;
+          p_title?: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
       update_workspace_general: {
         Args: {
           p_company_name: string;

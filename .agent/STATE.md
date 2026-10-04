@@ -1,16 +1,16 @@
 # Current State
 
-Active phase: P03
+Active phase: P04
 Status: COMPLETE
-Last updated: 2026-10-03
+Last updated: 2026-10-04
 Current branch: master
 Last known good implementation commit: 9fb2ae9
 
 ## Objective
 
-Delivered and verified persisted onboarding, a responsive authenticated shell, member management, role-aware settings, and notifications. All P03 acceptance and final gates passed.
+Implement real support operations as a complete customer → conversation → message → ticket vertical slice before AI.
 
-## Completed in this phase
+## Completed in P03
 
 - [x] Loaded binding project, design, Next.js, and agent guidance; inspected clean baseline and prior commits.
 - [x] Applied P03 Supabase migrations, including RLS, role-checked RPCs, completion invariants, notifications, and indexes. Live types regenerated.
@@ -21,14 +21,27 @@ Delivered and verified persisted onboarding, a responsive authenticated shell, m
 - [x] Inspected mobile onboarding, team, general/security settings, and desktop team screenshots.
 - [x] Supabase security/performance advisors reviewed; new notification table/index have no findings.
 
-## Remaining
+## Completed in P04 implementation pass
 
-- [x] Final P03 gate passed: typecheck, lint, format, unit, full browser suite, build, P01/P03 live security, authenticated production-build browser journey, and diff check.
-- [x] Final Supabase schema/RLS/advisor and test-cleanup checks passed; QA and handoff updated.
+- [x] Added migration for customers, identities, conversations, messages, tickets, ticket events, tags, and join tables with tenant RLS, indexes, composite workspace FKs, and deterministic ticket number/customer locks.
+- [x] Added workspace-checked RPCs for customer dedupe, conversation creation/update, idempotent message send/internal notes, ticket create/update, assignment membership, and audit events.
+- [x] Added generated database type entries for P04 tables and RPCs.
+- [x] Added real DB-backed inbox, conversation detail/composer, customer list/detail, and ticket list/detail routes with loading/error/empty/success states and mobile layouts.
+- [x] Added retry-safe composer client key, plain-text message rendering, filters, pagination range, and responsive support navigation.
+- [x] `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (21 passed, 2 opt-in skipped), `pnpm build`, and `git diff --check` pass.
+
+## P04 final verification — 2026-10-04
+
+- [x] Applied `20261004120000_p04_support_operations.sql`, `20261004130000_p04_support_indexes.sql`, and `20261004131500_p04_composite_fk_indexes.sql` to project `xviumgygixcklrbuynoh` with the local environment token; no credential was printed or committed.
+- [x] Regenerated `lib/supabase/database.types.ts` from the live project.
+- [x] Live P04 security/concurrency suite passed: deterministic customer dedupe, tenant isolation, forged IDs, viewer write denial, message retry idempotency, concurrent conversation/ticket updates, assignment validation, ticket timeline, and concurrent ticket numbers.
+- [x] Authenticated browser journey passed through customer → conversation → reply → internal note → ticket → resolved timeline, with responsive no-overflow checks at 320–1440px.
+- [x] Supabase security/performance advisors and linked schema lint completed; P04 has no security findings or unindexed foreign keys. Remaining INFO/WARN items are preexisting or expected on empty tables/provider configuration.
+- [x] Final gates passed: typecheck, lint, format, 21 unit tests (3 opt-in remote tests run separately), production build, and diff check.
 
 ## Current schema/migrations
 
-SupportSphere project `xviumgygixcklrbuynoh` is ACTIVE_HEALTHY. P03 versions: `20261002205848`, `20261002211804`, `20261002214802`, `20261002215444`, `20261002220242`. Generated types match live P03 schema. No temporary P03 workspaces/users remained after the latest checked run.
+SupportSphere project `xviumgygixcklrbuynoh` has P04 migrations `20261004120000`, `20261004130000`, and `20261004131500` applied. Generated types were refreshed from the live schema.
 
 ## Current integrations
 
@@ -38,9 +51,8 @@ Supabase is connected. P01 verified Brevo auth/invitation delivery; P02 verified
 
 - Default command sandbox has setup-refresh errors; approved escalated shell works.
 - Supabase advisor retains P02 service-role-only contact table INFO notices, two unused-index INFO notices, and provider-level leaked-password-protection WARN. No new P03 finding.
-- No new owner-controlled credential or dashboard step is required for P03.
+- No new owner-controlled credential or dashboard step is required for P04; the owner supplied the token through the ignored local environment.
 
 ## Next exact actions
 
-1. No P03 work remains. Deploy P03 app code in a future release step if requested; the database migrations are already applied.
-2. Start P04 only on owner request.
+P04 is complete. Continue with the next phase only after a new phase is explicitly started; preserve the applied migration history and live test evidence above.

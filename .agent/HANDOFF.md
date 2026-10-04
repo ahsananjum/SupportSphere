@@ -64,3 +64,33 @@ Applied five P03 migrations to Supabase project `xviumgygixcklrbuynoh`: `2026100
 Final checks: typecheck, lint, format, 21 unit tests, 13 ordinary browser tests, production build, P01 and P03 live security suites, and the authenticated P03 production-build browser journey all passed. Browser coverage includes refresh at every setup step, direct route guards, multi-workspace switching, role-aware controls for owner/admin/agent/viewer, notification read, settings save/reload, 320–1440 px no-overflow, and mobile drawer keyboard behavior. Temporary Supabase workspaces/users were cleaned to zero. Ignored screenshots under `test-results/p03-visual/` were inspected at mobile and desktop sizes.
 
 No P03 manual owner action is pending. P03 app code is local; the existing Vercel production site still serves P02 until a deployment is requested/performed. The P03 schema changes are backward compatible with the deployed P02 code. No P04 work has begun.
+
+## P04 handoff — 2026-10-04
+
+Status: **COMPLETE**. P04 is verified against the live Supabase project, including migration history, RLS/security behavior, concurrency, and the authenticated responsive browser journey. See `.agent/QA.md` and `MANUAL_ACTIONS.md` MANUAL-007.
+
+### Implemented
+
+- `supabase/migrations/20261004120000_p04_support_operations.sql`: customers, deterministic identities, conversations, messages, tickets, ticket events, tags, join tables, tenant RLS/select grants, composite workspace foreign keys, indexes, role-checked RPCs, message idempotency, customer advisory locking, ticket number locking, assignment membership checks, and audit events.
+- `lib/supabase/database.types.ts`: regenerated from the live P04 schema.
+- `lib/support/queries.ts` and `lib/validation/support.ts`: explicit workspace-scoped reads, search/filter/range pagination, and runtime validation.
+- `app/app/inbox`, `app/app/customers`, and `app/app/tickets`: real DB-backed list/detail routes with empty/error/success states.
+- `components/support/support-forms.tsx` and `app/app/support-actions.ts`: customer creation, conversation creation, message/internal note send with bounded retry key, ticket create/update, and status/priority/assignment actions.
+- `components/shared/app-navigation.tsx` and `app/globals.css`: support navigation and responsive workbench styles.
+
+### Verification
+
+- `pnpm typecheck` — PASS.
+- `pnpm lint` — PASS.
+- `pnpm format:check` — PASS.
+- `pnpm test` — PASS, 21 tests; opt-in live security suites also passed (P01/P03/P04, 3 tests).
+- `pnpm build` — PASS; P04 routes generated.
+- `git diff --check` — PASS.
+- `tests/live/p04-app-ui.mjs` — PASS; authenticated customer → conversation → reply → internal note → ticket → resolved journey and 320–1440px no-overflow checks.
+- Supabase migration list — PASS; P04 versions `20261004120000`, `20261004130000`, and `20261004131500` match remote history.
+- Live P04 concurrency — PASS; concurrent conversation and ticket updates serialized without errors, with ticket numbers remaining `1..8` and timeline events retained.
+- Supabase security/performance advisors and linked schema lint — PASS for P04; only preexisting/expected notices remain.
+
+### Next exact actions
+
+P04 is complete. Preserve the applied migration history and verification evidence when starting the next phase.

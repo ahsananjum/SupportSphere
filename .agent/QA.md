@@ -160,3 +160,26 @@ Initial full gate: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` 
 No new owner action is required. P03 source is not yet deployed to Vercel; deployment is a separate release step, and the local production build plus live Supabase behavior are the phase gate evidence.
 
 Existing advisor notices: [service-role-only contact tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) INFO, [unused older indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO, and [provider leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN. These predate P03 and do not represent a new tenant policy gap.
+
+## P04 final verification — 2026-10-04
+
+P04 is **COMPLETE**. The migration, live security checks, authenticated browser journey, and final quality gates all passed against SupportSphere project `xviumgygixcklrbuynoh`.
+
+| Requirement | Automated proof | Manual/live proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Support schema, constraints, indexes, RLS | Three P04 migrations are in remote history; linked schema lint passed; RLS, grants, composite workspace FKs, and indexes reviewed | `20261004120000`, `20261004130000`, and `20261004131500` applied through Supabase CLI using the ignored local token | PASS | No P04 security advisor findings or unindexed foreign keys |
+| Generated types and services | `lib/supabase/database.types.ts`, `lib/support/queries.ts`, and typed RPC calls compile | Types regenerated from the live project; `pnpm typecheck` and build passed | PASS | Live RPC signatures are represented in generated types |
+| Customer dedupe | RPC uses normalized email/identity lookup and workspace-scoped advisory lock | Live concurrent dedupe test passed with one customer id | PASS | Deterministic behavior is database-owned |
+| Conversations/messages/internal notes | Real routes, server actions, plain-text rendering, retry-preserving per-message idempotency, and client refresh reconciliation | Live suite and browser journey passed reply, retry key, and internal note behavior | PASS | Unsafe HTML is never rendered |
+| Tickets/timeline/number race | RPC uses workspace advisory transaction lock, unique `(workspace_id,ticket_number)`, row locks, event inserts, and assignment membership checks | Live concurrent ticket test passed numbers 1–8; concurrent conversation/ticket updates serialized successfully; resolved timeline persisted | PASS | Foreign assignee and tenant IDs rejected |
+| Search/filter/pagination | Inbox/customer/ticket queries use real workspace filters, search, and range/limit | Browser journey and route checks used real rows; empty/error states render from query results | PASS | No counters or records are hardcoded |
+| Mobile/accessibility/motion | CSS supports 320–1440 widths, no global horizontal overflow, labeled forms, plain-text messages, and reduced-motion-safe app motion | Authenticated browser flow passed no-overflow checks at 320, 360, 390, 768, 1024, and 1440px | PASS | Mobile inbox remains a usable single-column flow |
+| Static quality gates | `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (21 passed, 3 opt-in remote suites run separately), `pnpm build`, and `git diff --check` | n/a | PASS | Production build generated all P04 routes |
+| Live security/concurrency | `tests/security/p01-attacks.test.ts`, `p03-attacks.test.ts`, and `p04-attacks.test.ts` | All three files passed; temporary users/workspaces/rows cleaned | PASS | Includes forged workspace/foreign ID and viewer escalation checks |
+| Authenticated browser journey | `tests/live/p04-app-ui.mjs` | Customer → conversation → reply → note → ticket → resolved flow passed with responsive checks | PASS | Stable local server used; no production deployment claimed |
+
+### Database advisor notes
+
+- Security advisor: only existing contact-table service-role-only INFO notices and the provider leaked-password-protection WARN; no P04 finding.
+- Performance advisor: no unindexed foreign keys; unused-index INFOs are expected while the project is nearly empty, including new tag/ticket indexes.
+- Linked schema lint: passed with one preexisting P03 warning for an unused local variable in `update_workspace_general`.

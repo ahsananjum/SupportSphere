@@ -799,3 +799,14 @@ There must be no required-feature:
 - unbounded upload,
 - missing rate limit,
 - fake/non-durable queue.
+
+
+# Database & Migration Guidelines
+
+- When executing database migrations for project `xviumgygixcklrbuynoh`, run commands directly using the CLI:
+  `npx supabase db push --db-url "$SUPABASE_DB_URL"`
+  or
+  `SUPABASE_ACCESS_TOKEN=$SUPABASE_ACCESS_TOKEN npx supabase db push`
+- Do not stop or ask the user to manually paste SQL into the Supabase Dashboard unless the command returns an unresolvable exit code.
+- Always regenerate TypeScript definitions immediately after applying a migration:
+  `npx supabase gen types typescript --project-id xviumgygixcklrbuynoh > types/database.types.ts`

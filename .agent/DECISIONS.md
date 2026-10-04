@@ -120,4 +120,14 @@ Alternatives considered: local-storage onboarding, client-controlled workspace/r
 Consequences: Five P03 migrations are applied to SupportSphere; generated types, live security tests, browser journey, and agent documentation cover the new surfaces. P08 can extend notification kinds and delivery behavior when its producers exist.
 Files affected: `supabase/migrations`, `lib/workspaces`, `lib/validation/workspace.ts`, `app/app`, `components/shared/app-navigation.tsx`, `components/motion-primitives`, `tests`.
 
+## ADR-013 — P04 tenant support core and database-owned invariants
+
+Date: 2026-10-04
+Status: accepted
+Context: P04 requires the first real support operating slice before AI: customers, conversations, messages, internal notes, tickets, timelines, tags, tenant isolation, and concurrency-safe writes.
+Decision: Store support records in workspace-scoped tables with composite workspace foreign keys, explicit authenticated grants, RLS membership policies, and role-checked SECURITY DEFINER RPCs. Use normalized identity lookup plus a workspace advisory lock for deterministic customer dedupe, client ids for idempotent message retries, and a workspace advisory lock plus unique `(workspace_id, ticket_number)` for ticket numbering. Render message bodies as text and reconcile successful sends through route revalidation and a client refresh.
+Alternatives considered: client-generated ticket numbers, client-only dedupe, long-lived shared message keys, unsafe HTML rendering, and UI-only tenant checks.
+Consequences: Customer → conversation → message → ticket behavior is real and testable across tenants; the live project carries three versioned P04 migrations and generated types. Empty-project advisor output may report unused indexes until production traffic exists.
+Files affected: `supabase/migrations/20261004120000_p04_support_operations.sql`, `supabase/migrations/20261004130000_p04_support_indexes.sql`, `supabase/migrations/20261004131500_p04_composite_fk_indexes.sql`, `lib/supabase/database.types.ts`, `lib/support`, `app/app`, `components/support`, `tests/security/p04-attacks.test.ts`, `tests/live/p04-app-ui.mjs`.
+
 

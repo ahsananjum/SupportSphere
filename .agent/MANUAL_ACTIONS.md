@@ -21,6 +21,27 @@ Agent verification: list project by ref; inspect migrations/tables; apply review
 
 Blocking phase: P01
 
+## MANUAL-007 — Apply P04 support operations migration
+
+Status: VERIFIED — migration applied via Supabase CLI using the owner's local environment token on 2026-10-04; no token was pasted into chat or source.
+
+Why: P04 support routes and RPCs require the live tables, RLS policies, indexes, composite workspace foreign keys, and RPCs before the real customer → conversation → message → ticket flow can be verified. The owner supplied the access token through the ignored local environment, so the CLI path was used.
+
+Steps:
+
+1. The agent loaded `SUPABASE_ACCESS_TOKEN` from the ignored local `.env` and ran `supabase db push --project-ref xviumgygixcklrbuynoh --include-all --yes`.
+2. The applied versions are `20261004120000`, `20261004130000`, and `20261004131500`; the second and third add the support indexes and composite foreign-key indexes.
+3. Migration history, generated types, schema lint, security/performance advisors, live security tests, and the authenticated browser journey were verified after application.
+4. Provider credentials, database passwords, service-role keys, and customer data were not pasted into chat or source.
+
+Do NOT paste: Supabase access tokens, database passwords, service-role keys, or any customer data.
+
+Store result in: Supabase project migration history and Dashboard SQL Editor only.
+
+Agent verification: complete. Types were regenerated from project `xviumgygixcklrbuynoh`; migration history and RLS/security advisors were inspected; P04 live cross-tenant/concurrency/browser gates passed.
+
+Blocking phase: P04
+
 ## MANUAL-005 — Choose and configure the public production origin
 
 Status: VERIFIED — owner supplied project `support-sphere` and origin `https://support-sphere-psi.vercel.app`; commit `7681bd5` deployed to Production as GitHub deployment `6796535046`. Live canonical URLs, robots, sitemap, routes, auth OAuth initiation, and contact delivery passed on 2026-10-02.
