@@ -24,7 +24,10 @@ export default async function TicketsPage({
   const params = await searchParams;
   let result;
   try {
-    result = await listTickets(supabase, active.id, params);
+    result = await listTickets(supabase, active.id, {
+      ...params,
+      query: params.q,
+    });
   } catch {
     return (
       <section className="workspace-card error-state">

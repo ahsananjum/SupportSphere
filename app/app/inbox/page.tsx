@@ -23,7 +23,10 @@ export default async function InboxPage({
   const params = await searchParams;
   let result;
   try {
-    result = await listConversations(supabase, active.id, params);
+    result = await listConversations(supabase, active.id, {
+      ...params,
+      query: params.q,
+    });
   } catch {
     return (
       <section className="workspace-card error-state">

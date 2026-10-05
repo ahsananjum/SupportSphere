@@ -16,7 +16,7 @@ export async function listConversations(
   const page = Math.max(0, filters.page ?? 0);
   let query = client
     .from('conversations')
-    .select('*, customers(name,email)', { count: 'exact' })
+    .select('*', { count: 'exact' })
     .eq('workspace_id', workspaceId)
     .order('updated_at', { ascending: false })
     .range(page * 25, page * 25 + 24);
@@ -146,7 +146,7 @@ export async function listTickets(
 ) {
   let query = client
     .from('tickets')
-    .select('*, customers(name,email)', { count: 'exact' })
+    .select('*', { count: 'exact' })
     .eq('workspace_id', workspaceId)
     .order('updated_at', { ascending: false })
     .limit(50);
