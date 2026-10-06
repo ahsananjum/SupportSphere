@@ -697,6 +697,127 @@ export type Database = {
           },
         ];
       };
+      widget_configs: {
+        Row: {
+          allowed_origins: string[];
+          created_at: string;
+          enabled: boolean;
+          updated_at: string;
+          widget_key: string;
+          workspace_id: string;
+        };
+        Insert: {
+          allowed_origins: string[];
+          created_at?: string;
+          enabled?: boolean;
+          updated_at?: string;
+          widget_key?: string;
+          workspace_id: string;
+        };
+        Update: {
+          allowed_origins?: string[];
+          created_at?: string;
+          enabled?: boolean;
+          updated_at?: string;
+          widget_key?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'widget_configs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: true;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      widget_rate_buckets: {
+        Row: {
+          bucket_key: string;
+          hits: number;
+          reset_at: string;
+        };
+        Insert: {
+          bucket_key: string;
+          hits: number;
+          reset_at: string;
+        };
+        Update: {
+          bucket_key?: string;
+          hits?: number;
+          reset_at?: string;
+        };
+        Relationships: [];
+      };
+      widget_sessions: {
+        Row: {
+          conversation_id: string;
+          created_at: string;
+          customer_id: string;
+          expires_at: string;
+          id: string;
+          last_seen_at: string;
+          origin: string;
+          token_hash: string;
+          widget_key: string;
+          workspace_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          created_at?: string;
+          customer_id: string;
+          expires_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          origin: string;
+          token_hash: string;
+          widget_key: string;
+          workspace_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          created_at?: string;
+          customer_id?: string;
+          expires_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          origin?: string;
+          token_hash?: string;
+          widget_key?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'widget_session_conversation_fk';
+            columns: ['workspace_id', 'conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'widget_session_customer_fk';
+            columns: ['workspace_id', 'customer_id'];
+            isOneToOne: false;
+            referencedRelation: 'customers';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'widget_sessions_widget_key_fkey';
+            columns: ['widget_key'];
+            isOneToOne: false;
+            referencedRelation: 'widget_configs';
+            referencedColumns: ['widget_key'];
+          },
+          {
+            foreignKeyName: 'widget_sessions_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       workspace_invitations: {
         Row: {
           accepted_at: string | null;
@@ -860,6 +981,14 @@ export type Database = {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      configure_widget: {
+        Args: {
+          p_enabled: boolean;
+          p_origins: string[];
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       create_conversation: {
         Args: {
           p_channel?: string;
@@ -912,6 +1041,15 @@ export type Database = {
         Returns: undefined;
       };
       mark_notification_read: { Args: { p_id: string }; Returns: undefined };
+      open_widget_session: {
+        Args: {
+          p_existing_hash?: string;
+          p_key: string;
+          p_origin: string;
+          p_token_hash: string;
+        };
+        Returns: Json;
+      };
       remove_member: {
         Args: { p_user_id: string; p_workspace_id: string };
         Returns: undefined;
@@ -928,6 +1066,14 @@ export type Database = {
         Args: { p_key_hash: string; p_max_attempts: number };
         Returns: boolean;
       };
+      reserve_widget_rate: {
+        Args: {
+          p_bucket_key: string;
+          p_limit: number;
+          p_window_seconds: number;
+        };
+        Returns: boolean;
+      };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
       send_message: {
         Args: {
@@ -936,6 +1082,16 @@ export type Database = {
           p_conversation_id: string;
           p_internal?: boolean;
           p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      send_widget_message: {
+        Args: {
+          p_body: string;
+          p_client_id: string;
+          p_key: string;
+          p_origin: string;
+          p_session_hash: string;
         };
         Returns: string;
       };

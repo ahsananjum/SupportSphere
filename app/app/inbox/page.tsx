@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { listConversations } from '../../../lib/support/queries';
+import { InboxRealtime } from '../../../components/support/inbox-realtime';
 
 export const metadata = {
   title: 'Inbox',
@@ -53,6 +54,7 @@ export default async function InboxPage({
           Customers <span aria-hidden="true">↗</span>
         </Link>
       </div>
+      <InboxRealtime workspaceId={active.id} />
       <form className="filter-bar" role="search">
         <label className="sr-only" htmlFor="inbox-search">
           Search conversations

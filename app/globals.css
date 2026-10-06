@@ -1,6 +1,46 @@
 @import 'tailwindcss';
 @import '../tokens.css';
 
+.widget-settings-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+.widget-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 1rem;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font: 0.8rem/1.6 var(--font-mono);
+}
+.inbox-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.1rem 0 1rem;
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+}
+.live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px var(--color-success-paper);
+}
+.live-dot-off {
+  background: var(--color-warning);
+  box-shadow: 0 0 0 3px var(--color-warning-paper);
+}
+@media (max-width: 760px) {
+  .widget-settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 :root {
   color-scheme: light;
   background: #f7f7f5;

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>External widget test host</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        padding: 5vw;
+        background: #edeae2;
+        color: #22302b;
+        font:
+          16px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 760px;
+        margin: 12vh auto;
+      }
+      h1 {
+        max-width: 12ch;
+        font-size: clamp(2.5rem, 7vw, 5rem);
+        line-height: 1.02;
+        letter-spacing: -0.055em;
+      }
+      p {
+        max-width: 50ch;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p>INDEPENDENT TEST HOST</p>
+      <h1>A page outside SupportSphere.</h1>
+      <p>
+        This page serves from its own origin. The script below is the same embed
+        installed on a customer website.
+      </p>
+    </main>
+    <!-- The local server replaces this with the exact external embed snippet for the configured test key. -->
+    {{WIDGET_EMBED}}
+  </body>
+</html>

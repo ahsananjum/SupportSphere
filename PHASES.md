@@ -337,11 +337,11 @@ Prove customer-to-agent live communication.
 
 Plus:
 
-- [ ] Hostile origin rejected.
-- [ ] Flooding/rate limit produces usable 429 UX.
-- [ ] Guessed widget/session identifiers do not expose private data.
-- [ ] Mobile widget works.
-- [ ] No cross-workspace realtime subscription.
+- [x] Hostile origin rejected.
+- [x] Flooding/rate limit produces usable 429 UX.
+- [x] Guessed widget/session identifiers do not expose private data.
+- [x] Mobile widget works.
+- [x] No cross-workspace realtime subscription.
 
 ---
 

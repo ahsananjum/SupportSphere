@@ -7,6 +7,7 @@ import {
   TicketForm,
 } from '../../../../components/support/support-forms';
 import { updateConversation } from '../../support-actions';
+import { InboxRealtime } from '../../../../components/support/inbox-realtime';
 
 export const metadata = {
   title: 'Conversation',
@@ -49,6 +50,10 @@ export default async function ConversationPage({
               {customer?.name || customer?.email || 'Unknown customer'}
             </p>
           </div>
+          <InboxRealtime
+            workspaceId={active.id}
+            conversationId={conversation.id}
+          />
           {query.notice && (
             <p className="form-success" role="status">
               Conversation updated.

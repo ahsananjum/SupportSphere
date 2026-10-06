@@ -183,3 +183,21 @@ P04 is **COMPLETE**. The migration, live security checks, authenticated browser 
 - Security advisor: only existing contact-table service-role-only INFO notices and the provider leaked-password-protection WARN; no P04 finding.
 - Performance advisor: no unindexed foreign keys; unused-index INFOs are expected while the project is nearly empty, including new tag/ticket indexes.
 - Linked schema lint: passed with one preexisting P03 warning for an unused local variable in `update_workspace_general`.
+
+## P05 final verification — 2026-10-06
+
+Status: **COMPLETE** after the formal VERIFYING gate. The local production build and external host were tested against live SupportSphere project `xviumgygixcklrbuynoh`. No production Vercel deployment is claimed.
+
+| Requirement | Automated proof | Live proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Versioned schema, RLS, types | `20261006043128` and `20261006051012` appear in remote migration history; types regenerated with Supabase CLI; typecheck passes | MCP reviewed publication, policies, grants, security/performance advisors | PASS | `widget_sessions` and `widget_rate_buckets` intentionally have RLS enabled with no anon/auth policies; service-only. No P05 security-definer warning or unindexed FK remains. |
+| Public key, origin, iframe | External host page on `localhost:4177` loaded the async script from app origin; browser config handshake and iframe referrer matched configured origin | Golden browser test; hostile `Origin` returned 403; guessed key returned 403 | PASS | Frame path is relative to script origin so strict postMessage source/origin checks preserve mobile resize. |
+| Anonymous session and transcript | Live token hash created session/customer/conversation, reload reused it, and 105 same-timestamp added messages paginated from latest 100 to the original customer message | Golden test observed same history after reload; guessed bearer returned 401 | PASS | Plain-text rows, internal notes excluded, no browser table grants for session hashes. |
+| Customer ↔ team loop | Customer send created one persisted row; authorized owner Realtime Postgres Changes event arrived; inbox updated without manual refresh; agent action reply appeared in widget | Golden external-host journey | PASS | Inbox uses scoped subscription plus focus/reconnect/4-second reconciliation; widget polls and dedupes durable IDs. |
+| Retry, abuse and authorization | Reusing one client ID returned the same message ID and one row; oversized body returned 413; 12/min session limit returned 429 with visible widget feedback | Live API and browser assertions; foreign member read returned empty and foreign Realtime subscription received zero events | PASS | Service RPCs own writes; browser may not choose workspace or role. |
+| Mobile and accessibility | Open iframe fit 320, 360, 390, 768 and 1024 px host widths without overflow; Escape returned focus to launcher; reduced-motion duration collapsed | 390 px screenshot visually inspected after frame resize repair; offline draft remained intact | PASS | 44px close/send targets, visible labels, status/error text, keyboard support. |
+| Quality gate | `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (21 pass, 3 opt-in remote suites skipped), `pnpm test:e2e` (13 pass), `pnpm build`, `git diff --check` | `node --env-file=.env tests/live/p05-widget.mjs` with exact project-ref opt-in passed against `pnpm start` production build | PASS | MCP query after the final live run returned zero `p05-%` workspaces. |
+
+Motion Primitives documentation was reviewed for operational fit. Existing source-owned Animated Background remains in team navigation. The widget uses restrained launcher/panel transitions and reduced-motion CSS; animated numbers, text effects, and dynamic toolbars would not clarify this support task. No dependency was added.
+
+Expected advisor notices: [service-only RLS tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) INFO; [unused indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO on the sparse project; preexisting [leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN at provider level. No new P05 WARN remains.

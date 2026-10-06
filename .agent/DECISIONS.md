@@ -130,4 +130,14 @@ Alternatives considered: client-generated ticket numbers, client-only dedupe, lo
 Consequences: Customer → conversation → message → ticket behavior is real and testable across tenants; the live project carries three versioned P04 migrations and generated types. Empty-project advisor output may report unused indexes until production traffic exists.
 Files affected: `supabase/migrations/20261004120000_p04_support_operations.sql`, `supabase/migrations/20261004130000_p04_support_indexes.sql`, `supabase/migrations/20261004131500_p04_composite_fk_indexes.sql`, `lib/supabase/database.types.ts`, `lib/support`, `app/app`, `components/support`, `tests/security/p04-attacks.test.ts`, `tests/live/p04-app-ui.mjs`.
 
+## ADR-014 — P05 isolated widget and scoped live support
+
+Date: 2026-10-06
+Status: accepted
+Context: A public customer site needs a small embed while support records remain tenant-private. A website key is public and cannot authorize transcript access by itself.
+Decision: Use an async loader and SupportSphere-hosted iframe. The loader fetches configuration only when the browser's Origin matches an owner-configured exact origin; the server signs a short-lived, origin-scoped bootstrap proof. The iframe requires matching parent referrer and sends resize messages to that exact parent origin. A random anonymous bearer token is stored only in partitioned iframe storage, while Postgres stores its SHA-256 hash and owns the associated customer/conversation. Service-only RPCs atomically create sessions and idempotent customer messages; per-session and IP-derived rate buckets bound abuse. Team clients subscribe to Supabase Postgres Changes under membership RLS, reconcile from the database on events/reconnect/focus, and poll as a missed-event fallback. The widget uses scoped transcript polling and cursor pagination; internal notes never leave the team boundary. Source-owned Motion Primitives remain in workspace navigation, while the widget uses short CSS state transitions and removes them under reduced motion.
+Alternatives considered: injecting app styles into customer sites, broad anonymous table grants, public Realtime channels for widget sessions, client-supplied workspace IDs, and animated operational message lists.
+Consequences: Two P05 migrations are applied; the public key is safe to embed but the session token remains a bearer credential. Installation on a real owner site requires adding its exact origin and the generated snippet in widget settings. No new dependency or owner-held secret was introduced.
+Files affected: `supabase/migrations/20261006043128_p05_widget_realtime.sql`, `supabase/migrations/20261006051012_p05_widget_security_indexes.sql`, `lib/widget`, `app/api/widget`, `app/widget`, `app/app/settings/widget`, `components/support/inbox-realtime.tsx`, `public/widget/loader.js`, and `tests`.
+
 

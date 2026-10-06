@@ -94,3 +94,24 @@ Status: **COMPLETE**. P04 is verified against the live Supabase project, includi
 ### Next exact actions
 
 P04 is complete. Preserve the applied migration history and verification evidence when starting the next phase.
+
+## P05 handoff — 2026-10-06
+
+Status: **COMPLETE**. P05 was implemented and verified against the live SupportSphere Supabase project and a separate local external host. No production Vercel deployment or installation on an owner's real website is claimed.
+
+### Implementation
+
+- `20261006043128_p05_widget_realtime.sql` and `20261006051012_p05_widget_security_indexes.sql` are applied remotely. They add owner-configured public keys/origins, private hashed anonymous sessions, atomic widget conversation/message RPCs, rate buckets, Realtime publication, and reviewed indexes/security wrappers. `lib/supabase/database.types.ts` was regenerated from the live schema.
+- `/app/settings/widget` lets an owner/admin configure exact allowed origins and obtain the real async embed snippet. `public/widget/loader.js` inserts the SupportSphere iframe, and `/widget` provides the isolated customer UI. Server routes handle origin-scoped bootstrap, session restore, bounded message send, and paginated transcript reads.
+- Inbox list/detail subscribe to tenant-filtered Supabase Postgres Changes, dedupe event IDs, and reconcile from the persisted database on subscription/reconnect/focus and a four-second missed-event fallback. The widget polls only its authorized session while open. Internal notes stay private.
+- `tests/widget-host` is a separate local website. `tests/live/p05-widget.mjs` creates real temporary users/workspaces, runs the seven-step golden journey, checks hostile/guessed access, rate limits and visible 429, idempotent retry, foreign Realtime isolation, offline draft, long-history pagination, mobile widths, Escape focus, and reduced motion. It cleans fixtures in `finally`.
+
+### Verification
+
+- Formal gate while STATE was `VERIFYING`: typecheck, lint, format, 21 unit tests, 13 Playwright tests, production build, and diff check all passed.
+- The opt-in P05 live production-build browser journey passed after the gate; screenshot review confirmed the open 390px panel. The initial clipped iframe was repaired by using a relative frame path tied to the loader script origin.
+- MCP confirmed both P05 migration versions, `messages`/`conversations` Realtime publication, and zero `p05-%` test workspaces after the last run. Security advisor shows no new P05 WARN; private no-policy INFOs are intentional. Performance advisor has no unindexed P05 foreign keys; unused-index INFOs reflect sparse traffic. Provider leaked-password protection WARN predates P05.
+
+### Next actions
+
+P05 is complete. Continue to P06 only when requested. For a real customer site, the workspace owner should add its exact HTTPS origin in widget settings and paste the generated snippet into that site's page; no secret belongs in the page. Production deployment remains a separate release action.

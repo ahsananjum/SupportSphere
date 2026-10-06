@@ -1,14 +1,14 @@
 # Current State
 
-Active phase: P04
+Active phase: P05
 Status: COMPLETE
-Last updated: 2026-10-04
+Last updated: 2026-10-06
 Current branch: master
-Last known good implementation commit: 9fb2ae9
+Last known good implementation commit: pending P05 commit (formal gate passed)
 
 ## Objective
 
-Implement real support operations as a complete customer → conversation → message → ticket vertical slice before AI.
+Complete P05 customer website widget and customer ↔ team support loop with real persistence, tenant-safe Realtime, and verified external-host behavior.
 
 ## Completed in P03
 
@@ -41,7 +41,7 @@ Implement real support operations as a complete customer → conversation → me
 
 ## Current schema/migrations
 
-SupportSphere project `xviumgygixcklrbuynoh` has P04 migrations `20261004120000`, `20261004130000`, and `20261004131500` applied. Generated types were refreshed from the live schema.
+SupportSphere project `xviumgygixcklrbuynoh` has P04 and P05 migrations applied through `20261006051012`; generated types were refreshed from the live schema. P05 adds widget configuration, opaque session hashes, service-only rate buckets, atomic widget RPCs, and Realtime publication for messages/conversations.
 
 ## Current integrations
 
@@ -50,9 +50,26 @@ Supabase is connected. P01 verified Brevo auth/invitation delivery; P02 verified
 ## Known notes
 
 - Default command sandbox has setup-refresh errors; approved escalated shell works.
-- Supabase advisor retains P02 service-role-only contact table INFO notices, two unused-index INFO notices, and provider-level leaked-password-protection WARN. No new P03 finding.
-- No new owner-controlled credential or dashboard step is required for P04; the owner supplied the token through the ignored local environment.
+- Supabase advisor has expected service-only no-policy INFO notices for widget sessions/rate buckets, unused-index INFO notices on the sparse project, and the preexisting provider-level leaked-password-protection WARN. No P05 security-definer warning or unindexed FK remains.
+- No new owner-controlled credential or dashboard step is required for the local P05 golden test.
+
+## P05 execution checklist
+
+- [x] Add widget configuration, session, rate limit and origin enforcement schema with RLS and generated types.
+- [x] Add async iframe loader, public config handshake, session and messaging API, and customer UI.
+- [x] Add tenant-scoped inbox Realtime and reconnect reconciliation.
+- [x] Add external test host and abuse/golden tests, including long history, keyboard, mobile, reduced motion, offline draft, and retry dedupe.
+- [x] Apply migrations and inspect live schema, RLS, publication, advisors, and cleanup.
+- [x] Run the final phase gate after entering VERIFYING, update QA/HANDOFF, and mark COMPLETE.
+
+## P05 final verification — 2026-10-06
+
+- [x] Live golden flow passed: external host → iframe → customer message → inbox and authorized Realtime event → agent reply → widget → reload history.
+- [x] Hostile origin, guessed key/token, oversized message, flood 429 UX, retry dedupe, and cross-workspace Realtime/RLS attacks passed.
+- [x] Long transcript pagination, offline draft, Escape focus, reduced motion, and mobile widths 320–1024 passed; mobile screenshot inspected.
+- [x] Remote P05 migrations and generated types match; advisors have no new P05 WARN or missing FK indexes; final test cleanup returned zero P05 workspaces.
+- [x] Formal typecheck, lint, format, unit, Playwright, build, and diff gate passed. Exact evidence is in `.agent/QA.md`.
 
 ## Next exact actions
 
-P04 is complete. Continue with the next phase only after a new phase is explicitly started; preserve the applied migration history and live test evidence above.
+P05 is complete. Preserve the applied schema and verification record; begin P06 only on a new request. Production deployment and installation on a real owner site are separate release actions.
