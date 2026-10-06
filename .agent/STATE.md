@@ -4,7 +4,7 @@ Active phase: P05
 Status: COMPLETE
 Last updated: 2026-10-06
 Current branch: master
-Last known good implementation commit: pending P05 commit (formal gate passed)
+Last known good implementation commit: 33a70b6
 
 ## Objective
 
@@ -45,7 +45,7 @@ SupportSphere project `xviumgygixcklrbuynoh` has P04 and P05 migrations applied 
 
 ## Current integrations
 
-Supabase is connected. P01 verified Brevo auth/invitation delivery; P02 verified Vercel production origin `https://support-sphere-psi.vercel.app`. P03 changes are currently local plus applied Supabase migration; deployment was not requested in this phase.
+Supabase is connected. P01 verified Brevo auth/invitation delivery; P02 verified Vercel production origin `https://support-sphere-psi.vercel.app`. P03–P05 source changes have not been deployed to Vercel; their Supabase migrations are applied and P05 local production-build behavior is verified.
 
 ## Known notes
 
