@@ -115,3 +115,24 @@ Status: **COMPLETE**. P05 was implemented and verified against the live SupportS
 ### Next actions
 
 P05 is complete. Continue to P06 only when requested. For a real customer site, the workspace owner should add its exact HTTPS origin in widget settings and paste the generated snippet into that site's page; no secret belongs in the page. Production deployment remains a separate release action.
+
+## P06 handoff — 2026-10-07
+
+Status: **COMPLETE**. Knowledge ingestion is implemented and verified against the live SupportSphere Supabase project and a local production build. No P07 work or P06 web deployment to Vercel is claimed.
+
+### Implementation
+
+- Four migrations through `20261007031612_p06_abandoned_upload_recovery.sql` are applied remotely. They create tenant-scoped sources/documents/chunks/jobs with RLS, private exact-path Storage policies, HNSW/full-text indexes, role-checked RPCs, a leased worker cron, a recovery cron for abandoned uploads, and source/job rate limits. Live database types were regenerated.
+- The deployed `knowledge-worker` Edge Function extracts UTF-8 TXT/MD and selectable text PDFs, normalizes and splits documents, deterministically chunks, embeds with Supabase `gte-small`, and commits all chunks plus `ready` in one transaction. It retries transient errors at most three times. `docs/knowledge.md` documents content hashes, limits, recovery, errors, and environment setup.
+- `/app/knowledge` and its detail route provide real upload/paste, lifecycle status, preview, retry/reindex, enable/disable, deletion, pagination, pending/empty/error/success states, and mobile/keyboard behavior. Permanent extraction and incomplete-upload failures give a correction path rather than a retry button. The onboarding knowledge step links to the real page.
+- URL and DOCX inputs are not shown because their parser/security paths are not implemented. No owner-held AI key or manual setup is required for this phase; the Vault token was generated in the migration, and the project-specific worker URL was configured in Vault.
+
+### Verification
+
+- The final gate passed: typecheck, lint, format, 23 unit tests (3 unrelated opt-in skips), 13 Playwright tests, production build, and diff check.
+- The opt-in P06 live suite passed text PDF success, malformed PDF failure, oversized file, foreign Storage path, cross-tenant vector denial, unchanged-hash reindex, transient embedding retry on attempt two, and both abandoned-upload paths. The authenticated production-build browser test passed real paste/upload/toggle/delete, visible permanent error, 320–1024px layout, menu Escape/focus, and no page errors. A solo rerun had a clean server log.
+- Supabase MCP confirmed all P06 migrations, four RLS tables, both active knowledge crons, and no remaining P06 test rows/files. Advisor findings are recorded in `.agent/QA.md`. The browser test's 390px screenshot was visually reviewed.
+
+### Next actions
+
+P06 is complete. Continue with P07 only when requested. Deployment of the P06 web code to Vercel is a separate release action; the Edge worker and database migrations are already live.

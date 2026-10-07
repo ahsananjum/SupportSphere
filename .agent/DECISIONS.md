@@ -1,5 +1,15 @@
 # Architecture decisions
 
+## ADR-015 — P06 database-leased knowledge worker
+
+Date: 2026-10-07
+Status: accepted
+Context: P06 requires persistent ingestion, private tenant files, real embeddings, bounded retry, and no extra owner-held AI key.
+Decision: Store source/job lifecycle in Postgres, schedule a Supabase Edge worker with pg_cron/pg_net and a Vault-generated token, parse text PDFs with MIT-licensed unpdf, and embed with the built-in gte-small model. Publish chunks and ready state in one database transaction. Keep URL/DOCX off until complete parsers and URL SSRF defenses exist. See `docs/knowledge.md`.
+Alternatives considered: request-held indexing, an unprotected public worker, guessed external AI credentials, and fake embeddings.
+Consequences: Four P06 migrations and one Edge Function are applied to SupportSphere. A five-minute recovery cron handles abandoned file reservations, and ingestion jobs are capped per workspace per hour. The deployment-specific project URL is provisioned in Vault outside the migration. Knowledge sources need no new owner credential.
+Files affected: `supabase/migrations`, `supabase/functions`, `app/app/knowledge`, `lib/supabase/database.types.ts`, `docs/knowledge.md`, tests.
+
 ## ADR-001 — Single root application
 
 Date: 2026-09-30
@@ -139,5 +149,3 @@ Decision: Use an async loader and SupportSphere-hosted iframe. The loader fetche
 Alternatives considered: injecting app styles into customer sites, broad anonymous table grants, public Realtime channels for widget sessions, client-supplied workspace IDs, and animated operational message lists.
 Consequences: Two P05 migrations are applied; the public key is safe to embed but the session token remains a bearer credential. Installation on a real owner site requires adding its exact origin and the generated snippet in widget settings. No new dependency or owner-held secret was introduced.
 Files affected: `supabase/migrations/20261006043128_p05_widget_realtime.sql`, `supabase/migrations/20261006051012_p05_widget_security_indexes.sql`, `lib/widget`, `app/api/widget`, `app/widget`, `app/app/settings/widget`, `components/support/inbox-realtime.tsx`, `public/widget/loader.js`, and `tests`.
-
-

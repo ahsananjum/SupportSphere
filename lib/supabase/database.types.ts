@@ -360,6 +360,234 @@ export type Database = {
           },
         ];
       };
+      ingestion_jobs: {
+        Row: {
+          attempt: number;
+          completed_at: string | null;
+          created_at: string;
+          error_code: string | null;
+          error_message: string | null;
+          id: string;
+          idempotency_key: string;
+          lease_expires_at: string | null;
+          lease_token: string | null;
+          max_attempts: number;
+          next_run_at: string;
+          source_id: string;
+          started_at: string | null;
+          status: string;
+          workspace_id: string;
+        };
+        Insert: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          source_id: string;
+          started_at?: string | null;
+          status?: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          source_id?: string;
+          started_at?: string | null;
+          status?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ingestion_jobs_workspace_id_source_id_fkey';
+            columns: ['workspace_id', 'source_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_sources';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      knowledge_chunks: {
+        Row: {
+          chunk_index: number;
+          content: string;
+          created_at: string;
+          document_id: string;
+          embedding: string;
+          fts: unknown;
+          id: string;
+          metadata: Json;
+          source_id: string;
+          token_count: number;
+          workspace_id: string;
+        };
+        Insert: {
+          chunk_index: number;
+          content: string;
+          created_at?: string;
+          document_id: string;
+          embedding: string;
+          fts?: unknown;
+          id?: string;
+          metadata?: Json;
+          source_id: string;
+          token_count: number;
+          workspace_id: string;
+        };
+        Update: {
+          chunk_index?: number;
+          content?: string;
+          created_at?: string;
+          document_id?: string;
+          embedding?: string;
+          fts?: unknown;
+          id?: string;
+          metadata?: Json;
+          source_id?: string;
+          token_count?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'knowledge_chunks_workspace_id_document_id_fkey';
+            columns: ['workspace_id', 'document_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_documents';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'knowledge_chunks_workspace_id_source_id_fkey';
+            columns: ['workspace_id', 'source_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_sources';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      knowledge_documents: {
+        Row: {
+          content: string;
+          created_at: string;
+          document_index: number;
+          id: string;
+          metadata: Json;
+          source_id: string;
+          title: string;
+          workspace_id: string;
+        };
+        Insert: {
+          content: string;
+          created_at?: string;
+          document_index: number;
+          id?: string;
+          metadata?: Json;
+          source_id: string;
+          title: string;
+          workspace_id: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          document_index?: number;
+          id?: string;
+          metadata?: Json;
+          source_id?: string;
+          title?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'knowledge_documents_workspace_id_source_id_fkey';
+            columns: ['workspace_id', 'source_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_sources';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      knowledge_sources: {
+        Row: {
+          chunk_count: number;
+          content_hash: string | null;
+          created_at: string;
+          document_count: number;
+          enabled: boolean;
+          error_code: string | null;
+          error_message: string | null;
+          id: string;
+          input_text: string | null;
+          last_indexed_at: string | null;
+          name: string;
+          source_type: string;
+          source_uri: string | null;
+          status: string;
+          storage_path: string | null;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          chunk_count?: number;
+          content_hash?: string | null;
+          created_at?: string;
+          document_count?: number;
+          enabled?: boolean;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          input_text?: string | null;
+          last_indexed_at?: string | null;
+          name: string;
+          source_type: string;
+          source_uri?: string | null;
+          status?: string;
+          storage_path?: string | null;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          chunk_count?: number;
+          content_hash?: string | null;
+          created_at?: string;
+          document_count?: number;
+          enabled?: boolean;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          input_text?: string | null;
+          last_indexed_at?: string | null;
+          name?: string;
+          source_type?: string;
+          source_uri?: string | null;
+          status?: string;
+          storage_path?: string | null;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'knowledge_sources_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       messages: {
         Row: {
           body: string;
@@ -981,6 +1209,7 @@ export type Database = {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      claim_ingestion_job: { Args: never; Returns: Json };
       configure_widget: {
         Args: {
           p_enabled: boolean;
@@ -1003,6 +1232,15 @@ export type Database = {
           p_email: string;
           p_role: string;
           p_token_hash: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      create_knowledge_source: {
+        Args: {
+          p_name: string;
+          p_text?: string;
+          p_type: string;
           p_workspace_id: string;
         };
         Returns: string;
@@ -1036,9 +1274,40 @@ export type Database = {
         Args: { p_name: string; p_slug: string; p_timezone: string };
         Returns: string;
       };
+      delete_knowledge_source: {
+        Args: { p_source_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      enqueue_knowledge_upload: {
+        Args: { p_source_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      fail_ingestion_job: {
+        Args: {
+          p_code: string;
+          p_job_id: string;
+          p_lease_token: string;
+          p_message: string;
+          p_retry: boolean;
+        };
+        Returns: undefined;
+      };
+      finish_ingestion_job: {
+        Args: {
+          p_documents: Json;
+          p_hash: string;
+          p_job_id: string;
+          p_lease_token: string;
+        };
+        Returns: undefined;
+      };
       finish_onboarding: {
         Args: { p_ai_mode: string; p_workspace_id: string };
         Returns: undefined;
+      };
+      knowledge_worker_authorized: {
+        Args: { p_token: string };
+        Returns: boolean;
       };
       mark_notification_read: { Args: { p_id: string }; Returns: undefined };
       open_widget_session: {
@@ -1049,6 +1318,11 @@ export type Database = {
           p_token_hash: string;
         };
         Returns: Json;
+      };
+      recover_abandoned_knowledge_uploads: { Args: never; Returns: number };
+      reindex_knowledge_source: {
+        Args: { p_source_id: string; p_workspace_id: string };
+        Returns: undefined;
       };
       remove_member: {
         Args: { p_user_id: string; p_workspace_id: string };
@@ -1075,6 +1349,17 @@ export type Database = {
         Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      search_knowledge_chunks: {
+        Args: { p_embedding: string; p_limit?: number; p_workspace_id: string };
+        Returns: {
+          content: string;
+          distance: number;
+          document_id: string;
+          id: string;
+          metadata: Json;
+          source_id: string;
+        }[];
+      };
       send_message: {
         Args: {
           p_body: string;
@@ -1094,6 +1379,14 @@ export type Database = {
           p_session_hash: string;
         };
         Returns: string;
+      };
+      set_knowledge_source_enabled: {
+        Args: {
+          p_enabled: boolean;
+          p_source_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
       };
       update_conversation: {
         Args: {

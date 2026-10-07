@@ -76,6 +76,7 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
           { href: '/app/inbox', label: 'Inbox' },
           { href: '/app/tickets', label: 'Tickets' },
           { href: '/app/customers', label: 'Customers' },
+          { href: '/app/knowledge', label: 'Knowledge' },
           { href: '/app/team', label: 'Team' },
           { href: '/app/notifications', label: 'Notifications' },
           ...(['owner', 'admin'].includes(active.role)

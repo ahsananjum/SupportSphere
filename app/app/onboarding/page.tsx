@@ -185,10 +185,15 @@ export default async function OnboardingPage({
               <>
                 <h2 id="setup-step-heading">Knowledge source</h2>
                 <p className="page-intro">
-                  Knowledge ingestion will be added in P06. There is no source
-                  to connect yet, so this step is skippable and no sample
-                  content will be created.
+                  Add text or upload a source now, or continue and add it later.
+                  Indexing runs in the background and will show its real status.
                 </p>
+                <Link
+                  href="/app/knowledge"
+                  className="secondary-button inline-button"
+                >
+                  Open knowledge
+                </Link>
                 <form action={continueOnboarding}>
                   <input type="hidden" name="expected" value="knowledge" />
                   <SubmitButton

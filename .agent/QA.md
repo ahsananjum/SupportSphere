@@ -201,3 +201,38 @@ Status: **COMPLETE** after the formal VERIFYING gate. The local production build
 Motion Primitives documentation was reviewed for operational fit. Existing source-owned Animated Background remains in team navigation. The widget uses restrained launcher/panel transitions and reduced-motion CSS; animated numbers, text effects, and dynamic toolbars would not clarify this support task. No dependency was added.
 
 Expected advisor notices: [service-only RLS tables](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) INFO; [unused indexes](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO on the sparse project; preexisting [leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN at provider level. No new P05 WARN remains.
+## P06 implementation verification — 2026-10-07
+
+Status: COMPLETE. The P06 live suite and authenticated production-build browser journey passed against SupportSphere project `xviumgygixcklrbuynoh`. Temporary users, workspaces, and storage objects were cleaned by the suites.
+
+| Requirement | Automated proof | Live proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Schema, RLS, storage, types | Four P06 migrations applied through CLI; live types regenerated; four knowledge tables report RLS enabled | Storage policies limit exact reserved paths to authorized members; foreign write/read denied; authenticated delete rechecks owner/admin | PASS | Private bucket has 5 MiB backstop; app accepts at most 4 MiB |
+| Durable worker and ready invariant | Active minute cron, Vault token, leased job with max three attempts, transactional finish RPC | Live paste/PDF jobs persisted before ready, with real gte-small vectors and counts | PASS | No request-held worker or fake embedding |
+| Input extraction/failure | TXT/MD UTF-8 and PDF validation in action and worker | Text PDF produced document/chunks; malformed PDF failed with safe INVALID_PDF; oversized storage upload denied | PASS | Scanned PDF gives actionable PDF_NO_TEXT; URL/DOCX unexposed |
+| Duplicate and retry | Hash of normalized document text; unchanged reindex preserves IDs | Reindex retained chunk IDs; simulated transient embedding failure queued retry then succeeded on attempt 2 | PASS | Separate sources may share content; policy documented |
+| Abandoned upload recovery and capacity | Five-minute cron scans locked reservations older than ten minutes; job trigger caps a workspace at 100 jobs/hour | Live missing upload became `UPLOAD_INCOMPLETE`; file uploaded without enqueue was recovered, embedded, and marked ready | PASS | Both paths exercised through service-only recovery RPC; retry UI omitted for permanent failures |
+| Tenant retrieval and authorization | Search RPC checks membership and workspace ID, excludes disabled/non-ready; role checked mutation RPCs | Outsider source read empty, vector lookup denied, foreign Storage path upload denied | PASS | Six intentional authenticated SECURITY DEFINER RPC advisor WARNs were reviewed |
+| UI and cleanup | Real list/detail/status/preview/forms/actions; responsive CSS; server-side redirect after delete | Authenticated browser paste/upload/preview/toggle/delete passed; stored file and row removed | PASS | Browser test passed widths 320/360/390/768/1024 without overflow |
+| Quality checks | `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` (23 pass, 3 opt-in skipped), `pnpm test:e2e` (13 pass), `pnpm build`, `git diff --check` | Live P06 suite and browser journey passed separately | PASS | Final full gate repeated after refresh/status polish below |
+
+Supabase advisors: only the six intentionally exposed, role-checked P06 mutation/search SECURITY DEFINER functions are new security WARNs. Existing service-only no-policy INFOs and provider leaked-password-protection WARN remain. Performance advisor has unused vector/full-text index INFOs on sparse test data, with no missing-FK-index finding.
+
+The first browser attempt found that deleting a source removed its row/file but stayed on its deleted detail URL. The action now redirects server-side; the full browser journey passed on rerun.
+
+The P06 recovery pass added `20261007031612` and redeployed the worker. Its real integration suite passed both abandoned-upload paths plus all earlier PDF, size, storage, reindex, and transient-retry cases. The final production-build browser run checked 320/360/390/768/1024 widths, menu Escape/focus, upload and delete cleanup, and actionable PDF failure with no retry control. The settled 390px screenshot was visually inspected. MCP confirmed both knowledge crons active, all four tables RLS-enabled, and zero P06 workspaces, knowledge rows/jobs, or private Storage objects after cleanup.
+
+## P06 final phase gate — 2026-10-07
+
+- `pnpm typecheck` — PASS after final UI refresh change.
+- `pnpm lint` — PASS.
+- `pnpm format:check` — PASS.
+- `pnpm test` — 23 passed, 3 opt-in live suites skipped (the P06 opt-in suite ran separately and passed).
+- `pnpm test:e2e` — 13 passed.
+- `pnpm build` — PASS, Next.js 16.3.7 generated `/app/knowledge` and `/app/knowledge/[sourceId]`.
+- Opt-in `tests/live/p06-knowledge.mjs` — PASS against the live project; PDF success/failure, 5 MiB backstop, foreign Storage path, reindex IDs, transient embedding retry, tenant lookup, and both abandoned upload paths.
+- Opt-in `tests/live/p06-app-ui.mjs` — PASS on the production build after the final refresh change. It was rerun alone; browser page errors and server rendering errors were absent. A `NoFallbackError` seen only during the earlier concurrent run came from the regression suite's intentional nonexistent-page request against that same server.
+- `git diff --check` — PASS; no literal API/access token found in P06 source or documentation.
+- Supabase MCP — all four P06 migrations present, four new RLS tables enabled, both knowledge crons active, and zero temporary P06 workspaces/sources/documents/chunks/jobs/Storage objects after suite cleanup. Security advisor's six authenticated SECURITY DEFINER warnings are for intentionally exposed functions that check current workspace membership/role; prior service-only no-policy notices and Auth leaked-password-protection warning remain. Performance advisor only notes unused indexes on sparse data.
+
+All P06 acceptance criteria are proven for the supported paste, TXT/MD, and text PDF inputs. DOCX and URL ingestion remain unexposed; P06 does not require them. The app code was verified locally against live Supabase but has not been deployed to Vercel as part of this phase.
