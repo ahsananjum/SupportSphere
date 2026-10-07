@@ -236,3 +236,25 @@ The P06 recovery pass added `20261007031612` and redeployed the worker. Its real
 - Supabase MCP — all four P06 migrations present, four new RLS tables enabled, both knowledge crons active, and zero temporary P06 workspaces/sources/documents/chunks/jobs/Storage objects after suite cleanup. Security advisor's six authenticated SECURITY DEFINER warnings are for intentionally exposed functions that check current workspace membership/role; prior service-only no-policy notices and Auth leaked-password-protection warning remain. Performance advisor only notes unused indexes on sparse data.
 
 All P06 acceptance criteria are proven for the supported paste, TXT/MD, and text PDF inputs. DOCX and URL ingestion remain unexposed; P06 does not require them. The app code was verified locally against live Supabase but has not been deployed to Vercel as part of this phase.
+
+## P07 implementation verification — 2026-10-07
+
+Status: **BLOCKED_MANUAL**. The controlled workflow is implemented and deployed to Supabase, but no real OpenAI credential/model secrets exist in this project. The ten scenarios passed as controlled unit cases; database-enforced cases also passed against the live project. Real provider output and failure behavior remain unverified, so P07 is not complete.
+
+| Requirement | Automated proof | Live proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Data model, RLS, types | Five P07 migrations through `20261007080034` and regenerated live types | Migration history, RLS/advisor inspection | PASS | All five AI tables are tenant scoped; service RPCs use role checks. Four new FK indexes removed advisor findings. |
+| Durable graph and gates | Unit gate scenarios and SQL constraints/RPCs | Live queue/lease/finish/fail suite; active minute cron and active `ai-worker` v3 | PASS | DB finalizer rechecks policy, citation, quality, latest message, handoff, and assignment before send. Bounded three attempts. |
+| Known KB answer/citation | Controlled scenario 1 | Live `finish_ai_run` persisted grounded output, citation, trace; auto-send produced one real message | PARTIAL | Real model drafting and grounding await credential. |
+| No evidence; sensitive requests | Controlled scenarios 2–4 | Live no-evidence handoff, release, notification; deterministic billing/human gates in worker | PARTIAL | Real model path awaits credential; sensitive phrase detection is deterministic. |
+| Low confidence, off, draft, quality | Controlled scenarios 5–8 | Live off enqueued no run; draft and quality downgrade could not auto-send | PASS for policy gates | Real provider output awaits credential. |
+| Provider outage | Controlled scenario 9 verified two bounded adapter attempts | Live `fail_ai_run` terminal handoff and error trace; no provider secret present | PARTIAL | Real transport/outage recovery awaits credential. |
+| Injection document | Controlled scenario 10 quarantined instruction-bearing evidence | Worker uses lower-priority data input, detector and no model tools | PARTIAL | Real injection document through provider awaits credential. |
+| Policy/UI/feedback | Server actions, validation, role-checked RPCs, loading/empty/error states | Authenticated browser saved policy, showed draft and inspector/citations, submitted feedback | PASS | Responsive 320/360/390/768/1024, no overflow or page errors. Settled mobile screenshots inspected. Escape returns focus. |
+| Static and regression gate | `pnpm typecheck`, `pnpm lint`, `pnpm test` (35 pass, 3 unrelated opt-in skips), `pnpm test:e2e` (13 pass), `pnpm build`, `git diff --check` | Production-build authenticated browser and live database suite passed | PASS as of final implementation pass | `pnpm format:check` initially found two files, both formatted; final rerun recorded below. |
+
+Supabase security advisor reports the prior four service-only RLS/no-policy INFOs, nine authenticated SECURITY DEFINER WARNs (six preexisting P06; three new P07 role-checked RPCs), and preexisting Auth leaked-password-protection WARN. The new RPCs reject absent/foreign roles in function bodies. Performance advisor now has no unindexed FK findings; unused-index INFOs reflect sparse test traffic. No `p07-%` test workspaces or queued/processing AI runs remained after the live suites. Vercel MCP is unavailable; no web deployment or runtime verification is claimed.
+
+Formal P07 VERIFYING/full real-provider gate is deferred until MANUAL-008 is verified. The agent must repeat all ten scenarios with a real provider, inspect citations and handoff from actual runs, rerun the full code/browser/security gate, and only then set `COMPLETE`.
+
+Final implementation-pass check after record updates: `pnpm format:check` PASS; `git diff --check` PASS (line-ending normalization notices only). The last authenticated browser rerun against a freshly started production build passed after correcting its Playwright focus assertion. The 390px conversation and inspector screenshots show the mobile drawer closed and no content overlap. P07 remains `BLOCKED_MANUAL` pending MANUAL-008.

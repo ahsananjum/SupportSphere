@@ -136,3 +136,15 @@ Status: **COMPLETE**. Knowledge ingestion is implemented and verified against th
 ### Next actions
 
 P06 is complete. Continue with P07 only when requested. Deployment of the P06 web code to Vercel is a separate release action; the Edge worker and database migrations are already live.
+
+## P07 blocked handoff — 2026-10-07
+
+Status: **BLOCKED_MANUAL** in P07. The owner must complete MANUAL-008; do not advance to P08 or claim real-provider success.
+
+Implementation: Five migrations `20261007061500` through `20261007080034` are applied to SupportSphere Supabase. They add AI policy/runs/steps/citations/feedback, tenant RLS, worker lease and cron, service-only retrieval, transactional send/handoff and retries, and FK indexes. `ai-worker` v3 is deployed and active. The OpenAI Responses adapter, deterministic gates, settings, inbox draft/handoff, run inspector, feedback, tests, and `docs/ai.md` are in source. Generated DB types match remote. The web app was tested from a local production build; no P07 Vercel deployment is claimed.
+
+Verification: Ten controlled unit scenarios passed; the live database suite passed off, tenant/RLS, draft, quality, auto-send/citation/trace/feedback, no evidence/handoff, and outage terminal paths. Authenticated browser journey passed settings/draft/inspector/feedback at 320–1024 px; both settled 390px screenshots were inspected, and menu Escape returned focus. Static gates passed after formatting two files and rerunning `pnpm format:check`; `git diff --check` passed. Final commands/results are in `.agent/QA.md`. Supabase advisors, active cron/function, and zero P07 fixtures were checked.
+
+Manual gate: Supabase has no `AI_*` Edge Function secrets. The owner must create a private OpenAI project key with approved billing and set `AI_PROVIDER`, `AI_API_KEY`, and three structured-output model IDs in Supabase Edge Function Secrets. Exact steps and prohibited secret sharing are in `.agent/MANUAL_ACTIONS.md` MANUAL-008.
+
+Next: After owner confirmation, verify secret names, run all ten real-provider scenarios in isolated live workspace, inspect output/citations/handoff/logs and clean fixtures, then set `VERIFYING` and repeat the full P07 gate. Set `COMPLETE` only after objective real-provider proof. No provider key should enter chat, source, logs, or browser.

@@ -177,8 +177,15 @@ export function TicketForm({
     </form>
   );
 }
-export function Composer({ conversationId }: { conversationId: string }) {
+export function Composer({
+  conversationId,
+  initialBody = '',
+}: {
+  conversationId: string;
+  initialBody?: string;
+}) {
   const clientId = useRef(globalThis.crypto.randomUUID());
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const submitMessage = async (
     state: typeof initialFormState,
     formData: FormData,
@@ -203,13 +210,14 @@ export function Composer({ conversationId }: { conversationId: string }) {
       <div className="field">
         <label htmlFor="message-body">Reply</label>
         <textarea
+          ref={bodyRef}
           id="message-body"
           name="body"
           rows={4}
           required
           maxLength={20000}
           placeholder="Write a clear, helpful reply…"
-          defaultValue={state.values?.body}
+          defaultValue={state.values?.body ?? initialBody}
         />
       </div>
       <label className="check-row">

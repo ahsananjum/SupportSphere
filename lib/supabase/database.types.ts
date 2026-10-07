@@ -14,6 +14,311 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_agent_configs: {
+        Row: {
+          confidence_threshold: number;
+          custom_instructions: string;
+          evidence_threshold: number;
+          excluded_intents: string[];
+          mode: string;
+          tone: string;
+          updated_at: string;
+          updated_by: string | null;
+          version: number;
+          workspace_id: string;
+        };
+        Insert: {
+          confidence_threshold?: number;
+          custom_instructions?: string;
+          evidence_threshold?: number;
+          excluded_intents?: string[];
+          mode?: string;
+          tone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          version?: number;
+          workspace_id: string;
+        };
+        Update: {
+          confidence_threshold?: number;
+          custom_instructions?: string;
+          evidence_threshold?: number;
+          excluded_intents?: string[];
+          mode?: string;
+          tone?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          version?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_agent_configs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: true;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ai_citations: {
+        Row: {
+          chunk_id: string | null;
+          created_at: string;
+          id: string;
+          ordinal: number;
+          run_id: string;
+          score: number;
+          snippet: string;
+          source_id: string | null;
+          workspace_id: string;
+        };
+        Insert: {
+          chunk_id?: string | null;
+          created_at?: string;
+          id?: string;
+          ordinal: number;
+          run_id: string;
+          score: number;
+          snippet: string;
+          source_id?: string | null;
+          workspace_id: string;
+        };
+        Update: {
+          chunk_id?: string | null;
+          created_at?: string;
+          id?: string;
+          ordinal?: number;
+          run_id?: string;
+          score?: number;
+          snippet?: string;
+          source_id?: string | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_citations_workspace_id_chunk_id_fkey';
+            columns: ['workspace_id', 'chunk_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_chunks';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'ai_citations_workspace_id_run_id_fkey';
+            columns: ['workspace_id', 'run_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'ai_citations_workspace_id_source_id_fkey';
+            columns: ['workspace_id', 'source_id'];
+            isOneToOne: false;
+            referencedRelation: 'knowledge_sources';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      ai_feedback: {
+        Row: {
+          comment: string | null;
+          created_at: string;
+          id: string;
+          rating: string;
+          reason: string | null;
+          run_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Insert: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          rating: string;
+          reason?: string | null;
+          run_id: string;
+          user_id: string;
+          workspace_id: string;
+        };
+        Update: {
+          comment?: string | null;
+          created_at?: string;
+          id?: string;
+          rating?: string;
+          reason?: string | null;
+          run_id?: string;
+          user_id?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_feedback_workspace_id_run_id_fkey';
+            columns: ['workspace_id', 'run_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      ai_run_steps: {
+        Row: {
+          created_at: string;
+          duration_ms: number;
+          id: string;
+          metadata: Json;
+          ordinal: number;
+          run_id: string;
+          status: string;
+          step_type: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          duration_ms?: number;
+          id?: string;
+          metadata?: Json;
+          ordinal: number;
+          run_id: string;
+          status: string;
+          step_type: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          duration_ms?: number;
+          id?: string;
+          metadata?: Json;
+          ordinal?: number;
+          run_id?: string;
+          status?: string;
+          step_type?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_run_steps_workspace_id_run_id_fkey';
+            columns: ['workspace_id', 'run_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      ai_runs: {
+        Row: {
+          attempt: number;
+          completed_at: string | null;
+          confidence: number | null;
+          conversation_id: string | null;
+          created_at: string;
+          decision: string | null;
+          error_code: string | null;
+          evidence_score: number | null;
+          id: string;
+          input_message_id: string | null;
+          input_tokens: number | null;
+          latency_ms: number | null;
+          lease_expires_at: string | null;
+          lease_token: string | null;
+          model: string | null;
+          next_run_at: string;
+          output_text: string | null;
+          output_tokens: number | null;
+          policy_version: number;
+          prompt_version: string;
+          provider: string | null;
+          quality: Json | null;
+          reason_code: string | null;
+          run_type: string;
+          started_at: string | null;
+          status: string;
+          triage: Json | null;
+          workspace_id: string;
+        };
+        Insert: {
+          attempt?: number;
+          completed_at?: string | null;
+          confidence?: number | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          decision?: string | null;
+          error_code?: string | null;
+          evidence_score?: number | null;
+          id?: string;
+          input_message_id?: string | null;
+          input_tokens?: number | null;
+          latency_ms?: number | null;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          model?: string | null;
+          next_run_at?: string;
+          output_text?: string | null;
+          output_tokens?: number | null;
+          policy_version: number;
+          prompt_version?: string;
+          provider?: string | null;
+          quality?: Json | null;
+          reason_code?: string | null;
+          run_type?: string;
+          started_at?: string | null;
+          status?: string;
+          triage?: Json | null;
+          workspace_id: string;
+        };
+        Update: {
+          attempt?: number;
+          completed_at?: string | null;
+          confidence?: number | null;
+          conversation_id?: string | null;
+          created_at?: string;
+          decision?: string | null;
+          error_code?: string | null;
+          evidence_score?: number | null;
+          id?: string;
+          input_message_id?: string | null;
+          input_tokens?: number | null;
+          latency_ms?: number | null;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          model?: string | null;
+          next_run_at?: string;
+          output_text?: string | null;
+          output_tokens?: number | null;
+          policy_version?: number;
+          prompt_version?: string;
+          provider?: string | null;
+          quality?: Json | null;
+          reason_code?: string | null;
+          run_type?: string;
+          started_at?: string | null;
+          status?: string;
+          triage?: Json | null;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_runs_workspace_id_conversation_id_fkey';
+            columns: ['workspace_id', 'conversation_id'];
+            isOneToOne: false;
+            referencedRelation: 'conversations';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'ai_runs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_runs_workspace_id_input_message_id_fkey';
+            columns: ['workspace_id', 'input_message_id'];
+            isOneToOne: false;
+            referencedRelation: 'messages';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
       audit_logs: {
         Row: {
           action: string;
@@ -157,6 +462,8 @@ export type Database = {
       };
       conversations: {
         Row: {
+          ai_handoff_at: string | null;
+          ai_handoff_reason: string | null;
           assignee_user_id: string | null;
           channel: string;
           created_at: string;
@@ -171,6 +478,8 @@ export type Database = {
           workspace_id: string;
         };
         Insert: {
+          ai_handoff_at?: string | null;
+          ai_handoff_reason?: string | null;
           assignee_user_id?: string | null;
           channel?: string;
           created_at?: string;
@@ -185,6 +494,8 @@ export type Database = {
           workspace_id: string;
         };
         Update: {
+          ai_handoff_at?: string | null;
+          ai_handoff_reason?: string | null;
           assignee_user_id?: string | null;
           channel?: string;
           created_at?: string;
@@ -1205,10 +1516,12 @@ export type Database = {
         Args: { p_expected: string; p_next: string; p_workspace_id: string };
         Returns: undefined;
       };
+      ai_worker_authorized: { Args: { p_token: string }; Returns: boolean };
       change_member_role: {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      claim_ai_run: { Args: never; Returns: Json };
       claim_ingestion_job: { Args: never; Returns: Json };
       configure_widget: {
         Args: {
@@ -1282,6 +1595,15 @@ export type Database = {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      fail_ai_run: {
+        Args: {
+          p_error_code: string;
+          p_lease_token: string;
+          p_retry: boolean;
+          p_run_id: string;
+        };
+        Returns: undefined;
+      };
       fail_ingestion_job: {
         Args: {
           p_code: string;
@@ -1291,6 +1613,27 @@ export type Database = {
           p_retry: boolean;
         };
         Returns: undefined;
+      };
+      finish_ai_run: {
+        Args: {
+          p_citations: Json;
+          p_confidence: number;
+          p_evidence: number;
+          p_input_tokens: number;
+          p_latency_ms: number;
+          p_lease_token: string;
+          p_model: string;
+          p_output: string;
+          p_output_tokens: number;
+          p_provider: string;
+          p_quality: Json;
+          p_reason: string;
+          p_requested_decision: string;
+          p_run_id: string;
+          p_steps: Json;
+          p_triage: Json;
+        };
+        Returns: string;
       };
       finish_ingestion_job: {
         Args: {
@@ -1324,6 +1667,10 @@ export type Database = {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      release_ai_handoff: {
+        Args: { p_conversation_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
       remove_member: {
         Args: { p_user_id: string; p_workspace_id: string };
         Returns: undefined;
@@ -1349,6 +1696,16 @@ export type Database = {
         Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      search_ai_knowledge: {
+        Args: { p_embedding: string; p_limit?: number; p_workspace_id: string };
+        Returns: {
+          chunk_id: string;
+          content: string;
+          score: number;
+          source_id: string;
+          source_name: string;
+        }[];
+      };
       search_knowledge_chunks: {
         Args: { p_embedding: string; p_limit?: number; p_workspace_id: string };
         Returns: {
@@ -1384,6 +1741,28 @@ export type Database = {
         Args: {
           p_enabled: boolean;
           p_source_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      submit_ai_feedback: {
+        Args: {
+          p_comment: string;
+          p_rating: string;
+          p_reason: string;
+          p_run_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_ai_config: {
+        Args: {
+          p_confidence: number;
+          p_custom_instructions: string;
+          p_evidence: number;
+          p_excluded_intents: string[];
+          p_mode: string;
+          p_tone: string;
           p_workspace_id: string;
         };
         Returns: undefined;

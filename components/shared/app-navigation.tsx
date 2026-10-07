@@ -77,12 +77,14 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
           { href: '/app/tickets', label: 'Tickets' },
           { href: '/app/customers', label: 'Customers' },
           { href: '/app/knowledge', label: 'Knowledge' },
+          { href: '/app/ai/runs', label: 'AI runs' },
           { href: '/app/team', label: 'Team' },
           { href: '/app/notifications', label: 'Notifications' },
           ...(['owner', 'admin'].includes(active.role)
             ? [
                 { href: '/app/settings/general', label: 'General settings' },
                 { href: '/app/settings/widget', label: 'Website widget' },
+                { href: '/app/settings/ai', label: 'AI policy' },
               ]
             : []),
           ...(active.role === 'owner'

@@ -3269,3 +3269,74 @@ button:disabled {
   gap: 1rem;
   margin-top: 1rem;
 }
+.ai-settings-form {
+  max-width: 42rem;
+}
+.ai-mode-options {
+  display: grid;
+  gap: 0.35rem;
+}
+.ai-mode-options .setup-choice {
+  margin: 0;
+}
+.ai-thresholds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.ai-handoff {
+  border-left: 4px solid var(--color-warning);
+  margin-bottom: 1rem;
+}
+.ai-suggestion {
+  margin: 1rem 0;
+}
+.ai-output {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-run-page .workspace-card {
+  margin-bottom: 1rem;
+}
+.ai-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+}
+.ai-facts div {
+  min-width: 0;
+  border-top: 1px solid var(--color-rule);
+  padding-top: 0.5rem;
+}
+.ai-facts dt {
+  color: var(--color-ink-soft);
+  font-size: 0.8rem;
+}
+.ai-facts dd {
+  margin: 0.15rem 0 0;
+  overflow-wrap: anywhere;
+}
+.ai-step-list,
+.ai-citation-list,
+.ai-feedback-list {
+  padding-left: 1.3rem;
+}
+.ai-step-list li,
+.ai-citation-list li,
+.ai-feedback-list li {
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--color-rule);
+  overflow-wrap: anywhere;
+}
+.ai-step-list pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  color: var(--color-ink-soft);
+}
+@media (max-width: 600px) {
+  .ai-thresholds,
+  .ai-facts {
+    grid-template-columns: 1fr;
+  }
+}

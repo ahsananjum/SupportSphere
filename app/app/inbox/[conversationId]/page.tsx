@@ -8,6 +8,7 @@ import {
 } from '../../../../components/support/support-forms';
 import { updateConversation } from '../../support-actions';
 import { InboxRealtime } from '../../../../components/support/inbox-realtime';
+import { releaseAiHandoff } from '../../ai/actions';
 
 export const metadata = {
   title: 'Conversation',
@@ -31,6 +32,14 @@ export default async function ConversationPage({
     conversationId,
   );
   if (!conversation) notFound();
+  const { data: aiRuns, error: aiError } = await supabase
+    .from('ai_runs')
+    .select('id,status,decision,reason_code,output_text,created_at')
+    .eq('workspace_id', active.id)
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  const latestAiRun = aiRuns?.[0];
   const customer = Array.isArray(conversation.customers)
     ? conversation.customers[0]
     : conversation.customers;
@@ -64,6 +73,24 @@ export default async function ConversationPage({
               We could not update this conversation.
             </p>
           )}
+          {conversation.ai_handoff_at && (
+            <section className="workspace-card ai-handoff" role="status">
+              <h2>Human support requested</h2>
+              <p>{conversation.ai_handoff_reason}</p>
+              {['owner', 'admin', 'agent'].includes(active.role) && (
+                <form action={releaseAiHandoff}>
+                  <input
+                    type="hidden"
+                    name="conversationId"
+                    value={conversation.id}
+                  />
+                  <button className="secondary-button">
+                    Release AI handoff
+                  </button>
+                </form>
+              )}
+            </section>
+          )}
           <ol className="message-list">
             {conversation.messages?.length ? (
               conversation.messages.map((message) => (
@@ -90,7 +117,46 @@ export default async function ConversationPage({
               </li>
             )}
           </ol>
-          <Composer conversationId={conversation.id} />
+          {aiError && (
+            <p role="alert" className="form-error">
+              AI status could not be loaded. Refresh to retry.
+            </p>
+          )}
+          {latestAiRun && (
+            <section className="workspace-card ai-suggestion">
+              <p className="eyebrow">AI / {latestAiRun.status.toUpperCase()}</p>
+              <h2>
+                {latestAiRun.decision === 'draft'
+                  ? 'Draft for human review'
+                  : latestAiRun.decision === 'escalated'
+                    ? 'AI handed this to a human'
+                    : latestAiRun.decision === 'auto_sent'
+                      ? 'AI replied'
+                      : 'AI is processing'}
+              </h2>
+              {latestAiRun.decision === 'draft' && latestAiRun.output_text && (
+                <p className="ai-output">{latestAiRun.output_text}</p>
+              )}
+              {latestAiRun.reason_code && (
+                <p className="field-help">Reason: {latestAiRun.reason_code}</p>
+              )}
+              <Link
+                className="quiet-link"
+                href={'/app/ai/runs/' + latestAiRun.id}
+              >
+                Inspect run and citations ↗
+              </Link>
+            </section>
+          )}
+          <Composer
+            key={latestAiRun?.id ?? 'none'}
+            conversationId={conversation.id}
+            initialBody={
+              latestAiRun?.decision === 'draft'
+                ? (latestAiRun.output_text ?? '')
+                : ''
+            }
+          />
         </main>
         <aside className="conversation-inspector">
           <section className="inspector-card">

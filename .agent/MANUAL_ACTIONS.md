@@ -141,3 +141,24 @@ Store result in: Supabase Email Templates for this project. No new secret or loc
 Agent verification: send confirmation to a new alias and recovery to a confirmed account, open each in a separate browser session, confirm callback and protected/reset state, and verify no PKCE error in app logs.
 
 Blocking phase: P01
+
+## MANUAL-008 — Configure a real P07 AI provider
+
+Status: PENDING — blocks P07 completion. The connected Supabase project's Edge Function secret list has no `AI_*` entries as of 2026-10-07.
+
+Why: The deployed worker requires a real provider credential and structured-output-capable model. Controlled tests prove policy and database behavior, but real triage, grounded drafting, quality review, and outage recovery cannot be verified without it. OpenAI API usage is billed by the provider; choose a project with an approved budget.
+
+Steps:
+
+1. In OpenAI Platform → select the intended API project → API keys, create a project API key with access to the Responses API and an approved billing limit. Keep the key private.
+2. In Supabase Dashboard → project `xviumgygixcklrbuynoh` → Edge Functions → Secrets, set `AI_PROVIDER` to `openai` and set `AI_API_KEY` to that OpenAI project key. Set `AI_MODEL_TRIAGE`, `AI_MODEL_SUPPORT`, and `AI_MODEL_QUALITY` to a Responses model available to the project that supports strict JSON schema output. `gpt-6-luna` is a supported candidate; using the same model for all three is valid. These four non-secret values may be shared for verification: `AI_PROVIDER=openai` and the three chosen model IDs. The API key must never be sent to the agent.
+3. Confirm in Supabase Edge Functions that `ai-worker` is deployed. Leave the `supportsphere-ai-worker` cron active; it already runs once per minute. Start with a temporary workspace in `draft_only` mode and one ready knowledge article before enabling `assisted` in a real workspace.
+4. Tell the agent that setup is complete and provide only the non-secret model IDs. Do not paste the API key, any HTTP Authorization header, service-role key, or provider dashboard credentials into chat or source.
+
+Do NOT paste: `AI_API_KEY`, service-role credentials, billing information, or customer data into chat/source.
+
+Store result in: Supabase Edge Function Secrets for project `xviumgygixcklrbuynoh`; keep the source OpenAI key only in the OpenAI project. No `NEXT_PUBLIC_` variable may contain it.
+
+Agent verification: list secret names without reading values, run real-provider known KB/no-evidence/billing/human/low-confidence/off/draft/quality-failure/outage/prompt-injection scenarios in an isolated workspace, inspect real runs/citations/messages/steps, verify no auto-send in prohibited modes, check Edge logs for safe correlation, and clean fixtures. Repeat the full P07 phase gate and set `VERIFYING` then `COMPLETE` only if all acceptance criteria pass.
+
+Blocking phase: P07
