@@ -126,9 +126,13 @@ export class GeminiGenerateContentProvider implements SupportProvider {
         throw new ProviderError(
           response.status === 429
             ? 'PROVIDER_RATE_LIMIT'
-            : retryable
-              ? 'PROVIDER_UNAVAILABLE'
-              : 'PROVIDER_REJECTED',
+            : response.status === 401 || response.status === 403
+              ? 'PROVIDER_AUTH'
+              : response.status === 404
+                ? 'PROVIDER_MODEL'
+                : retryable
+                  ? 'PROVIDER_UNAVAILABLE'
+                  : 'PROVIDER_REJECTED',
           retryable,
         );
       }

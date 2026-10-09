@@ -153,8 +153,16 @@ Next: After owner confirmation, verify secret names, run all ten real-provider s
 
 Status: **BLOCKED_MANUAL**, still P07. Owner superseded the OpenAI provider choice with Google AI Studio Gemini Free Tier. The worker adapter and environment validation now accept `gemini` only. `ai-worker` v4 is deployed with fixed-host Gemini `generateContent` REST calls, native JSON `responseSchema`, exact-key runtime validation, bounded 429/transport retry, token accounting, and no model tools. The database graph, migrations, RLS, prompt version, citations, policy modes, final send gate, and UI remain intact.
 
-Verification: Gemini adapter tests, all ten controlled decision scenarios, full static/browser build gate, live database/RLS suite, and authenticated P07 browser journey passed. Supabase advisors and execution logs were reviewed. Two secret-name-only checks found no `AI_*` Edge Function secrets, and v4 scheduled calls return 503 before claiming jobs. No model-backed answer or injection canary is claimed. Zero P07 test workspaces and queued/processing runs remain; no P07 web deployment to Vercel is claimed.
+Verification: Gemini adapter tests, all ten controlled decision scenarios, full static/browser build gate, live database/RLS suite, and authenticated P07 browser journey passed. Supabase advisors and execution logs were reviewed. Secret-name-only verification now finds all five `AI_*` names. The first scheduled real-provider smoke reached Google, but `gemini-2.5-flash` returned safe `PROVIDER_MODEL` (HTTP 404), so no model-backed answer or injection canary is claimed. Zero P07 test workspaces and queued/processing runs remain; no P07 web deployment to Vercel is claimed.
 
-Owner action: MANUAL-008 now gives the exact Google AI Studio and Supabase Dashboard steps. The owner should save the key only in Supabase Edge Function Secrets and share only the chosen non-secret model IDs. Google’s free-tier data-use terms should be reviewed before real customer traffic is enabled; synthetic fixtures are used for verification.
+Owner action: MANUAL-008 now gives the exact Google AI Studio and Supabase Dashboard steps, including selecting a model available to this API key. The owner should save the key only in Supabase Edge Function Secrets and share only the chosen non-secret model IDs. Google’s free-tier data-use terms should be reviewed before real customer traffic is enabled; synthetic fixtures are used for verification.
 
 Next: Verify secret names, then run the ten real Gemini scenarios through the scheduled worker, inspect run/citation/step/message/log evidence, clean fixtures, set VERIFYING, repeat the full phase gate, and set COMPLETE only if every criterion passes. Keep P07 active meanwhile.
+
+## P07 Gemini verification pass — 2026-10-09
+
+- Verified only secret names: `AI_API_KEY`, `AI_MODEL_QUALITY`, `AI_MODEL_SUPPORT`, `AI_MODEL_TRIAGE`, `AI_PROVIDER`; values were never read.
+- Redeployed repository `ai-worker`; Supabase reports it active and both worker crons active every minute.
+- Added `tests/live/p07-gemini.mjs`, which uses real ingestion, scheduled-worker polling, run/step/citation/message/handoff assertions, safe logs, and cleanup. It does not print customer text or secrets.
+- Real smoke reached Google Gemini but `gemini-2.5-flash` returned HTTP 404, classified as `PROVIDER_MODEL`; the run safely failed/escalated and no message was sent. All retained synthetic workspaces/users were deleted.
+- P07 remains `BLOCKED_MANUAL`. Owner must choose an available structured-output Gemini model in AI Studio and update all three model secrets, then rerun the suite.

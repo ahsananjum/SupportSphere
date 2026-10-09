@@ -286,5 +286,15 @@ describe('Gemini generateContent adapter', () => {
       retryable: false,
     });
     expect(fetch).toHaveBeenCalledTimes(3);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('', { status: 404 })),
+    );
+    await expect(
+      provider.triage(prompt, 'gemini-2.5-flash'),
+    ).rejects.toMatchObject({
+      code: 'PROVIDER_MODEL',
+      retryable: false,
+    });
   });
 });

@@ -245,11 +245,11 @@ Status: **BLOCKED_MANUAL**. The controlled workflow is implemented and deployed 
 | --- | --- | --- | --- | --- |
 | Data model, RLS, types | Five P07 migrations through `20261007080034` and regenerated live types | Migration history, RLS/advisor inspection | PASS | All five AI tables are tenant scoped; service RPCs use role checks. Four new FK indexes removed advisor findings. |
 | Durable graph and gates | Unit gate scenarios and SQL constraints/RPCs | Live queue/lease/finish/fail suite; active minute cron and active `ai-worker` v3 | PASS | DB finalizer rechecks policy, citation, quality, latest message, handoff, and assignment before send. Bounded three attempts. |
-| Known KB answer/citation | Controlled scenario 1 | Live `finish_ai_run` persisted grounded output, citation, trace; auto-send produced one real message | PARTIAL | Real model drafting and grounding await credential. |
-| No evidence; sensitive requests | Controlled scenarios 2–4 | Live no-evidence handoff, release, notification; deterministic billing/human gates in worker | PARTIAL | Real model path awaits credential; sensitive phrase detection is deterministic. |
-| Low confidence, off, draft, quality | Controlled scenarios 5–8 | Live off enqueued no run; draft and quality downgrade could not auto-send | PASS for policy gates | Real provider output awaits credential. |
-| Provider outage | Controlled scenario 9 verified two bounded adapter attempts | Live `fail_ai_run` terminal handoff and error trace; no provider secret present | PARTIAL | Real transport/outage recovery awaits credential. |
-| Injection document | Controlled scenario 10 quarantined instruction-bearing evidence | Worker uses lower-priority data input, detector and no model tools | PARTIAL | Real injection document through provider awaits credential. |
+| Known KB answer/citation | Controlled scenario 1 | Live `finish_ai_run` persisted grounded output, citation, trace; auto-send produced one real message | PARTIAL | Real model drafting reached Google but model access returned `PROVIDER_MODEL`; rerun after model correction. |
+| No evidence; sensitive requests | Controlled scenarios 2–4 | Live no-evidence handoff, release, notification; deterministic billing/human gates in worker | PARTIAL | Sensitive phrase detection is proven; real model path is blocked by model access. |
+| Low confidence, off, draft, quality | Controlled scenarios 5–8 | Live off enqueued no run; draft and quality downgrade could not auto-send | PASS for policy gates | Real provider output is blocked by model access. |
+| Provider outage | Controlled scenario 9 verified two bounded adapter attempts | Live `fail_ai_run` terminal handoff and error trace; no provider secret present | PARTIAL | Controlled transport/outage recovery passes; real provider outage remains unrun. |
+| Injection document | Controlled scenario 10 quarantined instruction-bearing evidence | Worker uses lower-priority data input, detector and no model tools | PARTIAL | Injection canary is blocked by model access. |
 | Policy/UI/feedback | Server actions, validation, role-checked RPCs, loading/empty/error states | Authenticated browser saved policy, showed draft and inspector/citations, submitted feedback | PASS | Responsive 320/360/390/768/1024, no overflow or page errors. Settled mobile screenshots inspected. Escape returns focus. |
 | Static and regression gate | `pnpm typecheck`, `pnpm lint`, `pnpm test` (35 pass, 3 unrelated opt-in skips), `pnpm test:e2e` (13 pass), `pnpm build`, `git diff --check` | Production-build authenticated browser and live database suite passed | PASS as of final implementation pass | `pnpm format:check` initially found two files, both formatted; final rerun recorded below. |
 
@@ -261,7 +261,7 @@ Final implementation-pass check after record updates: `pnpm format:check` PASS; 
 
 ## P07 Gemini provider refactor — 2026-10-09
 
-Status: **BLOCKED_MANUAL**. Real Gemini secrets are absent by name; no model-backed run or free-tier quota behavior is claimed. The ten required scenarios remain controlled tests plus live database policy checks until MANUAL-008 is resolved.
+Status: **BLOCKED_MANUAL**. All five Gemini secret names are present, but the configured `gemini-2.5-flash` returned safe HTTP 404 (`PROVIDER_MODEL`) in the first real scheduled-worker smoke. The ten required scenarios remain blocked until an available model ID is configured.
 
 | Requirement | Automated proof | Live proof | Status | Notes |
 | --- | --- | --- | --- | --- |
@@ -270,6 +270,15 @@ Status: **BLOCKED_MANUAL**. Real Gemini secrets are absent by name; no model-bac
 | Ten acceptance scenarios | All ten controlled unit scenarios plus strict parsing cases: 15 tests in AI suite | Live DB suite passed off, tenant RLS, draft, quality, auto-send, citation/feedback, no-evidence, handoff, outage | PARTIAL | Model-backed known KB/no-evidence/quality/injection results await secret setup. |
 | Mobile/inspector | Existing run list/detail and settings unchanged | `tests/live/p07-app-ui.mjs` passed on fresh production build: policy, draft, inspector/citations, feedback, 320–1024px, keyboard | PASS | Temporary users/workspaces removed. |
 | Full code gate | `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 38 pass/3 opt-in skips; `pnpm test:e2e` 13 pass; `pnpm build` PASS | Active Gemini worker v4, active cron; zero P07 test workspaces and queued/processing runs | PASS for code/deployment | `git diff --check` PASS; commit check follows. |
-| Security/advisors/logs | Fixed Gemini host, model ID allow pattern, no key in URL/logs/client, schema and policy outside model | Secret-name-only checks: no `AI_*`; Edge execution logs show v4 scheduled 503 before claim; security advisor prior four service-only INFO, nine role-checked SECURITY DEFINER WARN, preexisting Auth WARN; performance advisor unused indexes INFO only | BLOCKED_MANUAL | No real provider request executed. |
+| Security/advisors/logs | Fixed Gemini host, model ID allow pattern, no key in URL/logs/client, schema and policy outside model | Secret-name-only check found all five names; scheduled worker reached provider and persisted safe `PROVIDER_MODEL`/`PROVIDER_UNAVAILABLE` handoff; no customer text or credentials logged; advisors unchanged | BLOCKED_MANUAL | Model access is unavailable for the configured ID; synthetic fixtures cleaned. |
 
 Official contract reviewed: [Gemini generateContent response schema](https://ai.google.dev/gemini-api/docs/migrate-to-interactions), [API response/finish reasons](https://ai.google.dev/api/generate-content), [transient retry guidance](https://ai.google.dev/gemini-api/docs/troubleshooting), and [current model access](https://ai.google.dev/gemini-api/docs/models). `responseSchema` is documented but deprecated in favor of `responseFormat`; it is used here because the owner explicitly requested that contract. Exact-key runtime parsing preserves strictness that Gemini’s legacy schema omits.
+
+## P07 verification pass — 2026-10-09
+
+- Secret-name-only verification: all five expected `AI_*` names present; values never read or printed.
+- Supabase deployment: repository `ai-worker` v9 active; `supportsphere-ai-worker` and `supportsphere-knowledge-worker` cron jobs active every minute.
+- Real-provider smoke: scheduled synthetic run reached Google Gemini. Configured `gemini-2.5-flash` returned HTTP 404; adapter classified this as `PROVIDER_MODEL`, persisted safe terminal handoff, and sent zero agent messages.
+- Synthetic cleanup: zero `p07-gemini-%` workspaces and zero queued/processing AI runs after cleanup.
+- Full local gate: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 38 passed/3 skipped; `pnpm test:e2e` PASS (13 tests); `pnpm build` PASS; `tests/live/p07-ai.mjs` PASS.
+- Phase status remains `BLOCKED_MANUAL`: an available structured-output Gemini model ID must be configured before the ten real-provider scenarios can run.

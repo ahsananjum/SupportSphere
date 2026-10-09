@@ -21,7 +21,7 @@ Complete the deterministic tenant-safe AI workflow with Google Gemini `generateC
 
 ## Remaining
 
-- [ ] MANUAL-008: owner saves Google AI Studio key and selected model IDs as `AI_*` Supabase Edge Function secrets. Two secret-name-only checks on 2026-10-09 found none.
+- [x] MANUAL-008: owner reported Gemini setup; secret-name-only CLI check found all five `AI_*` names on 2026-10-09. Values were not read. Real provider smoke reached Google but the configured model returned safe HTTP 404 (`PROVIDER_MODEL`); the selected model is unavailable to this key.
 - [ ] Run all ten scenarios through the real configured Gemini provider in an isolated synthetic workspace, inspect citations/steps/messages/Edge logs, and clean fixtures. Adapter 429/outage tests are currently controlled; a real provider response has not been observed.
 - [ ] Set VERIFYING only after the manual gate is resolved, repeat the full phase/security/mobile gate, repair failures, then set COMPLETE and update handoff.
 
@@ -31,16 +31,16 @@ Remote SupportSphere project `xviumgygixcklrbuynoh` matches local P07 migration 
 
 ## Current integrations
 
-Gemini `ai-worker` v4 is deployed and active. Scheduled invocations return 503 before claiming a run because `AI_PROVIDER`, `AI_API_KEY`, and model secret names are absent. The Next.js app was verified as a local production build; no P07 Vercel deployment is claimed, and Vercel MCP is unavailable.
+Gemini `ai-worker` is active after repository redeployment; real-provider smoke reached Google and safely classified the configured model as unavailable. The Next.js app was verified as a local production build; no P07 Vercel deployment is claimed, and Vercel MCP is unavailable.
 
 ## Known failures or blockers
 
-- MANUAL-008 Google AI Studio key/model setup is required; free-tier availability and real grounding remain unverified.
+- Secret names are present; the selected model is unavailable to this key. Real grounding and scenario behavior remain unverified until an available model ID is configured.
 - Supabase security advisor continues to show intentional role-checked SECURITY DEFINER warnings plus preexisting service-only RLS/Auth notices; performance advisor reports unused indexes only.
 - The local sandbox helper fails setup; approved escalated PowerShell works.
 
 ## Next exact actions
 
-1. After owner reports MANUAL-008 complete, inspect only AI secret names and model IDs the owner shares. Never print the key.
-2. Run the real Gemini ten-scenario suite through synthetic customer/knowledge records and the scheduled worker. Inspect run/citation/step/log outcomes and clean all fixtures.
+1. Redeploy/check `ai-worker` from repository code and verify provider behavior using synthetic fixtures. Never print the key.
+2. After the owner updates the three model IDs to an available Gemini model, run the real ten-scenario suite through synthetic customer/knowledge records and the scheduled worker. Inspect run/citation/step/log outcomes and clean all fixtures.
 3. Re-read P07 acceptance and code/schema, set VERIFYING, rerun full typecheck/lint/format/unit/E2E/build/live/browser/advisor/security checks, repair failures, then set COMPLETE and update HANDOFF.
