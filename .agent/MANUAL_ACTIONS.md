@@ -144,14 +144,14 @@ Blocking phase: P01
 
 ## MANUAL-008 — Configure Gemini for P07
 
-Status: BLOCKED — secret names are present, but the configured `gemini-2.5-flash` model returned safe HTTP 404 (`PROVIDER_MODEL`) during the first real scheduled-worker smoke. P07 completion remains blocked.
+Status: BLOCKED — secret names are present and `gemini-3.8-flash` is reachable, but the Google AI Studio free-tier quota returned `PROVIDER_RATE_LIMIT` during subsequent real scheduled-worker runs. P07 completion remains blocked.
 
 Why: The deployed controlled worker needs a real Google AI Studio API key and a `generateContent` model that supports native structured JSON. Controlled tests cannot prove real grounding and injection resistance. Google’s free tier has project/model quotas and may use submitted content to improve its products; verification uses synthetic data only.
 
 Steps:
 
 1. Open Google AI Studio → Get API key. Create or select the intended Google Cloud project and create a Gemini API key. In AI Studio, check that the project has access to a free-tier `generateContent` model with structured outputs. Google currently limits access to Gemini 2.5 models for some new projects; choose an available model such as `gemini-3.8-flash` if `gemini-2.5-flash` is unavailable. Do not use `gemini-1.5-flash` without confirming that the project still serves it.
-2. In Google AI Studio, open the API key project and confirm an available structured-output Gemini model. The configured `gemini-2.5-flash` returned HTTP 404 from `generateContent`; choose an available model ID such as `gemini-2.5-flash-lite` only if AI Studio lists it for this key. In Supabase Dashboard → project `xviumgygixcklrbuynoh` → Edge Functions → Secrets, update `AI_MODEL_TRIAGE`, `AI_MODEL_SUPPORT`, and `AI_MODEL_QUALITY` to that exact available ID. Keep `AI_PROVIDER=gemini` and `AI_API_KEY` unchanged. Save secrets there, not in `NEXT_PUBLIC_*`, Git, or chat.
+2. `gemini-3.8-flash` is reachable, but its free-tier quota has returned rate limits. Wait for the provider quota reset or use a Google AI Studio project/key with available quota. Keep `AI_PROVIDER=gemini` and all three model IDs aligned. If changing projects, update only the server-side `AI_API_KEY` secret in Supabase Dashboard. Save secrets there, not in `NEXT_PUBLIC_*`, Git, or chat.
 3. Tell the agent setup is complete and share only the non-secret model IDs. Leave the existing `supportsphere-ai-worker` cron active. Keep real workspaces in `off` mode until synthetic live scenarios and the phase gate pass.
 
 Non-secret values to copy to the agent: `AI_PROVIDER=gemini` and the three chosen model IDs. Do NOT paste the API key, service-role key, HTTP authorization headers, or customer data into chat/source.

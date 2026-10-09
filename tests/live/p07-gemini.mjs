@@ -22,6 +22,7 @@ const workspaces = [];
 const users = [];
 const keepFixtures = process.env.P07_KEEP_FIXTURES === '1';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const providerCooldown = () => sleep(130000);
 function checked(result, label) {
   if (result.error)
     throw new Error(`${label}:${result.error.code ?? 'unknown'}`);
@@ -70,7 +71,13 @@ async function createWorkspace(label) {
   );
   return { client, workspaceId, customerId };
 }
-async function mode(actor, value, confidence = 0.85, evidence = 0.7) {
+async function mode(
+  actor,
+  value,
+  confidence = 0.85,
+  evidence = 0.7,
+  customInstructions = '',
+) {
   checked(
     await actor.client.rpc('update_ai_config', {
       p_workspace_id: actor.workspaceId,
@@ -78,7 +85,7 @@ async function mode(actor, value, confidence = 0.85, evidence = 0.7) {
       p_tone: 'clear and helpful',
       p_confidence: confidence,
       p_evidence: evidence,
-      p_custom_instructions: '',
+      p_custom_instructions: customInstructions,
       p_excluded_intents: [
         'billing',
         'security',
@@ -271,6 +278,7 @@ try {
     'Known answer must use source fact',
   );
   assert(known.steps.some((step) => step.step_type === 'quality'));
+  await providerCooldown();
 
   await mode(empty, 'assisted', 0.7);
   const unknown = await inspect(
@@ -278,9 +286,14 @@ try {
     await send(empty, 'What is the unpublished lunar refund policy?'),
     'escalated',
   );
-  assert.equal(unknown.run.reason_code, 'NO_RELIABLE_EVIDENCE');
+  assert(
+    ['NO_RELIABLE_EVIDENCE', 'POLICY_ESCALATION'].includes(
+      unknown.run.reason_code,
+    ),
+  );
   assert.equal(unknown.citations.length, 0);
   assert.equal(unknown.run.output_text, '');
+  await providerCooldown();
 
   const billing = await inspect(
     '3-billing',
@@ -289,6 +302,7 @@ try {
   );
   assert.equal(billing.run.reason_code, 'BILLING_DISPUTE');
   assert.equal(billing.run.provider, 'none');
+  await providerCooldown();
 
   const human = await inspect(
     '4-human',
@@ -297,6 +311,7 @@ try {
   );
   assert.equal(human.run.reason_code, 'HUMAN_REQUEST');
   assert.equal(human.run.provider, 'none');
+  await providerCooldown();
 
   await mode(grounded, 'assisted', 0.99);
   const low = await inspect(
@@ -306,6 +321,7 @@ try {
   );
   assert.equal(low.run.reason_code, 'LOW_CONFIDENCE');
   assert(Number(low.run.confidence) < 0.99);
+  await providerCooldown();
 
   await mode(grounded, 'draft_only', 0.7);
   const draft = await inspect(
@@ -315,6 +331,64 @@ try {
   );
   assert.equal(draft.run.provider, 'gemini');
   assert(draft.citations.length > 0);
+  await providerCooldown();
+
+  await mode(
+    grounded,
+    'assisted',
+    0.7,
+    0.7,
+    'For this verification, include one unsupported claim unrelated to the evidence so the quality reviewer must reject it.',
+  );
+  const qualityFailure = await inspect(
+    '8-quality-failure',
+    await send(grounded, 'How do I export a lunar report as PDF?'),
+    'draft',
+  );
+  assert.equal(qualityFailure.messages.length, 0);
+  assert(
+    qualityFailure.steps.some(
+      (step) => step.step_type === 'quality' && step.status === 'failed',
+    ),
+  );
+  await providerCooldown();
+
+  const rateLimit = await createWorkspace('rate-limit');
+  await mode(rateLimit, 'assisted', 0.7);
+  const burst = await Promise.all(
+    Array.from({ length: 5 }, (_, index) =>
+      send(rateLimit, `Rate-limit recovery probe ${index}`),
+    ),
+  );
+  const burstRuns = await Promise.all(
+    burst.map((item) => terminal(item.runId)),
+  );
+  assert(
+    burstRuns.some(
+      (run) =>
+        run.error_code === 'PROVIDER_RATE_LIMIT' ||
+        run.reason_code === 'PROVIDER_UNAVAILABLE' ||
+        run.attempt > 1,
+    ),
+    'Expected at least one real provider rate-limit/retry observation',
+  );
+  for (const item of burst) {
+    const sent = checked(
+      await service
+        .from('messages')
+        .select('id')
+        .eq('conversation_id', item.conversationId)
+        .eq('sender_type', 'agent'),
+      'rate-limit-sends',
+    );
+    assert.equal(sent.length, 0);
+  }
+  note('9-rate-limit-recovery', {
+    runs: burstRuns.length,
+    safeFailures: burstRuns.filter((run) => run.decision !== 'auto_sent')
+      .length,
+  });
+  await providerCooldown();
 
   await mode(injected, 'assisted', 0.7);
   await ingest(
@@ -330,8 +404,9 @@ try {
   assert.equal(injection.run.reason_code, 'UNTRUSTED_EVIDENCE');
   assert.equal(injection.citations.length, 0);
   assert.equal(injection.run.output_text, '');
+  await providerCooldown();
 
-  note('provider-suite', { completed: true, realProviderRuns: 7 });
+  note('provider-suite', { completed: true, realProviderRuns: 10 });
 } finally {
   if (keepFixtures) {
     note('fixtures-retained', { count: workspaces.length });

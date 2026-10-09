@@ -282,3 +282,12 @@ Official contract reviewed: [Gemini generateContent response schema](https://ai.
 - Synthetic cleanup: zero `p07-gemini-%` workspaces and zero queued/processing AI runs after cleanup.
 - Full local gate: `pnpm typecheck` PASS; `pnpm lint` PASS; `pnpm format:check` PASS; `pnpm test` 38 passed/3 skipped; `pnpm test:e2e` PASS (13 tests); `pnpm build` PASS; `tests/live/p07-ai.mjs` PASS.
 - Phase status remains `BLOCKED_MANUAL`: an available structured-output Gemini model ID must be configured before the ten real-provider scenarios can run.
+
+## P07 Gemini quota verification — 2026-10-09
+
+- Updated secret names: all five expected `AI_*` names present; values never read.
+- Real provider evidence captured: known KB answer completed with `provider=gemini`, one citation, quality pass, and one agent send; no-evidence request escalated with zero citations/send; a later free-tier 429 was retried and safely terminal-escalated with zero send.
+- Repeated full synthetic suite after quota cooldown: subsequent known-KB attempt still hit `PROVIDER_RATE_LIMIT`; the harness cleaned all three temporary workspaces/users each time.
+- P07 remains `BLOCKED_MANUAL` because the remaining real-provider scenarios are not objectively proven under the current free-tier quota.
+
+- Final post-quota gate: Supabase security advisor unchanged (four intentional service-only RLS INFOs, nine role-checked SECURITY DEFINER WARNs, pre-existing Auth WARN); performance advisor reports unused indexes only. Edge logs show worker v12 200/503 responses with no credential or customer-text output.
