@@ -99,6 +99,12 @@ function record(value: unknown): Record<string, unknown> {
     throw new Error('INVALID_PROVIDER_OUTPUT');
   return value as Record<string, unknown>;
 }
+function exactKeys(value: Record<string, unknown>, keys: string[]): boolean {
+  return (
+    Object.keys(value).length === keys.length &&
+    keys.every((key) => Object.hasOwn(value, key))
+  );
+}
 function bounded(value: unknown): value is number {
   return (
     typeof value === 'number' &&
@@ -110,6 +116,16 @@ function bounded(value: unknown): value is number {
 export function parseTriage(value: unknown): Triage {
   const x = record(value);
   if (
+    !exactKeys(x, [
+      'intent',
+      'priority',
+      'sentiment',
+      'language',
+      'escalate',
+      'confidence',
+      'summary',
+      'tags',
+    ]) ||
     !intents.includes(String(x.intent)) ||
     !priorities.includes(String(x.priority)) ||
     !sentiments.includes(String(x.sentiment)) ||
@@ -130,6 +146,7 @@ export function parseTriage(value: unknown): Triage {
 export function parseDraft(value: unknown): Draft {
   const x = record(value);
   if (
+    !exactKeys(x, ['answer', 'citation_ordinals', 'confidence']) ||
     typeof x.answer !== 'string' ||
     x.answer.trim().length < 1 ||
     x.answer.length > 4000 ||
@@ -145,6 +162,14 @@ export function parseDraft(value: unknown): Draft {
 export function parseQuality(value: unknown): Quality {
   const x = record(value);
   if (
+    !exactKeys(x, [
+      'passed',
+      'grounded',
+      'safe',
+      'tone_ok',
+      'reason',
+      'confidence',
+    ]) ||
     typeof x.passed !== 'boolean' ||
     typeof x.grounded !== 'boolean' ||
     typeof x.safe !== 'boolean' ||

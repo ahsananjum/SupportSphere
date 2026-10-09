@@ -2,45 +2,45 @@
 
 Active phase: P07
 Status: BLOCKED_MANUAL
-Last updated: 2026-10-07
+Last updated: 2026-10-09
 Current branch: master
-Last known good commit: d22db44 (P06 complete)
+Last known completed-phase commit: d22db44 (P06); P07 implementation baseline: f4a7590
 
 ## Objective
 
-Complete the deterministic, tenant-safe AI support graph from customer message to triage, policy, pgvector retrieval, grounded draft, quality gate, and send/draft/handoff, with persistent inspection and feedback.
+Complete the deterministic tenant-safe AI workflow with Google Gemini `generateContent` Free Tier, retaining triage → policy → pgvector retrieval → draft → quality → send/draft/handoff and inspectable runs.
 
 ## Completed in P07
 
-- [x] Loaded mandatory repository and installed Next.js guidance; inspected actual prior implementation, live Supabase, git state, reference support/RAG pattern and MIT license.
-- [x] Applied five P07 migrations through `20261007080034_p07_run_type.sql`; regenerated live database types. AI tables have RLS and tenant ownership; indexes satisfy the live FK advisor.
-- [x] Deployed active `ai-worker` v3 and verified minute cron. Implemented OpenAI Responses adapter, versioned prompts, bounded workspace retrieval, structured outputs, deterministic gates, safe retry/handoff, and transactional final send.
-- [x] Built owner/admin policy settings, conversation draft/handoff, run list/inspector, feedback, navigation, and mobile/accessibility states.
-- [x] Controlled ten-scenario unit suite, live DB/RLS suite, authenticated production-build UI journey, responsive and keyboard checks, regression suite, typecheck/lint/tests/build all pass. Temporary P07 fixtures are cleaned.
-- [x] Documented architecture and precise owner action in `docs/ai.md`, `.agent/DECISIONS.md`, `.agent/QA.md`, and `.agent/MANUAL_ACTIONS.md`.
+- [x] Reloaded RULES, P07, applicable PRD/ARCHITECTURE/DESIGN, all agent records, git status/history, existing implementation, and live Supabase schema/function/cron before edits. Read current official Gemini API and Supabase guidance.
+- [x] Existing five P07 migrations through `20261007080034` remain applied; live RLS, worker lease, search and final send gates remain unchanged.
+- [x] Replaced OpenAI with Gemini REST adapter on a fixed host. The key is sent only as server-side `x-goog-api-key`; no model tools are provided. Gemini native JSON schema is paired with exact-key runtime validation. Bounded 408/429/5xx and transport retry feeds the existing 15/30-second leased job backoff.
+- [x] Preserved all P07 graph, mode, citation, handoff, and inspector behavior. Deployed active Gemini `ai-worker` v4; minute cron remains active.
+- [x] Gemini wire/error tests and ten controlled scenarios pass. Live DB/RLS policy suite and authenticated production-build browser journey pass; 320–1024px and keyboard checks pass. Static gate: 38 unit tests, 13 E2E tests, typecheck/lint/format/build pass. Supabase advisors reviewed; zero P07 fixtures and queued/processing runs remain.
+- [x] Updated Gemini provider documentation, ADR, and owner manual action.
 
 ## Remaining
 
-- [ ] Owner configures OpenAI project key and Responses structured-output model IDs in Supabase Edge Function Secrets (MANUAL-008). No AI secret names are present now.
-- [ ] Agent verifies secret names without reading values, runs all ten P07 scenarios through the **real** provider in an isolated workspace, including outage/injection behavior, and cleans fixtures.
-- [ ] Agent sets VERIFYING, repeats full P07 static/browser/security/mobile gate and advisor review, then sets COMPLETE and updates handoff only if every criterion is proven.
+- [ ] MANUAL-008: owner saves Google AI Studio key and selected model IDs as `AI_*` Supabase Edge Function secrets. Two secret-name-only checks on 2026-10-09 found none.
+- [ ] Run all ten scenarios through the real configured Gemini provider in an isolated synthetic workspace, inspect citations/steps/messages/Edge logs, and clean fixtures. Adapter 429/outage tests are currently controlled; a real provider response has not been observed.
+- [ ] Set VERIFYING only after the manual gate is resolved, repeat the full phase/security/mobile gate, repair failures, then set COMPLETE and update handoff.
 
 ## Current schema/migrations
 
-Remote SupportSphere project `xviumgygixcklrbuynoh` matches local history through P07 version `20261007080034`. P07 tables: `ai_agent_configs`, `ai_runs`, `ai_run_steps`, `ai_citations`, `ai_feedback`. AI worker cron is active each minute. No P07 test workspaces or queued/processing runs remained at last check.
+Remote SupportSphere project `xviumgygixcklrbuynoh` matches local P07 migration history through `20261007080034`. AI tables have tenant RLS. No schema migration was needed for the provider change. The `supportsphere-ai-worker` cron is active every minute.
 
 ## Current integrations
 
-Supabase database and AI Edge worker are live. The Next.js app is verified as a local production build; no P07 Vercel deployment is claimed and Vercel MCP is unavailable. OpenAI credentials/models are **not configured** in Supabase. The worker refuses to claim runs and returns 503 while unconfigured.
+Gemini `ai-worker` v4 is deployed and active. Scheduled invocations return 503 before claiming a run because `AI_PROVIDER`, `AI_API_KEY`, and model secret names are absent. The Next.js app was verified as a local production build; no P07 Vercel deployment is claimed, and Vercel MCP is unavailable.
 
 ## Known failures or blockers
 
-- MANUAL-008 owner credential/billing setup is required. Controlled outputs in tests cannot prove real model grounding or injection resistance.
-- Supabase advisor includes intentionally role-checked authenticated SECURITY DEFINER RPC warnings and preexisting service-only RLS/Auth notices; details in QA.
-- Local sandbox helper fails setup; approved escalated PowerShell works.
+- MANUAL-008 Google AI Studio key/model setup is required; free-tier availability and real grounding remain unverified.
+- Supabase security advisor continues to show intentional role-checked SECURITY DEFINER warnings plus preexisting service-only RLS/Auth notices; performance advisor reports unused indexes only.
+- The local sandbox helper fails setup; approved escalated PowerShell works.
 
 ## Next exact actions
 
-1. Wait for owner to complete MANUAL-008 without sharing any secret; remain in P07.
-2. Inspect Supabase AI secret **names**, then exercise real-provider ten-scenario suite through isolated live messages and inspect persisted runs/citations/messages/notifications; clean all fixtures.
-3. Re-read P07 acceptance, recheck code/schema, set VERIFYING, run final typecheck/lint/format/unit/E2E/build/live/browser/advisor/security checks, repair failures, then set COMPLETE and update handoff.
+1. After owner reports MANUAL-008 complete, inspect only AI secret names and model IDs the owner shares. Never print the key.
+2. Run the real Gemini ten-scenario suite through synthetic customer/knowledge records and the scheduled worker. Inspect run/citation/step/log outcomes and clean all fixtures.
+3. Re-read P07 acceptance and code/schema, set VERIFYING, rerun full typecheck/lint/format/unit/E2E/build/live/browser/advisor/security checks, repair failures, then set COMPLETE and update HANDOFF.

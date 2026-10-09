@@ -142,23 +142,22 @@ Agent verification: send confirmation to a new alias and recovery to a confirmed
 
 Blocking phase: P01
 
-## MANUAL-008 — Configure a real P07 AI provider
+## MANUAL-008 — Configure Gemini for P07
 
-Status: PENDING — blocks P07 completion. The connected Supabase project's Edge Function secret list has no `AI_*` entries as of 2026-10-07.
+Status: PENDING — blocks P07 completion. A 2026-10-09 secret-name-only check of SupportSphere Supabase project `xviumgygixcklrbuynoh` found no `AI_*` Edge Function secrets. The owner superseded the earlier OpenAI selection with Google AI Studio free tier.
 
-Why: The deployed worker requires a real provider credential and structured-output-capable model. Controlled tests prove policy and database behavior, but real triage, grounded drafting, quality review, and outage recovery cannot be verified without it. OpenAI API usage is billed by the provider; choose a project with an approved budget.
+Why: The deployed controlled worker needs a real Google AI Studio API key and a `generateContent` model that supports native structured JSON. Controlled tests cannot prove real grounding and injection resistance. Google’s free tier has project/model quotas and may use submitted content to improve its products; verification uses synthetic data only.
 
 Steps:
 
-1. In OpenAI Platform → select the intended API project → API keys, create a project API key with access to the Responses API and an approved billing limit. Keep the key private.
-2. In Supabase Dashboard → project `xviumgygixcklrbuynoh` → Edge Functions → Secrets, set `AI_PROVIDER` to `openai` and set `AI_API_KEY` to that OpenAI project key. Set `AI_MODEL_TRIAGE`, `AI_MODEL_SUPPORT`, and `AI_MODEL_QUALITY` to a Responses model available to the project that supports strict JSON schema output. `gpt-6-luna` is a supported candidate; using the same model for all three is valid. These four non-secret values may be shared for verification: `AI_PROVIDER=openai` and the three chosen model IDs. The API key must never be sent to the agent.
-3. Confirm in Supabase Edge Functions that `ai-worker` is deployed. Leave the `supportsphere-ai-worker` cron active; it already runs once per minute. Start with a temporary workspace in `draft_only` mode and one ready knowledge article before enabling `assisted` in a real workspace.
-4. Tell the agent that setup is complete and provide only the non-secret model IDs. Do not paste the API key, any HTTP Authorization header, service-role key, or provider dashboard credentials into chat or source.
+1. Open Google AI Studio → Get API key. Create or select the intended Google Cloud project and create a Gemini API key. In AI Studio, check that the project has access to a free-tier `generateContent` model with structured outputs. Google currently limits access to Gemini 2.5 models for some new projects; choose an available model such as `gemini-3.8-flash` if `gemini-2.5-flash` is unavailable. Do not use `gemini-1.5-flash` without confirming that the project still serves it.
+2. Open Supabase Dashboard → project `xviumgygixcklrbuynoh` → Edge Functions → Secrets. Set `AI_PROVIDER` to `gemini`, `AI_API_KEY` to the Google AI Studio key, and `AI_MODEL_TRIAGE`, `AI_MODEL_SUPPORT`, `AI_MODEL_QUALITY` to the exact available model IDs. The same model ID can be used for all three stages. Save the secrets there, not in `NEXT_PUBLIC_*`, Git, or chat.
+3. Tell the agent setup is complete and share only the non-secret model IDs. Leave the existing `supportsphere-ai-worker` cron active. Keep real workspaces in `off` mode until synthetic live scenarios and the phase gate pass.
 
-Do NOT paste: `AI_API_KEY`, service-role credentials, billing information, or customer data into chat/source.
+Non-secret values to copy to the agent: `AI_PROVIDER=gemini` and the three chosen model IDs. Do NOT paste the API key, service-role key, HTTP authorization headers, or customer data into chat/source.
 
-Store result in: Supabase Edge Function Secrets for project `xviumgygixcklrbuynoh`; keep the source OpenAI key only in the OpenAI project. No `NEXT_PUBLIC_` variable may contain it.
+Store result in: Google AI Studio project API keys and Supabase Edge Function Secrets for project `xviumgygixcklrbuynoh`.
 
-Agent verification: list secret names without reading values, run real-provider known KB/no-evidence/billing/human/low-confidence/off/draft/quality-failure/outage/prompt-injection scenarios in an isolated workspace, inspect real runs/citations/messages/steps, verify no auto-send in prohibited modes, check Edge logs for safe correlation, and clean fixtures. Repeat the full P07 phase gate and set `VERIFYING` then `COMPLETE` only if all acceptance criteria pass.
+Agent verification: list secret names only; deploy/check `ai-worker`; run the ten real-provider scenarios in an isolated synthetic workspace through the scheduled worker; inspect run steps/citations/messages and Edge execution logs without exposing credentials or customer text; verify no prohibited send; clean all test fixtures; then repeat the full P07 gate. Set `VERIFYING` and `COMPLETE` only after every acceptance criterion is proven.
 
 Blocking phase: P07

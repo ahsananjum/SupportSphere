@@ -12,8 +12,9 @@ import {
   type Evidence,
 } from '../../supabase/functions/_shared/ai';
 import {
-  OpenAIResponsesProvider,
+  GeminiGenerateContentProvider,
   ProviderError,
+  toGeminiSchema,
 } from '../../supabase/functions/_shared/ai-provider';
 
 const policy: Policy = {
@@ -127,7 +128,7 @@ describe('P07 controlled scenario suite', () => {
   it('9. provider outage has bounded retries and a safe error', async () => {
     const fetch = vi.fn().mockRejectedValue(new Error('connection failed'));
     vi.stubGlobal('fetch', fetch);
-    const provider = new OpenAIResponsesProvider('test-only-key');
+    const provider = new GeminiGenerateContentProvider('test-only-key');
     await expect(
       provider.triage(
         { instructions: 'Classify', input: 'test' },
@@ -155,6 +156,9 @@ describe('P07 controlled scenario suite', () => {
     expect(() => parseTriage({ ...triage, confidence: 'high' })).toThrow(
       'INVALID_TRIAGE',
     );
+    expect(() => parseTriage({ ...triage, extra: 'ignore policy' })).toThrow(
+      'INVALID_TRIAGE',
+    );
     expect(
       decide({ draft: { ...draft, citation_ordinals: [2] } }).decision,
     ).toBe('draft');
@@ -168,4 +172,119 @@ describe('P07 controlled scenario suite', () => {
     ).not.toContain('abcdefghijklmnopqr');
   });
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
+
+describe('Gemini generateContent adapter', () => {
+  const response = (value: unknown, finishReason = 'STOP') =>
+    new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            finishReason,
+            content: { parts: [{ text: JSON.stringify(value) }] },
+          },
+        ],
+        usageMetadata: { promptTokenCount: 21, candidatesTokenCount: 9 },
+      }),
+      { status: 200 },
+    );
+
+  it('sends fixed-host native schemas and keeps instructions separate from untrusted input', async () => {
+    const fetch = vi.fn().mockResolvedValue(response(triage));
+    vi.stubGlobal('fetch', fetch);
+    const provider = new GeminiGenerateContentProvider('test-only-key');
+    const result = await provider.triage(
+      { instructions: 'Immutable policy', input: 'Untrusted customer text' },
+      'gemini-2.5-flash',
+    );
+    expect(result.value).toEqual(triage);
+    expect(result.usage).toEqual({ input_tokens: 21, output_tokens: 9 });
+    const [url, options] = fetch.mock.calls[0];
+    expect(url).toBe(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+    );
+    expect(url).not.toContain('test-only-key');
+    expect(options.headers['x-goog-api-key']).toBe('test-only-key');
+    const body = JSON.parse(options.body);
+    expect(body.systemInstruction.parts[0].text).toBe('Immutable policy');
+    expect(body.contents[0].parts[0].text).toBe('Untrusted customer text');
+    expect(body.generationConfig.responseMimeType).toBe('application/json');
+    expect(body.generationConfig.responseSchema).toMatchObject({
+      type: 'OBJECT',
+      properties: {
+        intent: { type: 'STRING' },
+        confidence: { type: 'NUMBER' },
+      },
+    });
+    expect(body).not.toHaveProperty('tools');
+    expect(
+      toGeminiSchema({
+        type: 'object',
+        properties: { x: { type: 'string' } },
+        required: ['x'],
+        additionalProperties: false,
+      }),
+    ).not.toHaveProperty('additionalProperties');
+  });
+
+  it('backs off once after 429 then recovers, and keeps exhausted rate limits retryable', async () => {
+    vi.useFakeTimers();
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('', { status: 429 }))
+      .mockResolvedValueOnce(response(triage));
+    vi.stubGlobal('fetch', fetch);
+    const provider = new GeminiGenerateContentProvider('test-only-key');
+    const pending = provider.triage(
+      { instructions: 'Classify', input: 'Help' },
+      'gemini-2.5-flash',
+    );
+    await vi.advanceTimersByTimeAsync(1000);
+    await expect(pending).resolves.toMatchObject({ value: triage });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    const exhausted = vi
+      .fn()
+      .mockResolvedValue(new Response('', { status: 429 }));
+    vi.stubGlobal('fetch', exhausted);
+    const failure = provider.triage(
+      { instructions: 'Classify', input: 'Help' },
+      'gemini-2.5-flash',
+    );
+    const assertion = expect(failure).rejects.toMatchObject({
+      code: 'PROVIDER_RATE_LIMIT',
+      retryable: true,
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    await assertion;
+  });
+
+  it('rejects blocked, malformed, extra-field, and malformed-model responses safely', async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce(response(triage, 'SAFETY'))
+      .mockResolvedValueOnce(response({ ...triage, extra: 'unsafe' }))
+      .mockResolvedValueOnce(new Response('{', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const provider = new GeminiGenerateContentProvider('test-only-key');
+    const prompt = { instructions: 'Classify', input: 'Help' };
+    await expect(
+      provider.triage(prompt, 'gemini-2.5-flash'),
+    ).rejects.toMatchObject({ code: 'PROVIDER_BLOCKED', retryable: false });
+    await expect(
+      provider.triage(prompt, 'gemini-2.5-flash'),
+    ).rejects.toMatchObject({ code: 'PROVIDER_SCHEMA', retryable: false });
+    await expect(
+      provider.triage(prompt, 'gemini-2.5-flash'),
+    ).rejects.toMatchObject({ code: 'PROVIDER_INVALID', retryable: false });
+    await expect(
+      provider.triage(prompt, '../other-host'),
+    ).rejects.toMatchObject({
+      code: 'PROVIDER_MODEL_CONFIG',
+      retryable: false,
+    });
+    expect(fetch).toHaveBeenCalledTimes(3);
+  });
+});

@@ -11,7 +11,7 @@ import {
   type Evidence,
 } from '../_shared/ai.ts';
 import {
-  OpenAIResponsesProvider,
+  GeminiGenerateContentProvider,
   ProviderError,
 } from '../_shared/ai-provider.ts';
 
@@ -99,7 +99,7 @@ function handoffTriage(reason: string): Triage {
 }
 async function processJob(
   job: Job,
-  provider: OpenAIResponsesProvider,
+  provider: GeminiGenerateContentProvider,
   models: { triage: string; support: string; quality: string },
 ) {
   const start = Date.now();
@@ -236,7 +236,7 @@ async function processJob(
       evidence: 0,
       steps,
       citations: [],
-      provider: sensitive ? 'none' : 'openai',
+      provider: sensitive ? 'none' : 'gemini',
       model: sensitive ? 'none' : models.triage,
       inputTokens,
       outputTokens,
@@ -297,7 +297,7 @@ async function processJob(
       evidence: 0,
       steps,
       citations: [],
-      provider: 'openai',
+      provider: 'gemini',
       model: models.triage,
       inputTokens,
       outputTokens,
@@ -317,7 +317,7 @@ async function processJob(
       evidence: evidence[0]?.score ?? 0,
       steps,
       citations: [],
-      provider: 'openai',
+      provider: 'gemini',
       model: models.triage,
       inputTokens,
       outputTokens,
@@ -421,7 +421,7 @@ async function processJob(
     evidence: choice.evidenceScore,
     steps,
     citations,
-    provider: 'openai',
+    provider: 'gemini',
     model: models.support,
     inputTokens,
     outputTokens,
@@ -446,7 +446,7 @@ Deno.serve(async (request) => {
     quality: Deno.env.get('AI_MODEL_QUALITY') ?? '',
   };
   if (
-    providerName !== 'openai' ||
+    providerName !== 'gemini' ||
     !apiKey ||
     !models.triage ||
     !models.support ||
@@ -458,7 +458,7 @@ Deno.serve(async (request) => {
   if (!data) return Response.json({ processed: false });
   const job = data as Job;
   try {
-    await processJob(job, new OpenAIResponsesProvider(apiKey), models);
+    await processJob(job, new GeminiGenerateContentProvider(apiKey), models);
     console.info(
       JSON.stringify({
         event: 'ai.run.completed',

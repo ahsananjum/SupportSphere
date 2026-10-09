@@ -25,7 +25,7 @@ const emailSchema = z.object({
 });
 
 const aiSchema = z.object({
-  AI_PROVIDER: z.enum(['openai']),
+  AI_PROVIDER: z.enum(['gemini']),
   AI_API_KEY: z.string().min(1),
   AI_MODEL_SUPPORT: z.string().min(1),
   AI_MODEL_TRIAGE: z.string().min(1),
