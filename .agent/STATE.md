@@ -1,46 +1,49 @@
 # Current State
 
-Active phase: P07
-Status: BLOCKED_MANUAL
-Last updated: 2026-10-09
+Active phase: P08
+Status: COMPLETE
+Last updated: 2026-10-10
 Current branch: master
-Last known completed-phase commit: d22db44 (P06); P07 implementation baseline: f4a7590
+Last known completed-phase commit: 7d11d23 (P07 remains BLOCKED_MANUAL)
 
 ## Objective
 
-Complete the deterministic tenant-safe AI workflow with Google Gemini `generateContent` Free Tier, retaining triage → policy → pgvector retrieval → draft → quality → send/draft/handoff and inspectable runs.
+Build reliable tenant-safe workflow infrastructure: Redis namespacing and coordination, central rate limits, durable automation rules/runs, notifications, idempotent locks/dedupe, cache invalidation, and bounded retry with visible terminal failures.
 
-## Completed in P07
+## Completed in this phase
 
-- [x] Reloaded RULES, P07, applicable PRD/ARCHITECTURE/DESIGN, all agent records, git status/history, existing implementation, and live Supabase schema/function/cron before edits. Read current official Gemini API and Supabase guidance.
-- [x] Existing five P07 migrations through `20261007080034` remain applied; live RLS, worker lease, search and final send gates remain unchanged.
-- [x] Replaced OpenAI with Gemini REST adapter on a fixed host. The key is sent only as server-side `x-goog-api-key`; no model tools are provided. Gemini native JSON schema is paired with exact-key runtime validation. Bounded 408/429/5xx and transport retry feeds the existing 15/30-second leased job backoff.
-- [x] Preserved all P07 graph, mode, citation, handoff, and inspector behavior. Deployed active Gemini `ai-worker` v4; minute cron remains active.
-- [x] Gemini wire/error tests and ten controlled scenarios pass. Live DB/RLS policy suite and authenticated production-build browser journey pass; 320–1024px and keyboard checks pass. Static gate: 38 unit tests, 13 E2E tests, typecheck/lint/format/build pass. Supabase advisors reviewed; zero P07 fixtures and queued/processing runs remain.
-- [x] Updated Gemini provider documentation, ADR, and owner manual action.
+- [x] Read P08 source-of-truth documents and all agent records; inspected current schema, services, UI, and history.
+- [x] Added and applied P08 migrations for automation rules/runs, generic durable jobs, notification dedupe, RLS, service claim/finalize functions, support event triggers, and minute cron.
+- [x] Added server-only Redis REST client, namespaced keys, rate-limit matrix, idempotency markers, locks, cache helpers, and durable job wrapper.
+- [x] Added explicit automation schemas, deterministic engine, database action execution, worker wrapper, Automations UI, run history, and notification target links.
+- [x] Added cache invalidation after workspace/AI/widget settings writes and Redis-backed widget rate checks with safe DB fallback.
+- [x] Live SQL probe proved duplicate enqueue suppression, one persisted run, and deduplicated notifications; probe fixtures were deleted.
 
 ## Remaining
 
-- [x] MANUAL-008: owner reported `gemini-3.8-flash`; secret-name-only CLI check found all five `AI_*` names. Values were not read. The model is reachable, but subsequent real runs hit free-tier `PROVIDER_RATE_LIMIT` and safely escalated.
-- [ ] Run all ten scenarios through the real configured Gemini provider in an isolated synthetic workspace after quota is available. Real grounded auto-send, safe no-evidence escalation, and safe rate-limit recovery have been observed; remaining model scenarios are quota-blocked.
-- [ ] Set VERIFYING only after free-tier quota permits all ten real scenarios; repeat the full phase/security/mobile gate, repair failures, then set COMPLETE and update handoff.
+- [x] Run authenticated production-build browser smoke for /app/automations at 320, 360, 390, 768, 1024.
+- [x] Rerun full typecheck, lint, format, unit, E2E, build, diff, and Supabase advisor gate after final docs/UI updates.
+- [x] Review final diff, update HANDOFF, and set COMPLETE after objective P08 proof.
 
 ## Current schema/migrations
 
-Remote SupportSphere project `xviumgygixcklrbuynoh` matches local P07 migration history through `20261007080034`. AI tables have tenant RLS. No schema migration was needed for the provider change. The `supportsphere-ai-worker` cron is active every minute.
+SupportSphere project xviumgygixcklrbuynoh has P08 migrations 20261010122310, 20261010122718, and local migrations 20261010123000 and 20261010132500 applied remotely as versions 20261010131332 and 20261010132605. The supportsphere-automation-worker cron is active every minute. New automation tables have member read RLS; durable_jobs is service-only with RLS enabled.
 
 ## Current integrations
 
-Gemini `ai-worker` is active; `gemini-3.8-flash` reached Google, with later requests safely classified as free-tier rate limits. The Next.js app was verified as a local production build; no P07 Vercel deployment is claimed, and Vercel MCP is unavailable.
+Redis server-only REST coordination is implemented. Supabase MCP applied the migration and generated live type output. No Vercel deployment claim is made.
 
 ## Known failures or blockers
 
-- Secret names are present; the selected model is reachable, but free-tier quota is exhausted or rate-limited. Remaining scenario behavior remains unverified until quota is available.
-- Supabase security advisor continues to show intentional role-checked SECURITY DEFINER warnings plus preexisting service-only RLS/Auth notices; performance advisor reports unused indexes only.
-- The local sandbox helper fails setup; approved escalated PowerShell works.
+Supabase CLI linking failed with the local token format, but MCP migration, type generation, live schema, cron, and advisor verification succeeded. There is no active manual blocker for P08.
 
 ## Next exact actions
 
-1. Redeploy/check `ai-worker` from repository code and verify provider behavior using synthetic fixtures. Never print the key.
-2. After the owner restores Gemini quota or supplies a project/key with quota, run the remaining real scenarios through synthetic records and the scheduled worker. Inspect run/citation/step/log outcomes and clean all fixtures.
-3. Re-read P07 acceptance and code/schema, set VERIFYING, rerun full typecheck/lint/format/unit/E2E/build/live/browser/advisor/security checks, repair failures, then set COMPLETE and update HANDOFF.
+1. Continue P07 MANUAL-008 verification separately; P08 is complete.
+
+P08 final verification — 2026-10-10
+- Authenticated production-build browser smoke passed automation creation, success state, no page errors, and 320/360/390/768/1024px overflow checks.
+- Final direct gates passed: Prettier, ESLint, Vitest (45 passed, 3 opt-in skipped; `--pool=threads --no-file-parallelism` for Windows sandbox stability), Next route typegen, TypeScript, production webpack build, 13 Playwright tests, and git diff check.
+- Applied migration 20261010123000 fixes named PostgREST RPC parameters; live UI smoke confirmed create_automation_rule through the real server action.
+- P08 status is COMPLETE; P07 remains BLOCKED_MANUAL as previously recorded.
+- Final Supabase performance advisor rerun after 20261010132500: no unindexed foreign-key findings; only expected unused-index INFOs remain.

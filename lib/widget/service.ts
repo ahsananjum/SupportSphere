@@ -1,6 +1,7 @@
 import 'server-only';
 import { createAdminClient } from '../supabase/admin';
 import { hashToken } from './security';
+import { consumeRateLimit } from '../redis/rate-limit';
 
 export async function getWidgetConfig(key: string, origin: string) {
   if (!/^wgt_[a-f0-9]{32}$/.test(key)) return null;
@@ -30,6 +31,9 @@ export async function reserveRate(
   signal: string,
   kind: 'open' | 'send',
 ) {
+  const redisBucket = kind === 'send' ? 'widgetMessage' : 'widgetOpen';
+  const redisResult = await consumeRateLimit(redisBucket, `${key}:${signal}`);
+  if (redisResult.available) return redisResult.allowed;
   const admin = createAdminClient();
   const bucket = hashToken(`${kind}:${key}:${signal}`);
   const { data, error } = await admin.rpc('reserve_widget_rate', {

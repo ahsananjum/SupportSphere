@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
 import { logEvent } from '../../../../lib/observability/log';
+import { invalidateCacheSafe } from '../../../../lib/redis/cache';
 import type { FormState } from '../../../../lib/action-state';
 
 const origin = z
@@ -66,6 +67,7 @@ export async function saveWidget(
     };
   }
   logEvent('widget.configure', 'succeeded', { workspaceId: active.id });
+  await invalidateCacheSafe('widget-config', active.id);
   revalidatePath('/app/settings/widget');
   return { success: 'Widget settings saved.' };
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
 import { logEvent } from '../../../../lib/observability/log';
+import { invalidateCacheSafe } from '../../../../lib/redis/cache';
 import type { FormState } from '../../../../lib/action-state';
 
 const schema = z.object({
@@ -67,6 +68,7 @@ export async function saveAiSettings(
     return { message: 'AI policy could not be saved. Retry shortly.' };
   }
   logEvent('ai.config', 'succeeded', { workspaceId: active.id });
+  await invalidateCacheSafe('workspace-ai-config', active.id);
   revalidatePath('/app/settings/ai');
   return {
     success: 'AI policy saved. New customer messages will follow this mode.',

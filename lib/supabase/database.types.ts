@@ -961,9 +961,11 @@ export type Database = {
         Row: {
           body: string;
           created_at: string;
+          dedupe_key: string | null;
           id: string;
           kind: string;
           read_at: string | null;
+          target_route: string | null;
           title: string;
           user_id: string;
           workspace_id: string;
@@ -971,9 +973,11 @@ export type Database = {
         Insert: {
           body: string;
           created_at?: string;
+          dedupe_key?: string | null;
           id?: string;
           kind: string;
           read_at?: string | null;
+          target_route?: string | null;
           title: string;
           user_id: string;
           workspace_id: string;
@@ -981,9 +985,11 @@ export type Database = {
         Update: {
           body?: string;
           created_at?: string;
+          dedupe_key?: string | null;
           id?: string;
           kind?: string;
           read_at?: string | null;
+          target_route?: string | null;
           title?: string;
           user_id?: string;
           workspace_id?: string;
@@ -997,6 +1003,171 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      automation_rules: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          name: string;
+          trigger_type: string;
+          conditions: Json;
+          actions: Json;
+          enabled: boolean;
+          version: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          trigger_type: string;
+          conditions?: Json;
+          actions: Json;
+          enabled?: boolean;
+          version?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          name?: string;
+          trigger_type?: string;
+          conditions?: Json;
+          actions?: Json;
+          enabled?: boolean;
+          version?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      automation_runs: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          rule_id: string;
+          trigger_type: string;
+          trigger_entity_id: string | null;
+          payload: Json;
+          idempotency_key: string;
+          status: string;
+          attempt: number;
+          max_attempts: number;
+          next_run_at: string;
+          lease_token: string | null;
+          lease_expires_at: string | null;
+          error_code: string | null;
+          error_message: string | null;
+          result: Json | null;
+          created_at: string;
+          started_at: string | null;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          rule_id: string;
+          trigger_type: string;
+          trigger_entity_id?: string | null;
+          payload?: Json;
+          idempotency_key: string;
+          status?: string;
+          attempt?: number;
+          max_attempts?: number;
+          next_run_at?: string;
+          lease_token?: string | null;
+          lease_expires_at?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          result?: Json | null;
+          created_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          rule_id?: string;
+          trigger_type?: string;
+          trigger_entity_id?: string | null;
+          payload?: Json;
+          idempotency_key?: string;
+          status?: string;
+          attempt?: number;
+          max_attempts?: number;
+          next_run_at?: string;
+          lease_token?: string | null;
+          lease_expires_at?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          result?: Json | null;
+          created_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      durable_jobs: {
+        Row: {
+          id: string;
+          workspace_id: string;
+          job_type: string;
+          entity_id: string | null;
+          payload: Json;
+          idempotency_key: string;
+          status: string;
+          attempt: number;
+          max_attempts: number;
+          next_run_at: string;
+          lease_token: string | null;
+          lease_expires_at: string | null;
+          error_code: string | null;
+          error_message: string | null;
+          created_at: string;
+          started_at: string | null;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          job_type: string;
+          entity_id?: string | null;
+          payload?: Json;
+          idempotency_key: string;
+          status?: string;
+          attempt?: number;
+          max_attempts?: number;
+          next_run_at?: string;
+          lease_token?: string | null;
+          lease_expires_at?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          job_type?: string;
+          entity_id?: string | null;
+          payload?: Json;
+          idempotency_key?: string;
+          status?: string;
+          attempt?: number;
+          max_attempts?: number;
+          next_run_at?: string;
+          lease_token?: string | null;
+          lease_expires_at?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          created_at?: string;
+          started_at?: string | null;
+          completed_at?: string | null;
+        };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -1751,6 +1922,94 @@ export type Database = {
           p_rating: string;
           p_reason: string;
           p_run_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      apply_automation_action: {
+        Args: {
+          p_action_type: string;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_params: Json;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      claim_automation_run: { Args: never; Returns: Json };
+      claim_durable_job: { Args: never; Returns: Json };
+      create_automation_rule: {
+        Args: {
+          p_actions: Json;
+          p_conditions: Json;
+          p_enabled: boolean;
+          p_name: string;
+          p_trigger_type: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      delete_automation_rule: {
+        Args: { p_rule_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      enqueue_automation_event: {
+        Args: {
+          p_entity_id: string;
+          p_event_key: string;
+          p_payload: Json;
+          p_trigger_type: string;
+          p_workspace_id: string;
+        };
+        Returns: number;
+      };
+      enqueue_durable_job: {
+        Args: {
+          p_entity_id: string;
+          p_idempotency_key: string;
+          p_job_type: string;
+          p_max_attempts?: number;
+          p_payload: Json;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      fail_automation_run: {
+        Args: {
+          p_error_code: string;
+          p_error_message: string;
+          p_lease_token: string;
+          p_retry: boolean;
+          p_run_id: string;
+        };
+        Returns: undefined;
+      };
+      fail_durable_job: {
+        Args: {
+          p_error_code: string;
+          p_error_message: string;
+          p_job_id: string;
+          p_lease_token: string;
+          p_retry: boolean;
+        };
+        Returns: undefined;
+      };
+      finish_automation_run: {
+        Args: { p_lease_token: string; p_result: Json; p_run_id: string };
+        Returns: undefined;
+      };
+      finish_durable_job: {
+        Args: { p_job_id: string; p_lease_token: string; p_result: Json };
+        Returns: undefined;
+      };
+      update_automation_rule: {
+        Args: {
+          p_actions: Json;
+          p_conditions: Json;
+          p_enabled: boolean;
+          p_name: string;
+          p_rule_id: string;
+          p_trigger_type: string;
           p_workspace_id: string;
         };
         Returns: undefined;

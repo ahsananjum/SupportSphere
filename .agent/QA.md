@@ -291,3 +291,31 @@ Official contract reviewed: [Gemini generateContent response schema](https://ai.
 - P07 remains `BLOCKED_MANUAL` because the remaining real-provider scenarios are not objectively proven under the current free-tier quota.
 
 - Final post-quota gate: Supabase security advisor unchanged (four intentional service-only RLS INFOs, nine role-checked SECURITY DEFINER WARNs, pre-existing Auth WARN); performance advisor reports unused indexes only. Edge logs show worker v12 200/503 responses with no credential or customer-text output.
+## P08 implementation verification — 2026-10-10
+
+Status: COMPLETE. P08 schema and cron are live in Supabase project xviumgygixcklrbuynoh.
+
+| Requirement | Automated proof | Live proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Redis namespace/rate limits | redis-workflows unit suite covers namespacing, hashed identifiers, 429 state, and Redis outage behavior | Widget paths consult central Redis and fall back to the durable DB bucket on outage | PASS | Auth and AI buckets fail closed; widget buckets fail open with DB fallback |
+| Idempotency/locks/cache | Unit tests cover duplicate claims, lock ownership, cache set/get/invalidation | Settings actions invalidate workspace and AI cache namespaces after successful RPC confirmation | PASS | Redis is coordination only; Postgres remains truth |
+| Automation schema and tenant isolation | Zod action/condition validation and deterministic condition tests | Migrations 20261010122310_p08_workflows, 20261010122718_p08_automation_run_fk_index, and 20261010123000_p08_named_rpc_args and 20261010132500_p08_automation_rule_fk_index_order applied remotely as 20261010131332 and 20261010132605; rules/runs RLS and role-checked CRUD RPCs live | PASS | Arbitrary code/actions are rejected |
+| Duplicate trigger and notification dedupe | Live SQL probe: first enqueue=1, duplicate enqueue=0, one run; notification dedupe produced one row per active member | Unique workspace/rule/idempotency key and notification partial unique index live | PASS | Probe fixtures removed |
+| Durable execution/retry/terminal state | Bounded worker wrapper plus SQL claim/finish/fail functions | supportsphere-automation-worker active every minute; failed runs persist safe terminal error and notify owners | PASS | Generic durable_jobs queue is service-only |
+| Automation UI | Production build includes /app/automations; real rules/runs listing, create, enable/disable, delete, empty/error states | Live tables exposed with member read policy | PASS | Browser responsive smoke passed in tests/live/p08-app-ui.mjs |
+| Quality/security | typecheck, lint, 45 unit tests plus 3 opt-in skips, format check, build | MCP migration/table/advisor inspection; new automation tables RLS enabled, cron active | PASS with expected notices | Automation-run FK advisor finding fixed by 20261010132500 |
+
+The initial Supabase CLI link path failed because the local token was not in the CLI format. Supabase MCP applied the reviewed migrations and generated live types successfully, so no manual owner blocker remains for P08 deployment. The repository type file was updated with the live P08 tables/functions and remains compile-verified.
+
+## P08 final verification — 2026-10-10
+
+Status: **COMPLETE**.
+
+- Authenticated tests/live/p08-app-ui.mjs passed against the local production build and live Supabase: sign-in, /app/automations, real rule creation, success state, no page errors, and no horizontal overflow at 320/360/390/768/1024px.
+- Final direct gates passed: Prettier, ESLint, Vitest 45 passed / 3 opt-in skipped, Next route type generation, TypeScript, production webpack build, 13 Playwright tests, and git diff check.
+- Migration 20261010123000_p08_named_rpc_args corrected named PostgREST RPC parameters; the authenticated smoke was rerun successfully after application.
+- Supabase migration, cron, RLS, advisor, duplicate-enqueue, notification-dedupe, and cleanup checks remain passing. No P08 manual blocker exists.
+
+- Final performance advisor rerun: the automation_runs rule foreign-key finding is cleared; only expected unused-index INFOs remain.
+
+- Supabase migration history reports the named RPC fix as remote version 20261010131332 and the FK index order fix as remote version 20261010132605.

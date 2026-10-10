@@ -166,3 +166,11 @@ Next: Verify secret names, then run the ten real Gemini scenarios through the sc
 - Added `tests/live/p07-gemini.mjs`, which uses real ingestion, scheduled-worker polling, run/step/citation/message/handoff assertions, safe logs, and cleanup. It does not print customer text or secrets.
 - Real smoke reached Google Gemini but `gemini-2.5-flash` returned HTTP 404, classified as `PROVIDER_MODEL`; the run safely failed/escalated and no message was sent. All retained synthetic workspaces/users were deleted.
 - P07 remains `BLOCKED_MANUAL`. Owner must choose an available structured-output Gemini model in AI Studio and update all three model secrets, then rerun the suite.
+
+## P08 final handoff — 2026-10-10
+
+Status: **COMPLETE**. P08 reliable workflow infrastructure is implemented, applied, and verified. The active Supabase migrations are `20261010122310_p08_workflows`, `20261010122718_p08_automation_run_fk_index`, `20261010123000_p08_named_rpc_args` (remote 20261010131332), and `20261010132500_p08_automation_rule_fk_index_order` (remote 20261010132605); the automation worker cron runs every minute.
+
+The final authenticated production-build smoke created a real automation through `/app/automations`, confirmed the success state and no page errors, and passed 320/360/390/768/1024px overflow checks. Static gates passed with 45 unit tests and 3 opt-in skips, ESLint, Prettier, TypeScript, route type generation, production build, 13 Playwright tests, and diff check. Supabase live probes proved duplicate trigger suppression, notification dedupe, RLS, cron, cleanup, and no unindexed foreign-key advisor findings. P07 remains blocked on its existing Gemini manual gate; that does not block this P08 handoff.
+
+Continue with P07 MANUAL-008 only when the owner provides the required non-secret model/quota confirmation. For P08, no manual action remains.

@@ -3340,3 +3340,42 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.automations-page {
+  display: grid;
+  gap: 1.25rem;
+}
+.automation-form-card {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-line));
+}
+.automation-rule-row,
+.automation-run-row {
+  align-items: flex-start;
+  gap: 1rem;
+}
+.automation-rule-row code {
+  color: var(--color-ink);
+}
+.automation-rule-row small,
+.automation-run-row small {
+  color: var(--color-ink-soft);
+}
+.automation-run-row time {
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+.record-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 620px) {
+  .automation-rule-row,
+  .automation-run-row {
+    flex-direction: column;
+  }
+  .automation-run-row time {
+    white-space: normal;
+  }
+}

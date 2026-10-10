@@ -11,6 +11,7 @@ import {
 } from '../../lib/validation/workspace';
 import { uuidSchema } from '../../lib/validation/auth';
 import { logEvent } from '../../lib/observability/log';
+import { invalidateCacheSafe } from '../../lib/redis/cache';
 import type { FormState } from '../../lib/action-state';
 
 function fieldErrors(error: {
@@ -75,6 +76,7 @@ export async function saveGeneralSettings(
     return { message: dbMessage(error.message), values };
   }
   logEvent('workspace.settings', 'succeeded', { workspaceId: active.id });
+  await invalidateCacheSafe('workspace-config', active.id);
   revalidatePath('/app', 'layout');
   return { success: 'Workspace settings saved.' };
 }

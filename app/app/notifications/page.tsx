@@ -20,7 +20,7 @@ export default async function NotificationsPage({
   const params = await searchParams;
   const { data, error } = await supabase
     .from('notifications')
-    .select('id,title,body,kind,created_at,read_at')
+    .select('id,title,body,kind,created_at,read_at,target_route')
     .eq('workspace_id', active.id)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -55,6 +55,11 @@ export default async function NotificationsPage({
                 <div>
                   <strong>{item.title}</strong>
                   <p>{item.body}</p>
+                  {item.target_route && (
+                    <Link href={item.target_route} className="text-button">
+                      Open related work
+                    </Link>
+                  )}
                   <time dateTime={item.created_at}>
                     {new Date(item.created_at).toLocaleString('en-US', {
                       dateStyle: 'medium',
