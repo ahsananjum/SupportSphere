@@ -319,3 +319,69 @@ Status: **COMPLETE**.
 - Final performance advisor rerun: the automation_runs rule foreign-key finding is cleared; only expected unused-index INFOs remain.
 
 - Supabase migration history reports the named RPC fix as remote version 20261010131332 and the FK index order fix as remote version 20261010132605.
+
+## P09 implementation and verification — 2026-10-11
+
+| Requirement | Automated proof | Live/manual proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Metric definitions | `lib/analytics/definitions.ts`; analytics unit test checks all required definitions | Analytics page labels timezone and denominators/samples | PASS | First response, resolution, rates, and retrieval denominator logic are documented in code. |
+| Real support analytics | `lib/analytics/queries.ts` reads RLS-filtered conversations/messages/tickets/runs/citations/feedback with workspace and date bounds | P09 authenticated smoke rendered empty real-data state | PASS | No fake counts or accuracy claim; date range uses workspace IANA timezone and inclusive calendar end. |
+| Evaluation persistence/RLS | P09 migrations and generated type additions; live role-checked RPC test writes 5 cases, run, and 5 explicit failures, then cleans them | Supabase tables/RLS and zero retained fixtures verified by MCP | PASS | Results remain `NO_MATCHING_INPUT` until a real persisted AI run matches a curated input. |
+| Loading/empty/error/mobile/accessibility | `loading.tsx`, `error.tsx`, semantic headings/status text, responsive CSS | `tests/live/p09-app-ui.mjs` passed 320/360/390/768/1024px, no page errors/overflow | PASS | SubmitButton provides disabled busy state for evaluation action. |
+| Static checks | TypeScript, ESLint, Prettier, 48 unit tests, webpack production build pass | Route `/app/analytics` appears in production route manifest | PASS | Default Turbopack and unprivileged `.next` build were sandbox-restricted; elevated webpack build passed. |
+| Security/performance | Supabase security/performance advisors inspected; new evaluation FKs indexed | P09 remote migration history present | PASS with expected notices | Existing role-checked SECURITY DEFINER and sparse unused-index notices remain; no new unindexed FK finding. |
+| E2E suite | Existing Playwright invocation attempted | Full suite could not start because config webServer invokes pnpm, whose Windows shim hit EPERM; P09 live smoke passed separately | PARTIAL | Re-run repository E2E command in a host with working pnpm shim before release gate. |
+
+Commands: `node_modules/.bin/tsc --noEmit`; `node_modules/.bin/eslint .`; `node_modules/.bin/prettier --check ...`; `node_modules/.bin/vitest run --pool=threads --no-file-parallelism` (48 passed, 3 opt-in skipped); `node_modules/.bin/next build --webpack` (pass, elevated); `node tests/live/p09-app-ui.mjs` (pass with local env, live Supabase, cleaned fixtures); `git diff --check` (pass).
+
+## P09 final phase gate — 2026-10-11
+
+- `node_modules/.bin/tsc --noEmit` — PASS.
+- `node_modules/.bin/eslint .` — PASS.
+- Prettier check — PASS.
+- Vitest unit suite — 48 passed, 3 opt-in live suites skipped.
+- Playwright E2E — 13 passed after restarting the stale build server.
+- `node_modules/.bin/next build --webpack` — PASS with elevated process permissions; `/app/analytics` included.
+- P09 authenticated live smoke — PASS: persisted five curated cases, one evaluation run, five explicit `NO_MATCHING_INPUT` results, cleaned fixtures, no page errors, no overflow at 320/360/390/768/1024.
+- Supabase MCP — P09 migrations present remotely as versions `20261011055252` and `20261011060612`; evaluation tables RLS-enabled; evaluation FK advisors clear; zero retained evaluation fixtures. Security notices are existing role-checked SECURITY DEFINER functions and Auth leaked-password protection.
+- `git diff --check` — PASS.
+
+P09 acceptance is objectively proven. No AI accuracy percentage is displayed; P07 Gemini provider quota remains a separate blocker.
+
+## P10 implementation and hardening — 2026-10-11
+
+Status: BLOCKED_MANUAL pending MANUAL-009 credential rotation. Outgoing webhooks are the selected integration; Stripe/Slack remain unselected and checkout is hidden.
+
+| Requirement | Automated proof | Live/manual proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Real integration state | `integration_connections` and endpoint status are persisted; `pending` is distinct from `connected`, `disconnected`, and `error` | Authenticated UI rendered real pending state after endpoint creation; live delivery promoted it to connected | PASS | No hardcoded connected state |
+| Secure endpoint configuration | Zod/server validation, owner/admin RPC checks, RLS member reads, HTTPS-only UI, Vault secret refs, one-time secret/rotation UI | Live schema has `secret_ref`/`revoked_at` and no endpoint secret column; role grants and tenant policies inspected | PASS | Localhost is rejected by worker; private/reserved IPv4 and redirects blocked |
+| Signed delivery | Edge worker HMAC-SHA256 `t=,v1=` signature, exact JSON envelope, safe headers, no response-body logging | Hardened worker v2 deployed; HTTP 200 to httpbin persisted `succeeded`, attempts=1, endpoint/provider became connected | PASS | Receiver verification utility has replay/tamper/malformed tests |
+| Retry/idempotency/terminal state | Unique `(endpoint_id,event_id)`, lease claim, bounded exponential backoff, terminal error state | Live SQL probes passed duplicate suppression, success, five attempts, error state; no retained P10 rows | PASS | Worker cron active every minute |
+| Revocation/cancellation | Soft revoke hides endpoint, deletes Vault secret, cancels queued/processing history | Authenticated cleanup path and Vault orphan inspection; temporary fixtures removed | PASS | Delivery history remains safe metadata |
+| UI completeness/mobile | Endpoint form/edit/rotate/test/revoke controls, pending/empty/error/history states, server validation, confirmation, reduced surface | `tests/live/p10-app-ui.mjs` passed auth, real endpoint state, no page errors/overflow at 320/360/390/768/1024 | PASS | Form feedback and destructive confirmation present |
+| Static/regression gates | TypeScript PASS; ESLint PASS; Prettier PASS; Vitest 51 passed/3 skipped; webpack production build PASS; Playwright 13 passed; diff check PASS | Fresh production server used after build | PASS | Existing opt-in live suites remain skipped unless explicitly enabled |
+| Supabase schema/advisors | P10 migrations through `20261011081659` live; all new tables RLS; generated types refreshed and hardened fields synchronized | Security advisor unchanged expected INFO/WARN set; performance advisor only sparse unused-index INFOs; webhook cron/function active | PASS with expected notices | No new unindexed FK warning |
+| Owner credential hygiene | No secrets added to source or agent records | MANUAL-009 required after an ignored `.env` inspection command printed token/key values in tool output | BLOCKED_MANUAL | Rotate Supabase access token and service credential before P10 completion |
+
+External delivery evidence: `https://httpbin.org/anything` returned HTTP 200 through the Supabase cron/Edge worker; logs showed authorized worker claim/finish calls and no credential/customer payload output. Temporary endpoint, delivery, and Vault fixtures were cleaned; final counts are zero.
+
+Commands: `node_modules/.bin/tsc --noEmit`; `node_modules/.bin/eslint .`; `node_modules/.bin/prettier --check .`; `node_modules/.bin/vitest run --pool=threads --no-file-parallelism` (51 passed, 3 skipped); `node_modules/.bin/next build --webpack`; `node_modules/.bin/playwright test` (13 passed); `node tests/live/p10-app-ui.mjs`; `git diff --check`; Supabase MCP migration/table/function/advisor/log inspection.
+
+
+## P10 final invariants pass — 2026-10-11
+
+- Migration `20261011140000_p10_final_invariants.sql` is applied remotely. It restores the original P08 automation trigger, adds a separate P10 webhook trigger, composite tenant foreign key/index, Vault cleanup trigger, endpoint/test rate limits, manual retry RPC, bounded lease exhaustion, active-lease finalization, and status synchronization.
+- `webhook-worker` v4 validates DNS A records for public IPv4 immediately before HTTPS delivery, rejects private/reserved/test ranges and redirects, sends no response body to logs, and uses the final JSON claim contract. Supabase Edge function logs show successful worker invocation.
+- Final v4 live probes: httpbin HTTP 200 → `succeeded`, `attempts=1`, endpoint `connected`; httpbin HTTP 500 → `queued`, `attempts=2`, safe `HTTP_500` retry state. All temporary endpoints, deliveries, and Vault secrets are zero after cleanup.
+- Exact checked-in types include `secret_ref`, `revoked_at`, `canceled_at`, JSON claim result, and retry RPC. TypeScript, ESLint, Prettier, Vitest 51/3 skipped, webpack build, Playwright 13, authenticated mobile smoke, and diff check pass.
+
+## P10 final phase gate — 2026-10-11
+
+Status: **COMPLETE**.
+
+- Owner confirmed MANUAL-009 rotation. A metadata-only Supabase server query succeeded with the replacement configuration, and the authenticated integrations smoke succeeded without reading or printing credential values.
+- The live smoke fixture was corrected to use the final 43-character base64url secret contract. The authenticated page rendered a real endpoint state and passed 320/360/390/768/1024px overflow checks; temporary users, endpoints, deliveries, and Vault secrets were cleaned.
+- A final visibility migration, `20261011141000_p10_webhook_visibility`, grants authenticated users access only to the non-secret `revoked_at` metadata required to exclude revoked endpoints. No endpoint secret column or secret value is exposed.
+- Final direct gates passed: TypeScript, ESLint, Prettier, Vitest 51 passed / 3 skipped, webpack production build, Playwright 13 passed, authenticated P10 smoke, and `git diff --check`.
+- Supabase MCP reports migrations through `20261011114641`, active `webhook-worker` v5, active minute cron, zero retained webhook endpoints/deliveries, and only the previously recorded security/performance advisor notices. P07 Gemini quota remains a separate blocker.

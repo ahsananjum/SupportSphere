@@ -1,49 +1,36 @@
 # Current State
-
-Active phase: P08
+Active phase: P10
 Status: COMPLETE
-Last updated: 2026-10-10
+Last updated: 2026-10-11
 Current branch: master
-Last known completed-phase commit: 7d11d23 (P07 remains BLOCKED_MANUAL)
+Last known completed-phase commit: 579983d
 
 ## Objective
-
-Build reliable tenant-safe workflow infrastructure: Redis namespacing and coordination, central rate limits, durable automation rules/runs, notifications, idempotent locks/dedupe, cache invalidation, and bounded retry with visible terminal failures.
+Deliver genuinely connected integration status and secure outgoing webhooks. Stripe/Slack are optional and not selected; checkout remains hidden.
 
 ## Completed in this phase
-
-- [x] Read P08 source-of-truth documents and all agent records; inspected current schema, services, UI, and history.
-- [x] Added and applied P08 migrations for automation rules/runs, generic durable jobs, notification dedupe, RLS, service claim/finalize functions, support event triggers, and minute cron.
-- [x] Added server-only Redis REST client, namespaced keys, rate-limit matrix, idempotency markers, locks, cache helpers, and durable job wrapper.
-- [x] Added explicit automation schemas, deterministic engine, database action execution, worker wrapper, Automations UI, run history, and notification target links.
-- [x] Added cache invalidation after workspace/AI/widget settings writes and Redis-backed widget rate checks with safe DB fallback.
-- [x] Live SQL probe proved duplicate enqueue suppression, one persisted run, and deduplicated notifications; probe fixtures were deleted.
+- [x] Loaded repository rules/requirements/design/state and inspected live Supabase migration/schema/cron/function state.
+- [x] Vault-backed outgoing webhook migration/worker/UI deployed and exercised; claim, grants, retry, Vault, and SSRF defects found by live probes repaired.
+- [x] Live external delivery HTTP 200, queue dedupe/success/five-attempt failure probes, revocation/cancellation, mobile authenticated smoke, static gates and 13 browser regressions passed.
+- [x] Strict receiver signature verification utility/docs and one-time secret rotation UX added.
 
 ## Remaining
-
-- [x] Run authenticated production-build browser smoke for /app/automations at 320, 360, 390, 768, 1024.
-- [x] Rerun full typecheck, lint, format, unit, E2E, build, diff, and Supabase advisor gate after final docs/UI updates.
-- [x] Review final diff, update HANDOFF, and set COMPLETE after objective P08 proof.
+- [x] Encrypt endpoint secrets in Vault; revoke/cancel on removal; rotation, strict tenant invariants and bounded lease recovery.
+- [x] SSRF-safe public HTTPS delivery, no redirects, safe error codes; strict signature receiver verification proof.
+- [x] Complete mutation feedback/confirmation, edit/retry/history/loading/error and platform integration reality checks.
+- [x] Restore live-generated types and run meaningful live tenant/role/queue/signature/UI tests and full final phase gate.
+- [x] Owner rotation of the exposed local Supabase token/service credential verified through the authenticated smoke and metadata-only server query; no values were read or printed.
+- [x] Set VERIFYING, run the final phase gate, and complete P10 with the handoff updated.
 
 ## Current schema/migrations
-
-SupportSphere project xviumgygixcklrbuynoh has P08 migrations 20261010122310, 20261010122718, and local migrations 20261010123000 and 20261010132500 applied remotely as versions 20261010131332 and 20261010132605. The supportsphere-automation-worker cron is active every minute. New automation tables have member read RLS; durable_jobs is service-only with RLS enabled.
+P09 changes were already uncommitted on session entry and remain preserved. Local P10 migrations through `20261011141000` are applied by Supabase MCP; Supabase reports the latest applied remote version as `20261011114641`. Webhook-worker v5 and the minute cron are active. Final live delivery/retry/cleanup probes passed, and the owner credential rotation is verified.
 
 ## Current integrations
-
-Redis server-only REST coordination is implemented. Supabase MCP applied the migration and generated live type output. No Vercel deployment claim is made.
+Supabase MCP available. Vercel MCP unavailable in this session. Existing Supabase knowledge/AI/workflow cron retained. P07 Gemini quota remains its separate prior gate.
 
 ## Known failures or blockers
-
-Supabase CLI linking failed with the local token format, but MCP migration, type generation, live schema, cron, and advisor verification succeeded. There is no active manual blocker for P08.
+The prior MANUAL-009 exposure was rotated by the owner and verified without reading or printing replacement values. The sandbox command runner still fails before execution due to an E: volume error; elevated repository commands work. P10 final gates pass. P07 Gemini quota remains a separate prior blocker.
 
 ## Next exact actions
-
-1. Continue P07 MANUAL-008 verification separately; P08 is complete.
-
-P08 final verification — 2026-10-10
-- Authenticated production-build browser smoke passed automation creation, success state, no page errors, and 320/360/390/768/1024px overflow checks.
-- Final direct gates passed: Prettier, ESLint, Vitest (45 passed, 3 opt-in skipped; `--pool=threads --no-file-parallelism` for Windows sandbox stability), Next route typegen, TypeScript, production webpack build, 13 Playwright tests, and git diff check.
-- Applied migration 20261010123000 fixes named PostgREST RPC parameters; live UI smoke confirmed create_automation_rule through the real server action.
-- P08 status is COMPLETE; P07 remains BLOCKED_MANUAL as previously recorded.
-- Final Supabase performance advisor rerun after 20261010132500: no unindexed foreign-key findings; only expected unused-index INFOs remain.
+1. Preserve the P10 implementation and evidence; no P10 action remains.
+2. Keep P07 MANUAL-008/Gemini quota as the separate active blocker when resuming AI-provider work.

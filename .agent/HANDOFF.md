@@ -174,3 +174,44 @@ Status: **COMPLETE**. P08 reliable workflow infrastructure is implemented, appli
 The final authenticated production-build smoke created a real automation through `/app/automations`, confirmed the success state and no page errors, and passed 320/360/390/768/1024px overflow checks. Static gates passed with 45 unit tests and 3 opt-in skips, ESLint, Prettier, TypeScript, route type generation, production build, 13 Playwright tests, and diff check. Supabase live probes proved duplicate trigger suppression, notification dedupe, RLS, cron, cleanup, and no unindexed foreign-key advisor findings. P07 remains blocked on its existing Gemini manual gate; that does not block this P08 handoff.
 
 Continue with P07 MANUAL-008 only when the owner provides the required non-secret model/quota confirmation. For P08, no manual action remains.
+
+## P09 implementation handoff — 2026-10-11
+
+Status: VERIFYING. Analytics and persisted AI evaluation are implemented and live in Supabase. The final phase gate is waiting on the known Playwright webServer/pnpm Windows shim limitation being rerun in a host where pnpm can start, although the dedicated authenticated P09 smoke passed.
+
+Changed: `app/app/analytics`, `lib/analytics`, `components/shared/app-navigation.tsx`, `app/globals.css`, generated Supabase types, P09 migrations, unit/live tests, and agent records.
+
+Live schema: Supabase MCP applied P09 migrations (remote versions `20261011055252` and `20261011060612`), with evaluation tables RLS-enabled, role-checked `ensure_evaluation_cases`/`run_ai_evaluation`, and evaluation FK indexes. The authenticated smoke created five curated cases and one stored run with five explicit `NO_MATCHING_INPUT` results, then removed all fixtures; MCP confirmed zero retained evaluation rows.
+
+Verification: TypeScript, ESLint, Prettier, 48 unit tests, elevated webpack production build, Supabase advisors, migration history, `git diff --check`, and authenticated 320/360/390/768/1024px analytics smoke passed. Full Playwright could not start because its configured `pnpm dev` webServer hit the Windows pnpm shim EPERM; do not claim that suite passed.
+
+Next: rerun `node_modules/.bin/playwright test` where `pnpm dev` starts successfully. If it passes and no criterion regresses, update QA, set STATE to `COMPLETE`, and keep P07 Gemini quota blocker separate. If host limitation persists, retain VERIFYING and record it.
+
+## P09 final handoff — 2026-10-11
+
+Status: COMPLETE. Workspace analytics and persisted evidence-bound evaluation are implemented and verified.
+
+Changed: `app/app/analytics` (page/actions/loading/error), `lib/analytics`, analytics navigation/styles, generated Supabase types, P09 migrations and FK indexes, analytics unit/live tests, and agent records.
+
+The analytics page reads real RLS-filtered conversations, messages, tickets, AI runs, citations, and feedback. It supports timezone-aware inclusive date ranges, text summaries, empty/error/loading states, and responsive mobile layout. Metric definitions and denominators live in `lib/analytics/definitions.ts`.
+
+The evaluation harness stores curated cases, run metadata, and per-case results in Supabase. Owner/admin role checks run the harness; it only matches real customer messages to persisted AI runs and citations. Missing runs are explicit failures, and no fabricated accuracy is shown.
+
+Verification passed: TypeScript, ESLint, Prettier, 48 unit tests, 13 Playwright E2E tests, elevated webpack build, Supabase migrations/RLS/advisors, live evaluation persistence/cleanup, mobile widths, and diff check. P07’s Gemini quota blocker remains recorded separately and is not reclassified by P09.
+
+## P10 handoff — 2026-10-11
+
+Status: COMPLETE. P10 selected outgoing webhooks; Stripe/Slack remain deliberately unselected until a real provider configuration and server entitlement path are verified.
+
+Implementation: `/app/settings/integrations` now manages real owner/admin webhook endpoints with HTTPS validation, event selection, pending/connected/disconnected/error state, edit, test, revoke, confirmation, one-time secret display, Vault-backed secret rotation, delivery history, loading/empty/error/success states, and mobile-safe controls. The server does not trust client roles or endpoint ownership.
+
+Data/runtime: Local P10 migrations through `20261011141000` add tenant-scoped connection/endpoints/deliveries, RLS and column grants, idempotent queue/lease/finalizer functions, Vault secret refs, revocation/cancellation, status evidence, P08-safe support-event triggers, worker token and minute cron; Supabase reports the latest applied remote version as `20261011114641`. `webhook-worker` v5 is active and uses exact-body HMAC signatures, HTTPS/no-redirect delivery, DNS A-record/private-range rejection, bounded timeout/retries, safe error codes, and no response-body logging. `lib/integrations/signature.ts` and `docs/integrations.md` document strict receiver verification.
+
+Evidence: authenticated P10 UI smoke passed at 320/360/390/768/1024px; full 13-test Playwright suite passed; TypeScript, ESLint, Prettier, 51 unit tests, webpack build, diff check, live idempotency/success/retry/error/RLS/schema/advisor/log probes passed. A real httpbin delivery returned HTTP 200 and promoted pending to connected. P10 fixtures and Vault secrets were cleaned to zero.
+
+Credential hygiene: MANUAL-009 is verified. The owner rotated the exposed credentials; a metadata-only server query and the authenticated P10 smoke succeeded with the replacement configuration. No credential values were read or printed.
+
+
+Final invariant pass: `20261011140000_p10_final_invariants.sql` restores P08 triggers and adds an independent P10 trigger, composite tenant FK/index, Vault cleanup trigger, endpoint/test rate limits, manual retry, active lease checks, lease exhaustion terminalization, and provider state synchronization. `20261011141000_p10_webhook_visibility.sql` grants only the safe `revoked_at` metadata column needed by the authenticated UI. `webhook-worker` v5 validates public DNS A records immediately before HTTPS delivery, rejects private/reserved/test ranges and redirects, and uses the JSON claim contract. Final live probes passed HTTP 200 success and HTTP 500 bounded retry (`attempts=2`, `HTTP_500`); cleanup counts for P10 endpoints/deliveries/Vault secrets are zero.
+
+P10 has no remaining manual blocker. The prior ignored `.env` inspection exposure was rotated and verified without reading or printing replacement values. P07 Gemini quota remains a separate phase blocker.

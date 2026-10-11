@@ -533,6 +533,91 @@ button:disabled {
   max-width: 1240px;
   margin: 0 auto;
 }
+
+.analytics-filter {
+  flex-wrap: wrap;
+  align-items: end;
+}
+.analytics-filter input {
+  min-height: 44px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  padding: 0 12px;
+  color: var(--color-ink);
+}
+.analytics-summary {
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+}
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.metric-card {
+  display: grid;
+  gap: 8px;
+}
+.metric-card > span {
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+}
+.metric-card > strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+}
+.metric-card > small,
+.analytics-muted {
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.analytics-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.analytics-card h2 {
+  font-size: 1rem;
+  margin: 0 0 14px;
+}
+.analytics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.analytics-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 8px;
+}
+.evaluation-card {
+  display: grid;
+  gap: 12px;
+}
+.evaluation-card h2 {
+  margin: 0;
+}
+@media (max-width: 800px) {
+  .analytics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .analytics-grid,
+  .analytics-columns {
+    grid-template-columns: 1fr;
+  }
+  .analytics-filter input,
+  .analytics-filter button {
+    width: 100%;
+  }
+}
 .support-heading {
   display: flex;
   align-items: end;
@@ -3363,6 +3448,124 @@ button:disabled {
 .automation-run-row time {
   color: var(--color-ink-soft);
   white-space: nowrap;
+}
+
+.integrations-page {
+  max-width: 1040px;
+}
+
+.integration-status-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.integration-status {
+  border: 1px solid var(--color-rule);
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.integration-status.connected {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-signal);
+}
+
+.integration-status.error {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+}
+
+.integration-status.disconnected {
+  color: var(--color-ink-soft);
+}
+
+.integration-status.pending {
+  background: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  color: var(--color-ink);
+}
+
+.checkbox-group {
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.checkbox-group legend {
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  padding: 0 0.25rem;
+}
+
+.secret-reveal {
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-surface));
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.8rem;
+}
+
+.secret-reveal textarea {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  min-height: 3.5rem;
+  resize: vertical;
+}
+
+.integration-endpoint-row,
+.integration-delivery-row {
+  align-items: flex-start;
+}
+
+.integration-endpoint-row small,
+.integration-delivery-row small {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.integration-endpoint-row code {
+  overflow-wrap: anywhere;
+}
+
+.integration-edit-details {
+  flex-basis: 100%;
+  margin-top: 0.85rem;
+}
+
+.integration-edit-details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.integration-edit-form,
+.secret-rotate-form {
+  margin-top: 0.75rem;
+  max-width: 34rem;
+}
+
+.secret-rotate-form textarea {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .integration-status-card {
+    flex-direction: column;
+  }
+
+  .integration-endpoint-row,
+  .integration-delivery-row {
+    display: grid;
+  }
 }
 .record-actions {
   display: flex;

@@ -4,6 +4,7 @@ export type FormState = {
   fields?: Record<string, string>;
   email?: string;
   values?: Record<string, string>;
+  secret?: string;
 };
 
 export const initialFormState: FormState = {};

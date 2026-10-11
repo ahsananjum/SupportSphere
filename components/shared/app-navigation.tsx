@@ -78,6 +78,7 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
           { href: '/app/customers', label: 'Customers' },
           { href: '/app/knowledge', label: 'Knowledge' },
           { href: '/app/automations', label: 'Automations' },
+          { href: '/app/analytics', label: 'Analytics' },
           { href: '/app/ai/runs', label: 'AI runs' },
           { href: '/app/team', label: 'Team' },
           { href: '/app/notifications', label: 'Notifications' },
@@ -86,6 +87,7 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
                 { href: '/app/settings/general', label: 'General settings' },
                 { href: '/app/settings/widget', label: 'Website widget' },
                 { href: '/app/settings/ai', label: 'AI policy' },
+                { href: '/app/settings/integrations', label: 'Integrations' },
               ]
             : []),
           ...(active.role === 'owner'

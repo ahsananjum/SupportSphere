@@ -178,3 +178,21 @@ Decision: Store automation_rules, automation_runs, and durable_jobs in Postgres 
 Alternatives considered: in-memory setTimeout workers, arbitrary user code, client-side automation execution, Redis as canonical job storage, and a broad service-role API.
 Consequences: P08 migrations 20261010122310 and 20261010122718 are applied to SupportSphere; the automation cron is active every minute; the authenticated Automations page exposes real rule and run state. A generic job wrapper remains available for AI/email work without requiring an always-on worker.
 Files affected: supabase/migrations/20261010122310_p08_workflows.sql, supabase/migrations/20261010122718_p08_automation_run_fk_index.sql, lib/redis, lib/automation, lib/jobs, app/app/automations, tests/unit/redis-workflows.test.ts, tests/unit/automation.test.ts.
+
+## ADR-018 — P09 persisted analytics and evidence-bound evaluation
+
+Date: 2026-10-11
+Status: accepted
+Context: P09 requires honest support metrics and AI evaluation without fabricated accuracy. Existing support and AI tables persist the source events, decisions, citations, and feedback needed for rollups.
+Decision: Compute analytics on request from RLS-filtered workspace rows using explicit date boundaries converted from the workspace IANA timezone. Persist curated evaluation cases, run metadata, and one result per case. The role-checked runner evaluates a case only when a matching customer input has a persisted AI run, checking decision, reason, and citation expectations; missing evidence is a failed result.
+Consequences: No fake seed metrics or accuracy claims. Evaluation cases remain pending until real provider runs exist, keeping P07 quota limitations visible. Composite foreign keys and indexes preserve tenant isolation and advisor health.
+Files affected: supabase/migrations/20261011100000_p09_analytics_evaluation.sql, supabase/migrations/20261011101000_p09_evaluation_fk_indexes.sql, lib/analytics, app/app/analytics, components/shared/app-navigation.tsx.
+
+## ADR-019 — P10 signed outgoing webhooks and platform evidence
+
+Date: 2026-10-11
+Status: accepted; implementation verification in progress
+Context: P10 permits optional billing/webhooks but requires real integration states and server authority. No Stripe configuration has been verified. Outgoing support events need delivery outside Vercel request lifetimes.
+Decision: Select outgoing webhooks, retain Stripe/Slack as unselected and hide checkout. Use Supabase cron/Edge leased delivery, Vault encryption, metadata-only payloads, endpoint/event uniqueness, bounded retries, public IPv4 HTTPS transport with DNS pinning and no redirects, immutable event identity, receiver timestamp/HMAC validation, role-checked mutations, safe delivery history and revocation/cancellation. Derive platform states from provider probes or persisted evidence, distinguishing configured/pending checks from successful connections. No fabricated plans or client upgrade state; the only available application entitlement is the server-owned portfolio feature set.
+Consequences: Connected requires delivery/provider evidence. Endpoint removal revokes secrets and cancels pending work while retaining history. IPv6-only/private/plain HTTP destinations are intentionally unsupported. No new package dependency. Existing P08 automation trigger must remain intact.
+Files affected: supabase/migrations, supabase/functions/webhook-worker and _shared/webhook*, lib/integrations, lib/billing, app/app/settings/integrations, tests, docs/integrations.md.

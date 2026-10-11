@@ -360,21 +360,152 @@ export type Database = {
           },
         ];
       };
+      automation_rules: {
+        Row: {
+          actions: Json;
+          conditions: Json;
+          created_at: string;
+          enabled: boolean;
+          id: string;
+          name: string;
+          trigger_type: string;
+          updated_at: string;
+          version: number;
+          workspace_id: string;
+        };
+        Insert: {
+          actions: Json;
+          conditions?: Json;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          name: string;
+          trigger_type: string;
+          updated_at?: string;
+          version?: number;
+          workspace_id: string;
+        };
+        Update: {
+          actions?: Json;
+          conditions?: Json;
+          created_at?: string;
+          enabled?: boolean;
+          id?: string;
+          name?: string;
+          trigger_type?: string;
+          updated_at?: string;
+          version?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'automation_rules_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      automation_runs: {
+        Row: {
+          attempt: number;
+          completed_at: string | null;
+          created_at: string;
+          error_code: string | null;
+          error_message: string | null;
+          id: string;
+          idempotency_key: string;
+          lease_expires_at: string | null;
+          lease_token: string | null;
+          max_attempts: number;
+          next_run_at: string;
+          payload: Json;
+          result: Json | null;
+          rule_id: string;
+          started_at: string | null;
+          status: string;
+          trigger_entity_id: string | null;
+          trigger_type: string;
+          workspace_id: string;
+        };
+        Insert: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          payload?: Json;
+          result?: Json | null;
+          rule_id: string;
+          started_at?: string | null;
+          status?: string;
+          trigger_entity_id?: string | null;
+          trigger_type: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          payload?: Json;
+          result?: Json | null;
+          rule_id?: string;
+          started_at?: string | null;
+          status?: string;
+          trigger_entity_id?: string | null;
+          trigger_type?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'automation_runs_rule_id_fkey';
+            columns: ['rule_id'];
+            isOneToOne: false;
+            referencedRelation: 'automation_rules';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'automation_runs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       contact_rate_limits: {
         Row: {
           attempts: number;
+          canceled_at: string | null;
           expires_at: string;
           key_hash: string;
           window_start: string;
         };
         Insert: {
           attempts?: number;
+          canceled_at?: string | null;
           expires_at: string;
           key_hash: string;
           window_start: string;
         };
         Update: {
           attempts?: number;
+          canceled_at?: string | null;
           expires_at?: string;
           key_hash?: string;
           window_start?: string;
@@ -671,6 +802,248 @@ export type Database = {
           },
         ];
       };
+      durable_jobs: {
+        Row: {
+          attempt: number;
+          completed_at: string | null;
+          created_at: string;
+          entity_id: string | null;
+          error_code: string | null;
+          error_message: string | null;
+          id: string;
+          idempotency_key: string;
+          job_type: string;
+          lease_expires_at: string | null;
+          lease_token: string | null;
+          max_attempts: number;
+          next_run_at: string;
+          payload: Json;
+          started_at: string | null;
+          status: string;
+          workspace_id: string;
+        };
+        Insert: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key: string;
+          job_type: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          payload?: Json;
+          started_at?: string | null;
+          status?: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempt?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          entity_id?: string | null;
+          error_code?: string | null;
+          error_message?: string | null;
+          id?: string;
+          idempotency_key?: string;
+          job_type?: string;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_run_at?: string;
+          payload?: Json;
+          started_at?: string | null;
+          status?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'durable_jobs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      evaluation_cases: {
+        Row: {
+          active: boolean;
+          case_key: string;
+          created_at: string;
+          expected_decision: string | null;
+          expected_reason_code: string | null;
+          expected_source_required: boolean;
+          id: string;
+          input_text: string;
+          workspace_id: string;
+        };
+        Insert: {
+          active?: boolean;
+          case_key: string;
+          created_at?: string;
+          expected_decision?: string | null;
+          expected_reason_code?: string | null;
+          expected_source_required?: boolean;
+          id?: string;
+          input_text: string;
+          workspace_id: string;
+        };
+        Update: {
+          active?: boolean;
+          case_key?: string;
+          created_at?: string;
+          expected_decision?: string | null;
+          expected_reason_code?: string | null;
+          expected_source_required?: boolean;
+          id?: string;
+          input_text?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'evaluation_cases_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      evaluation_results: {
+        Row: {
+          ai_run_id: string | null;
+          case_id: string;
+          created_at: string;
+          evaluation_run_id: string;
+          expected: Json;
+          failure_code: string | null;
+          id: string;
+          observed: Json;
+          passed: boolean;
+          workspace_id: string;
+        };
+        Insert: {
+          ai_run_id?: string | null;
+          case_id: string;
+          created_at?: string;
+          evaluation_run_id: string;
+          expected?: Json;
+          failure_code?: string | null;
+          id?: string;
+          observed?: Json;
+          passed: boolean;
+          workspace_id: string;
+        };
+        Update: {
+          ai_run_id?: string | null;
+          case_id?: string;
+          created_at?: string;
+          evaluation_run_id?: string;
+          expected?: Json;
+          failure_code?: string | null;
+          id?: string;
+          observed?: Json;
+          passed?: boolean;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'evaluation_results_ai_run_id_fkey';
+            columns: ['ai_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_case_id_fkey';
+            columns: ['case_id'];
+            isOneToOne: false;
+            referencedRelation: 'evaluation_cases';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_evaluation_run_id_fkey';
+            columns: ['evaluation_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'evaluation_runs';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_workspace_id_ai_run_id_fkey';
+            columns: ['workspace_id', 'ai_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'ai_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_workspace_id_case_id_fkey';
+            columns: ['workspace_id', 'case_id'];
+            isOneToOne: false;
+            referencedRelation: 'evaluation_cases';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_workspace_id_evaluation_run_id_fkey';
+            columns: ['workspace_id', 'evaluation_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'evaluation_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
+          {
+            foreignKeyName: 'evaluation_results_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      evaluation_runs: {
+        Row: {
+          completed_at: string | null;
+          error_code: string | null;
+          id: string;
+          passed_cases: number;
+          started_at: string;
+          status: string;
+          total_cases: number;
+          workspace_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          error_code?: string | null;
+          id?: string;
+          passed_cases?: number;
+          started_at?: string;
+          status?: string;
+          total_cases?: number;
+          workspace_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          error_code?: string | null;
+          id?: string;
+          passed_cases?: number;
+          started_at?: string;
+          status?: string;
+          total_cases?: number;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'evaluation_runs_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       ingestion_jobs: {
         Row: {
           attempt: number;
@@ -730,6 +1103,47 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'knowledge_sources';
             referencedColumns: ['workspace_id', 'id'];
+          },
+        ];
+      };
+      integration_connections: {
+        Row: {
+          connected_at: string | null;
+          display_name: string;
+          last_error: string | null;
+          metadata: Json;
+          provider: string;
+          status: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          connected_at?: string | null;
+          display_name: string;
+          last_error?: string | null;
+          metadata?: Json;
+          provider: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          connected_at?: string | null;
+          display_name?: string;
+          last_error?: string | null;
+          metadata?: Json;
+          provider?: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_connections_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
           },
         ];
       };
@@ -1004,171 +1418,6 @@ export type Database = {
           },
         ];
       };
-      automation_rules: {
-        Row: {
-          id: string;
-          workspace_id: string;
-          name: string;
-          trigger_type: string;
-          conditions: Json;
-          actions: Json;
-          enabled: boolean;
-          version: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          workspace_id: string;
-          name: string;
-          trigger_type: string;
-          conditions?: Json;
-          actions: Json;
-          enabled?: boolean;
-          version?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          workspace_id?: string;
-          name?: string;
-          trigger_type?: string;
-          conditions?: Json;
-          actions?: Json;
-          enabled?: boolean;
-          version?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      automation_runs: {
-        Row: {
-          id: string;
-          workspace_id: string;
-          rule_id: string;
-          trigger_type: string;
-          trigger_entity_id: string | null;
-          payload: Json;
-          idempotency_key: string;
-          status: string;
-          attempt: number;
-          max_attempts: number;
-          next_run_at: string;
-          lease_token: string | null;
-          lease_expires_at: string | null;
-          error_code: string | null;
-          error_message: string | null;
-          result: Json | null;
-          created_at: string;
-          started_at: string | null;
-          completed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          workspace_id: string;
-          rule_id: string;
-          trigger_type: string;
-          trigger_entity_id?: string | null;
-          payload?: Json;
-          idempotency_key: string;
-          status?: string;
-          attempt?: number;
-          max_attempts?: number;
-          next_run_at?: string;
-          lease_token?: string | null;
-          lease_expires_at?: string | null;
-          error_code?: string | null;
-          error_message?: string | null;
-          result?: Json | null;
-          created_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          workspace_id?: string;
-          rule_id?: string;
-          trigger_type?: string;
-          trigger_entity_id?: string | null;
-          payload?: Json;
-          idempotency_key?: string;
-          status?: string;
-          attempt?: number;
-          max_attempts?: number;
-          next_run_at?: string;
-          lease_token?: string | null;
-          lease_expires_at?: string | null;
-          error_code?: string | null;
-          error_message?: string | null;
-          result?: Json | null;
-          created_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-        };
-        Relationships: [];
-      };
-      durable_jobs: {
-        Row: {
-          id: string;
-          workspace_id: string;
-          job_type: string;
-          entity_id: string | null;
-          payload: Json;
-          idempotency_key: string;
-          status: string;
-          attempt: number;
-          max_attempts: number;
-          next_run_at: string;
-          lease_token: string | null;
-          lease_expires_at: string | null;
-          error_code: string | null;
-          error_message: string | null;
-          created_at: string;
-          started_at: string | null;
-          completed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          workspace_id: string;
-          job_type: string;
-          entity_id?: string | null;
-          payload?: Json;
-          idempotency_key: string;
-          status?: string;
-          attempt?: number;
-          max_attempts?: number;
-          next_run_at?: string;
-          lease_token?: string | null;
-          lease_expires_at?: string | null;
-          error_code?: string | null;
-          error_message?: string | null;
-          created_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          workspace_id?: string;
-          job_type?: string;
-          entity_id?: string | null;
-          payload?: Json;
-          idempotency_key?: string;
-          status?: string;
-          attempt?: number;
-          max_attempts?: number;
-          next_run_at?: string;
-          lease_token?: string | null;
-          lease_expires_at?: string | null;
-          error_code?: string | null;
-          error_message?: string | null;
-          created_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-        };
-        Relationships: [];
-      };
       profiles: {
         Row: {
           avatar_url: string | null;
@@ -1400,6 +1649,137 @@ export type Database = {
           },
           {
             foreignKeyName: 'tickets_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      webhook_deliveries: {
+        Row: {
+          attempts: number;
+          completed_at: string | null;
+          created_at: string;
+          delivered_at: string | null;
+          endpoint_id: string;
+          event_id: string;
+          event_type: string;
+          id: string;
+          last_error: string | null;
+          lease_expires_at: string | null;
+          lease_token: string | null;
+          max_attempts: number;
+          next_attempt_at: string;
+          payload: Json;
+          response_code: number | null;
+          status: string;
+          workspace_id: string;
+        };
+        Insert: {
+          attempts?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          endpoint_id: string;
+          event_id: string;
+          event_type: string;
+          id?: string;
+          last_error?: string | null;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          payload?: Json;
+          response_code?: number | null;
+          status?: string;
+          workspace_id: string;
+        };
+        Update: {
+          attempts?: number;
+          completed_at?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          endpoint_id?: string;
+          event_id?: string;
+          event_type?: string;
+          id?: string;
+          last_error?: string | null;
+          lease_expires_at?: string | null;
+          lease_token?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          payload?: Json;
+          response_code?: number | null;
+          status?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'webhook_deliveries_endpoint_id_fkey';
+            columns: ['endpoint_id'];
+            isOneToOne: false;
+            referencedRelation: 'webhook_endpoints';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'webhook_deliveries_workspace_id_fkey';
+            columns: ['workspace_id'];
+            isOneToOne: false;
+            referencedRelation: 'workspaces';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      webhook_endpoints: {
+        Row: {
+          created_at: string;
+          destination_url: string;
+          enabled: boolean;
+          event_types: string[];
+          id: string;
+          last_error: string | null;
+          last_success_at: string | null;
+          name: string;
+          revoked_at: string | null;
+          secret_ref: string;
+          status: string;
+          updated_at: string;
+          workspace_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          destination_url: string;
+          enabled?: boolean;
+          event_types?: string[];
+          id?: string;
+          last_error?: string | null;
+          last_success_at?: string | null;
+          name: string;
+          revoked_at?: string | null;
+          secret_ref: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id: string;
+        };
+        Update: {
+          created_at?: string;
+          destination_url?: string;
+          enabled?: boolean;
+          event_types?: string[];
+          id?: string;
+          last_error?: string | null;
+          last_success_at?: string | null;
+          name?: string;
+          revoked_at?: string | null;
+          secret_ref?: string;
+          status?: string;
+          updated_at?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'webhook_endpoints_workspace_id_fkey';
             columns: ['workspace_id'];
             isOneToOne: false;
             referencedRelation: 'workspaces';
@@ -1682,6 +2062,49 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      apply_automation_action: {
+        Args: {
+          p_entity_id: string;
+          p_entity_type: string;
+          p_params: Json;
+          p_action_type: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      enqueue_automation_event: {
+        Args: {
+          p_entity_id: string;
+          p_event_key: string;
+          p_payload: Json;
+          p_trigger_type: string;
+          p_workspace_id: string;
+        };
+        Returns: number;
+      };
+      update_webhook_endpoint: {
+        Args: {
+          p_destination_url: string;
+          p_enabled: boolean;
+          p_endpoint_id: string;
+          p_event_types: string[];
+          p_name: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      delete_webhook_endpoint: {
+        Args: { p_endpoint_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      rotate_webhook_secret: {
+        Args: {
+          p_endpoint_id: string;
+          p_secret: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       accept_invitation: { Args: { p_token_hash: string }; Returns: string };
       advance_onboarding: {
         Args: { p_expected: string; p_next: string; p_workspace_id: string };
@@ -1693,11 +2116,55 @@ export type Database = {
         Returns: undefined;
       };
       claim_ai_run: { Args: never; Returns: Json };
+      claim_automation_run: {
+        Args: never;
+        Returns: {
+          attempt: number;
+          id: string;
+          lease_token: string;
+          payload: Json;
+          rule_id: string;
+          trigger_entity_id: string;
+          trigger_type: string;
+          workspace_id: string;
+        }[];
+      };
+      claim_durable_job: {
+        Args: never;
+        Returns: {
+          attempt: number;
+          entity_id: string;
+          id: string;
+          job_type: string;
+          lease_token: string;
+          payload: Json;
+          workspace_id: string;
+        }[];
+      };
       claim_ingestion_job: { Args: never; Returns: Json };
+      claim_webhook_delivery: {
+        Args: never;
+        Returns: Json;
+      };
+      retry_webhook_delivery: {
+        Args: { p_delivery_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
       configure_widget: {
         Args: {
           p_enabled: boolean;
           p_origins: string[];
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
+      create_automation_rule: {
+        Args: {
+          p_actions: Json;
+          p_conditions: Json;
+          p_enabled: boolean;
+          p_name: string;
+          p_trigger_type: string;
           p_workspace_id: string;
         };
         Returns: string;
@@ -1754,17 +2221,50 @@ export type Database = {
         };
         Returns: string;
       };
+      create_webhook_endpoint: {
+        Args: {
+          p_destination_url: string;
+          p_event_types: string[];
+          p_name: string;
+          p_secret: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       create_workspace: {
         Args: { p_name: string; p_slug: string; p_timezone: string };
         Returns: string;
+      };
+      delete_automation_rule: {
+        Args: { p_rule_id: string; p_workspace_id: string };
+        Returns: undefined;
       };
       delete_knowledge_source: {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
       };
+      enqueue_durable_job: {
+        Args: {
+          p_entity_id: string;
+          p_idempotency_key: string;
+          p_job_type: string;
+          p_max_attempts?: number;
+          p_payload: Json;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       enqueue_knowledge_upload: {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
+      };
+      enqueue_webhook_test: {
+        Args: { p_endpoint_id: string; p_workspace_id: string };
+        Returns: string;
+      };
+      ensure_evaluation_cases: {
+        Args: { p_workspace_id: string };
+        Returns: number;
       };
       fail_ai_run: {
         Args: {
@@ -1772,6 +2272,26 @@ export type Database = {
           p_lease_token: string;
           p_retry: boolean;
           p_run_id: string;
+        };
+        Returns: undefined;
+      };
+      fail_automation_run: {
+        Args: {
+          p_error_code: string;
+          p_error_message: string;
+          p_lease_token: string;
+          p_retry: boolean;
+          p_run_id: string;
+        };
+        Returns: undefined;
+      };
+      fail_durable_job: {
+        Args: {
+          p_error_code: string;
+          p_error_message: string;
+          p_job_id: string;
+          p_lease_token: string;
+          p_retry: boolean;
         };
         Returns: undefined;
       };
@@ -1806,6 +2326,14 @@ export type Database = {
         };
         Returns: string;
       };
+      finish_automation_run: {
+        Args: { p_lease_token: string; p_result: Json; p_run_id: string };
+        Returns: undefined;
+      };
+      finish_durable_job: {
+        Args: { p_job_id: string; p_lease_token: string; p_result: Json };
+        Returns: undefined;
+      };
       finish_ingestion_job: {
         Args: {
           p_documents: Json;
@@ -1817,6 +2345,16 @@ export type Database = {
       };
       finish_onboarding: {
         Args: { p_ai_mode: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      finish_webhook_delivery: {
+        Args: {
+          p_delivery_id: string;
+          p_error: string;
+          p_lease_token: string;
+          p_response_code: number;
+          p_success: boolean;
+        };
         Returns: undefined;
       };
       knowledge_worker_authorized: {
@@ -1867,6 +2405,7 @@ export type Database = {
         Returns: boolean;
       };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      run_ai_evaluation: { Args: { p_workspace_id: string }; Returns: string };
       search_ai_knowledge: {
         Args: { p_embedding: string; p_limit?: number; p_workspace_id: string };
         Returns: {
@@ -1926,80 +2465,16 @@ export type Database = {
         };
         Returns: undefined;
       };
-      apply_automation_action: {
+      update_ai_config: {
         Args: {
-          p_action_type: string;
-          p_entity_id: string;
-          p_entity_type: string;
-          p_params: Json;
+          p_confidence: number;
+          p_custom_instructions: string;
+          p_evidence: number;
+          p_excluded_intents: string[];
+          p_mode: string;
+          p_tone: string;
           p_workspace_id: string;
         };
-        Returns: undefined;
-      };
-      claim_automation_run: { Args: never; Returns: Json };
-      claim_durable_job: { Args: never; Returns: Json };
-      create_automation_rule: {
-        Args: {
-          p_actions: Json;
-          p_conditions: Json;
-          p_enabled: boolean;
-          p_name: string;
-          p_trigger_type: string;
-          p_workspace_id: string;
-        };
-        Returns: string;
-      };
-      delete_automation_rule: {
-        Args: { p_rule_id: string; p_workspace_id: string };
-        Returns: undefined;
-      };
-      enqueue_automation_event: {
-        Args: {
-          p_entity_id: string;
-          p_event_key: string;
-          p_payload: Json;
-          p_trigger_type: string;
-          p_workspace_id: string;
-        };
-        Returns: number;
-      };
-      enqueue_durable_job: {
-        Args: {
-          p_entity_id: string;
-          p_idempotency_key: string;
-          p_job_type: string;
-          p_max_attempts?: number;
-          p_payload: Json;
-          p_workspace_id: string;
-        };
-        Returns: string;
-      };
-      fail_automation_run: {
-        Args: {
-          p_error_code: string;
-          p_error_message: string;
-          p_lease_token: string;
-          p_retry: boolean;
-          p_run_id: string;
-        };
-        Returns: undefined;
-      };
-      fail_durable_job: {
-        Args: {
-          p_error_code: string;
-          p_error_message: string;
-          p_job_id: string;
-          p_lease_token: string;
-          p_retry: boolean;
-        };
-        Returns: undefined;
-      };
-      finish_automation_run: {
-        Args: { p_lease_token: string; p_result: Json; p_run_id: string };
-        Returns: undefined;
-      };
-      finish_durable_job: {
-        Args: { p_job_id: string; p_lease_token: string; p_result: Json };
         Returns: undefined;
       };
       update_automation_rule: {
@@ -2010,18 +2485,6 @@ export type Database = {
           p_name: string;
           p_rule_id: string;
           p_trigger_type: string;
-          p_workspace_id: string;
-        };
-        Returns: undefined;
-      };
-      update_ai_config: {
-        Args: {
-          p_confidence: number;
-          p_custom_instructions: string;
-          p_evidence: number;
-          p_excluded_intents: string[];
-          p_mode: string;
-          p_tone: string;
           p_workspace_id: string;
         };
         Returns: undefined;
@@ -2061,6 +2524,10 @@ export type Database = {
           p_workspace_id: string;
         };
         Returns: undefined;
+      };
+      webhook_worker_authorized: {
+        Args: { p_token: string };
+        Returns: boolean;
       };
     };
     Enums: {

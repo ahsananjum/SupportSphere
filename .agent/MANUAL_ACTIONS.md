@@ -161,3 +161,18 @@ Store result in: Google AI Studio project API keys and Supabase Edge Function Se
 Agent verification: list secret names only; deploy/check `ai-worker`; rerun the ten real-provider scenarios in an isolated synthetic workspace through the scheduled worker; inspect run steps/citations/messages and Edge execution logs without exposing credentials or customer text; verify no prohibited send; clean all test fixtures; then repeat the full P07 gate. Set `VERIFYING` and `COMPLETE` only after every acceptance criterion is proven.
 
 Blocking phase: P07
+
+## MANUAL-009 — Rotate locally exposed Supabase credentials
+
+Status: VERIFIED — owner confirmed rotation on 2026-10-11; replacement configuration passed the authenticated P10 smoke and server/admin query without credential values being read or printed.
+Why: During P10, a configuration-inspection command accidentally printed the ignored .env Supabase access token and legacy service-role credential into tool output. They were not committed, but must be treated as exposed and rotated.
+Steps:
+1. Open Supabase Dashboard → account avatar → Account Preferences → Access Tokens. Revoke the token used by this repository and create a replacement if CLI access is needed. Store it only as SUPABASE_ACCESS_TOKEN in ignored C:\SupportSphere\.env or the CLI secret store. Do not paste it into chat.
+2. Open SupportSphere project xviumgygixcklrbuynoh → Settings → API Keys. Revoke/rotate the exposed service credential. For a legacy service_role JWT key, follow the Dashboard's JWT/legacy-key rotation procedure; review its impact on legacy anon keys and sessions before completing it. A new server secret API key may be used by the application where supported. Keep the publishable client key separate.
+3. Store the replacement as SUPABASE_SERVICE_ROLE_KEY in ignored C:\SupportSphere\.env and Vercel project support-sphere → Settings → Environment Variables for environments using it. Follow Supabase's managed Edge-secret behavior; never put server credentials in NEXT_PUBLIC_*.
+4. Tell the agent only that rotation and local/server storage are complete. The agent will inspect key names and execute authorized test queries, never print credential values.
+Non-secret values: project ref xviumgygixcklrbuynoh; environment names SUPABASE_ACCESS_TOKEN and SUPABASE_SERVICE_ROLE_KEY.
+Do NOT paste: tokens, service/secret keys, legacy JWT secret, database passwords, or authorization headers into chat/source.
+Store result in: ignored local environment, Supabase secret/account settings, Vercel server-only environment variables.
+Agent verification: public client authentication succeeded in the authenticated integrations smoke, and the replacement server credential succeeded in a metadata-only Supabase query. The live smoke and fixture cleanup were rerun with no values logged. The owner confirmed the old credentials were revoked; provider revocation details are not echoed here.
+Blocking phase: P10
