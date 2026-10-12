@@ -246,7 +246,7 @@ P12 repaired the widget fallback semantic heading/metadata, added role-safe supp
 
 ## P13 in-progress handoff — 2026-10-12
 
-Status: BLOCKED_MANUAL.
+Status: BLOCKED_MANUAL.\r\n\r\nCommitted as `315c76c` (`feat(release): package P13 deployment proof`); working tree is clean.
 
 Implemented this pass: replaced the P00 README with the actual SupportSphere portfolio/reproducibility package; added `docs/demo-seed.md` and idempotent `scripts/seed-demo.mjs`; added `pnpm seed:demo`; generated and visually reviewed `docs/screenshots/production-home.png`; added final migration `supabase/migrations/20261012163227_p13_reproducibility_trigger_hardening.sql` and applied it to Supabase; recorded ADR-021 and P13 QA evidence.
 
