@@ -265,3 +265,5 @@ Next exact actions:
 3. Verify metadata-only Supabase access, Edge workers, Vercel runtime/logs, Brevo links, OAuth callback, and production commit parity.
 4. Run `node --env-file=.env.demo.local scripts/seed-demo.mjs` in a dedicated demo workspace, wait for indexing, then execute and record the full deployed golden journey.
 5. Re-run the full static/browser/mobile/security/secret gate; commit coherent P12/P13 changes; only then set VERIFYING → COMPLETE.
+
+The complete testing guide is now at `docs/verification-runbook.md` and linked from README. It is documentation-only, passed formatting/diff/credential-pattern checks, and was committed as `485a82e`. P13 remains BLOCKED_MANUAL for the previously recorded owner gates.

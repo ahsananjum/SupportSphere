@@ -462,3 +462,9 @@ Supabase MCP final inspection: remote migrations through `20261011121955_p11_tri
 - `git diff --check` — PASS
 - Supabase MCP migration/table/function/cron/advisor inspection — PASS with documented existing notices
 - Tracked-file secret scan — PASS; only placeholders/test patterns matched
+
+## Verification runbook pass — 2026-10-12
+
+Added `docs/verification-runbook.md`, linked from README, with repository-backed steps for local setup, static/unit/security/E2E/live checks, Supabase migrations/RLS/advisors, demo seeding, auth/OAuth/email, roles, support operations, widget, knowledge/RAG, AI, automations, webhooks, analytics, SEO/accessibility/mobile, deployment, observability, secret scans, troubleshooting, and the final P13 completion gate.
+
+Documentation proof: Prettier check passed for the runbook and README; `git diff --check` passed; credential-like pattern scan found no matches in the new docs. Commit `485a82e`.
