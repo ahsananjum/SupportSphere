@@ -145,6 +145,7 @@ The [500 AI Agents Projects](https://github.com/ashishpatel26/500-AI-Agents-Proj
 
 ## Agent release records
 
+- [Complete verification runbook](docs/verification-runbook.md)
 - [P13 state](.agent/STATE.md)
 - [Verification matrix](.agent/QA.md)
 - [Manual owner actions](.agent/MANUAL_ACTIONS.md)
