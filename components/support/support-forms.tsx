@@ -21,6 +21,19 @@ function Feedback({ state }: { state: typeof initialFormState }) {
     </p>
   ) : null;
 }
+function FieldError({
+  state,
+  name,
+}: {
+  state: typeof initialFormState;
+  name: string;
+}) {
+  return state.fields?.[name] ? (
+    <p id={`${name}-error`} className="field-error" role="alert">
+      {state.fields[name]}
+    </p>
+  ) : null;
+}
 export function CustomerForm() {
   const [state, action, pending] = useActionState(
     createCustomer,
@@ -36,7 +49,10 @@ export function CustomerForm() {
           required
           maxLength={160}
           defaultValue={state.values?.name}
+          aria-invalid={Boolean(state.fields?.name)}
+          aria-describedby={state.fields?.name ? 'name-error' : undefined}
         />
+        <FieldError state={state} name="name" />
       </div>
       <div className="field">
         <label htmlFor="customer-email">Email</label>
@@ -46,7 +62,10 @@ export function CustomerForm() {
           type="email"
           maxLength={320}
           defaultValue={state.values?.email}
+          aria-invalid={Boolean(state.fields?.email)}
+          aria-describedby={state.fields?.email ? 'email-error' : undefined}
         />
+        <FieldError state={state} name="email" />
       </div>
       <div className="field">
         <label htmlFor="customer-phone">
@@ -57,6 +76,7 @@ export function CustomerForm() {
           name="phone"
           maxLength={60}
           defaultValue={state.values?.phone}
+          aria-invalid={Boolean(state.fields?.phone)}
         />
       </div>
       <div className="field">
@@ -68,6 +88,7 @@ export function CustomerForm() {
           name="company"
           maxLength={160}
           defaultValue={state.values?.company}
+          aria-invalid={Boolean(state.fields?.company)}
         />
       </div>
       <Feedback state={state} />
@@ -93,7 +114,10 @@ export function ConversationForm({ customerId }: { customerId: string }) {
           required
           maxLength={240}
           defaultValue={state.values?.subject}
+          aria-invalid={Boolean(state.fields?.subject)}
+          aria-describedby={state.fields?.subject ? 'subject-error' : undefined}
         />
+        <FieldError state={state} name="subject" />
       </div>
       <div className="field">
         <label htmlFor="conversation-channel">Channel</label>
@@ -134,7 +158,10 @@ export function TicketForm({
           required
           maxLength={240}
           defaultValue={state.values?.title}
+          aria-invalid={Boolean(state.fields?.title)}
+          aria-describedby={state.fields?.title ? 'title-error' : undefined}
         />
+        <FieldError state={state} name="title" />
       </div>
       <div className="field">
         <label htmlFor="ticket-description">Description</label>
@@ -144,6 +171,7 @@ export function TicketForm({
           rows={5}
           maxLength={40000}
           defaultValue={state.values?.description}
+          aria-invalid={Boolean(state.fields?.description)}
         />
       </div>
       <div className="field">
@@ -218,7 +246,10 @@ export function Composer({
           maxLength={20000}
           placeholder="Write a clear, helpful reply…"
           defaultValue={state.values?.body ?? initialBody}
+          aria-invalid={Boolean(state.fields?.body)}
+          aria-describedby={state.fields?.body ? 'body-error' : undefined}
         />
+        <FieldError state={state} name="body" />
       </div>
       <label className="check-row">
         <input type="checkbox" name="internal" /> Internal note

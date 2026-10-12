@@ -68,11 +68,13 @@ export default async function CustomerPage({
             <p className="page-intro">No conversations yet.</p>
           )}
         </section>
-        <aside className="workspace-card">
-          <p className="eyebrow">NEW THREAD</p>
-          <h2>Start a conversation</h2>
-          <ConversationForm customerId={customer.id} />
-        </aside>
+        {active.role !== 'viewer' && (
+          <aside className="workspace-card">
+            <p className="eyebrow">NEW THREAD</p>
+            <h2>Start a conversation</h2>
+            <ConversationForm customerId={customer.id} />
+          </aside>
+        )}
       </div>
     </div>
   );

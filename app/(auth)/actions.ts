@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { createClient } from '../../lib/supabase/server';
 import { safeNextPath, trustedUrl } from '../../lib/auth/redirect';
 import {
@@ -12,6 +12,52 @@ import {
 } from '../../lib/validation/auth';
 import type { FormState } from '../../lib/action-state';
 import { logEvent } from '../../lib/observability/log';
+import { consumeRateLimit, RATE_LIMITS } from '../../lib/redis/rate-limit';
+import { createAdminClient } from '../../lib/supabase/admin';
+import { createHash } from 'node:crypto';
+
+async function authAbuseLimit(
+  bucket: 'auth' | 'signupInvite' | 'forgotPassword',
+  email: string,
+) {
+  const requestHeaders = await headers();
+  const ip =
+    (process.env.VERCEL
+      ? requestHeaders.get('x-vercel-forwarded-for')
+      : requestHeaders.get('x-forwarded-for')
+    )
+      ?.split(',')[0]
+      ?.trim() ?? 'unknown';
+  const identifiers = [`auth-ip:${ip}`, `auth-email:${email.toLowerCase()}`];
+  const results = await Promise.all(
+    identifiers.map(async (identifier) => {
+      if (process.env.REDIS_REST_URL && process.env.REDIS_REST_TOKEN)
+        return (await consumeRateLimit(bucket, identifier)).allowed;
+      // Atomic persistent backstop when Redis has not been provisioned. Browser
+      // roles cannot invoke this RPC; no raw email/IP is persisted or logged.
+      try {
+        const config = RATE_LIMITS[bucket];
+        const hash = createHash('sha256')
+          .update(
+            `${process.env.VERCEL_ENV ?? process.env.NODE_ENV}:${bucket}:${identifier}`,
+          )
+          .digest('hex');
+        const { data, error } = await createAdminClient().rpc(
+          'reserve_widget_rate',
+          {
+            p_bucket_key: hash,
+            p_limit: config.limit,
+            p_window_seconds: config.windowSeconds,
+          },
+        );
+        return !error && data === true;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  return results.every(Boolean);
+}
 
 function fieldErrors(error: {
   issues: { path: PropertyKey[]; message: string }[];
@@ -37,6 +83,12 @@ export async function signUp(
       values: { displayName: String(formData.get('displayName') ?? '') },
     };
   const next = safeNextPath(String(formData.get('next') ?? ''));
+  if (!(await authAbuseLimit('signupInvite', parsed.data.email)))
+    return {
+      message: 'Too many signup attempts. Try again later.',
+      email: parsed.data.email,
+      values: { displayName: parsed.data.displayName },
+    };
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -79,6 +131,11 @@ export async function logIn(
       email: String(formData.get('email') ?? ''),
     };
   const supabase = await createClient();
+  if (!(await authAbuseLimit('auth', parsed.data.email)))
+    return {
+      message: 'Too many sign-in attempts. Try again later.',
+      email: parsed.data.email,
+    };
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     logEvent('auth.login', 'failed', { errorClass: error.name });
@@ -99,6 +156,11 @@ export async function requestReset(
   const parsed = emailSchema.safeParse(formData.get('email'));
   if (!parsed.success)
     return { fields: { email: 'Enter a valid email address.' } };
+  if (!(await authAbuseLimit('forgotPassword', parsed.data)))
+    return {
+      message: 'Too many reset requests. Try again later.',
+      email: parsed.data,
+    };
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
     redirectTo: trustedUrl('/auth/callback?next=/reset-password'),

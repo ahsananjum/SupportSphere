@@ -11,6 +11,12 @@ import {
 import type { FormState } from '../../../lib/action-state';
 import { logEvent } from '../../../lib/observability/log';
 
+function values(formData: FormData) {
+  return Object.fromEntries(
+    Array.from(formData.entries()).map(([key, value]) => [key, text(value)]),
+  );
+}
+
 function text(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value : '';
 }
@@ -75,6 +81,7 @@ export async function createAutomationRule(
           issue.message,
         ]),
       ),
+      values: values(formData),
     };
   const { supabase, active } = await getWorkspaceContext();
   if (!active || !['owner', 'admin'].includes(active.role))
@@ -103,19 +110,27 @@ export async function createAutomationRule(
   revalidatePath('/app/automations');
   return { success: 'Automation rule saved.' };
 }
-export async function toggleAutomationRule(formData: FormData) {
+export async function toggleAutomationRule(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = z.string().uuid().safeParse(formData.get('ruleId'));
-  if (!id.success) return;
+  if (!id.success)
+    return { message: 'This rule is unavailable. Refresh the page.' };
   const { supabase, active } = await getWorkspaceContext();
-  if (!active || !['owner', 'admin'].includes(active.role)) return;
+  if (!active || !['owner', 'admin'].includes(active.role))
+    return {
+      message: 'Only workspace owners and admins can manage automations.',
+    };
   const { data: rule } = await supabase
     .from('automation_rules')
     .select('id,name,trigger_type,conditions,actions,enabled')
     .eq('workspace_id', active.id)
     .eq('id', id.data)
     .maybeSingle();
-  if (!rule) return;
-  await supabase.rpc('update_automation_rule', {
+  if (!rule)
+    return { message: 'This rule could not be loaded. Refresh and retry.' };
+  const { error } = await supabase.rpc('update_automation_rule', {
     p_workspace_id: active.id,
     p_rule_id: rule.id,
     p_name: rule.name,
@@ -124,16 +139,41 @@ export async function toggleAutomationRule(formData: FormData) {
     p_actions: rule.actions,
     p_enabled: !rule.enabled,
   });
+  if (error) {
+    logEvent('automation.rule.toggle', 'failed', {
+      workspaceId: active.id,
+      errorClass: error.code,
+    });
+    return { message: 'The rule could not be updated. Try again.' };
+  }
   revalidatePath('/app/automations');
+  return {
+    success: rule.enabled ? 'Automation disabled.' : 'Automation enabled.',
+  };
 }
-export async function deleteAutomationRule(formData: FormData) {
+export async function deleteAutomationRule(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = z.string().uuid().safeParse(formData.get('ruleId'));
-  if (!id.success) return;
+  if (!id.success || formData.get('confirm') !== 'on')
+    return { message: 'Confirm deletion before removing this automation.' };
   const { supabase, active } = await getWorkspaceContext();
-  if (!active || !['owner', 'admin'].includes(active.role)) return;
-  await supabase.rpc('delete_automation_rule', {
+  if (!active || !['owner', 'admin'].includes(active.role))
+    return {
+      message: 'Only workspace owners and admins can manage automations.',
+    };
+  const { error } = await supabase.rpc('delete_automation_rule', {
     p_workspace_id: active.id,
     p_rule_id: id.data,
   });
+  if (error) {
+    logEvent('automation.rule.delete', 'failed', {
+      workspaceId: active.id,
+      errorClass: error.code,
+    });
+    return { message: 'The rule could not be deleted. Try again.' };
+  }
   revalidatePath('/app/automations');
+  return { success: 'Automation deleted.' };
 }

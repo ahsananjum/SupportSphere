@@ -215,3 +215,53 @@ Credential hygiene: MANUAL-009 is verified. The owner rotated the exposed creden
 Final invariant pass: `20261011140000_p10_final_invariants.sql` restores P08 triggers and adds an independent P10 trigger, composite tenant FK/index, Vault cleanup trigger, endpoint/test rate limits, manual retry, active lease checks, lease exhaustion terminalization, and provider state synchronization. `20261011141000_p10_webhook_visibility.sql` grants only the safe `revoked_at` metadata column needed by the authenticated UI. `webhook-worker` v5 validates public DNS A records immediately before HTTPS delivery, rejects private/reserved/test ranges and redirects, and uses the JSON claim contract. Final live probes passed HTTP 200 success and HTTP 500 bounded retry (`attempts=2`, `HTTP_500`); cleanup counts for P10 endpoints/deliveries/Vault secrets are zero.
 
 P10 has no remaining manual blocker. The prior ignored `.env` inspection exposure was rotated and verified without reading or printing replacement values. P07 Gemini quota remains a separate phase blocker.
+
+## P11 handoff — 2026-10-11
+
+Status: COMPLETE (2026-10-11). P11 repaired the live polymorphic automation/webhook trigger regression in `20261011121955_p11_trigger_hardening`, added auth abuse limits with a service-only atomic database fallback, explicit authenticated Realtime initialization, enforced CSP/security headers that preserve the cross-origin widget, and patched Next.js/source-map-js high advisories.
+
+Live evidence: P01/P03/P04 tenant attack suites passed; P05 widget golden host, strict Realtime event, origin/session/rate/storage checks passed; P08 automation and P10 integration UI passed at 320/360/390/768/1024px; Supabase MCP migration/policies/advisors inspected; headers smoke passed; `pnpm audit --prod --audit-level high` reports no known vulnerabilities. Static gate passed with TypeScript, ESLint, Prettier, 52 unit tests, elevated Next 16.3.8 webpack build, and diff check.
+
+Findings retained for the final P11 review: P07 Gemini real-provider injection suite remains blocked by its existing owner quota gate; Supabase leaked-password protection is a provider-plan WARN; webhook DNS validation still has a theoretical DNS rebinding window after immediate public-A validation. These are documented in `.agent/QA.md`; no application high-severity advisor finding remains.
+
+Next exact actions: preserve the P11 evidence and keep P07 MANUAL-008 as a separate provider/quota gate; do not reclassify that prior blocker as a P11 finding.
+
+## P11 verification update — 2026-10-12
+
+Status: COMPLETE.
+
+This pass repaired repository-level verification reliability by pinning Vitest to the Windows-safe thread pool and disabling file-level parallelism. It also removed the `X-Powered-By` fingerprinting header and added a Playwright regression for public/widget security headers.
+
+Verification passed: `node_modules/.bin/vitest run` (52 passed / 3 skipped), `node_modules/.bin/tsc --noEmit`, `node_modules/.bin/eslint .`, `node_modules/.bin/prettier --check .`, elevated `node_modules/.bin/next build --webpack`, `pnpm audit --prod --audit-level high`, client bundle secret scan, `node_modules/.bin/playwright test` (14 passed), Supabase security/performance advisors, and `git diff --check`.
+
+No new migration or manual owner action was introduced. P07 MANUAL-008 Gemini quota/provider verification remains separately blocked and must not be represented as a P11 failure.
+
+## P12 final handoff — 2026-10-12
+
+Status: COMPLETE.
+
+P12 completed the exhaustive route/control, accessibility, responsive, SEO, performance, and permission audit. `docs/p12-route-control-inventory.md` records every public, auth, app, widget, and API family with expected content and state behavior. The real authenticated audit `tests/live/p12-app-audit.mjs` passed 153 checks against disposable Supabase fixtures: all app/detail routes, empty/populated/error/validation/success states, support writes, field errors, automation ticket actions/toggle/confirmed delete, settings persistence, knowledge transitions, owner/admin/agent/viewer behavior, keyboard focus, console, cleanup, and 320/360/390/768/1024/1440px overflow.
+
+P12 repaired the widget fallback semantic heading/metadata, added role-safe support controls and server checks, added automation action fields and surfaced mutation errors, added destructive confirmations, fixed the hidden mobile filter-label overflow, and stabilized Playwright on Windows with the direct Next webpack server and one worker. The full browser suite passed 19/19; the production webpack build, TypeScript, ESLint, Prettier, Vitest (52 passed / 3 skipped), diff check, and Supabase MCP RLS/advisor/migration inspection passed. No P12 migration or manual owner action was required. Vercel MCP was unavailable; production origin/canonical behavior remains covered by the owner-configured P02 record. P07 MANUAL-008 remains a separate Gemini provider/quota gate.
+
+## P13 in-progress handoff — 2026-10-12
+
+Status: BLOCKED_MANUAL.
+
+Implemented this pass: replaced the P00 README with the actual SupportSphere portfolio/reproducibility package; added `docs/demo-seed.md` and idempotent `scripts/seed-demo.mjs`; added `pnpm seed:demo`; generated and visually reviewed `docs/screenshots/production-home.png`; added final migration `supabase/migrations/20261012163227_p13_reproducibility_trigger_hardening.sql` and applied it to Supabase; recorded ADR-021 and P13 QA evidence.
+
+Supabase evidence: project `xviumgygixcklrbuynoh` is ACTIVE_HEALTHY; migration `20261012163227` is applied; both automation/webhook trigger functions are JSON-safe; all five cron workers are active; advisor findings remain the documented intentional INFO/WARN set. Generated-types MCP call completed; no schema type changes were introduced.
+
+Production evidence: `https://support-sphere-psi.vercel.app` served the public site; read-only P02 production smoke passed public pages, SEO/canonical/robots/sitemap, keyboard, console, six widths, 404, and internal-link checks; OAuth initiation smoke passed the exact production callback; the widget loader returned 200. The screenshot is linked from README.
+
+Static evidence: TypeScript, ESLint, Prettier, 52 unit tests / 3 skipped, elevated webpack build, diff check, node seed syntax, and tracked-file secret scan passed. The full Playwright command stalled before a report on Windows and was stopped; focused `tests/e2e/p12-public.spec.ts` passed 5/5, prior P12 had 19/19, and the dedicated production smoke passed.
+
+Manual blockers: MANUAL-010 requires rotation of the credentials exposed in this session's `.env` inspection. MANUAL-011 requires Vercel connector installation/inspection, current production deployment commit and environment parity, and production OAuth/email runtime verification. Existing MANUAL-008 still blocks real Gemini provider scenarios because of quota/model availability. Do not mark P13 complete or claim the full golden journey.
+
+Next exact actions:
+
+1. Owner rotates MANUAL-010 values and confirms without sharing secrets.
+2. Owner connects Vercel and redeploys the current tree with production-only env values; share only URL/commit metadata.
+3. Verify metadata-only Supabase access, Edge workers, Vercel runtime/logs, Brevo links, OAuth callback, and production commit parity.
+4. Run `node --env-file=.env.demo.local scripts/seed-demo.mjs` in a dedicated demo workspace, wait for indexing, then execute and record the full deployed golden journey.
+5. Re-run the full static/browser/mobile/security/secret gate; commit coherent P12/P13 changes; only then set VERIFYING → COMPLETE.

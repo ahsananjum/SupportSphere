@@ -1,36 +1,44 @@
 # Current State
-Active phase: P10
-Status: COMPLETE
-Last updated: 2026-10-11
+Active phase: P13
+Status: BLOCKED_MANUAL
+Last updated: 2026-10-12
 Current branch: master
-Last known completed-phase commit: 579983d
+Last known completed-phase commit: 959034e
 
 ## Objective
-Deliver genuinely connected integration status and secure outgoing webhooks. Stripe/Slack are optional and not selected; checkout remains hidden.
+Deploy and prove SupportSphere as a reproducible portfolio product, then complete the P13 release gate.
 
 ## Completed in this phase
-- [x] Loaded repository rules/requirements/design/state and inspected live Supabase migration/schema/cron/function state.
-- [x] Vault-backed outgoing webhook migration/worker/UI deployed and exercised; claim, grants, retry, Vault, and SSRF defects found by live probes repaired.
-- [x] Live external delivery HTTP 200, queue dedupe/success/five-attempt failure probes, revocation/cancellation, mobile authenticated smoke, static gates and 13 browser regressions passed.
-- [x] Strict receiver signature verification utility/docs and one-time secret rotation UX added.
+- [x] Repository truth loaded: RULES, PHASES P13, PRD, ARCHITECTURE, DESIGN, and all `.agent/*.md` files.
+- [x] Added idempotent real-database demo seed `scripts/seed-demo.mjs`, `pnpm seed:demo`, and `docs/demo-seed.md`; no UI fake data or seeded AI output.
+- [x] Replaced the P00 README with the P13 portfolio package and added a reviewed production landing screenshot under `docs/screenshots/`.
+- [x] Added and applied migration `20261012163227_p13_reproducibility_trigger_hardening`; both automation/webhook trigger functions are JSON-safe after the full local migration order.
+- [x] Supabase MCP inspection: project `xviumgygixcklrbuynoh` is ACTIVE_HEALTHY, all 39 public tables have RLS, three Edge workers are active, five cron jobs are active, and advisors show only the documented INFO/WARN set.
+- [x] Read-only production smoke passed public routes, SEO/canonical/robots/sitemap, keyboard, console, custom 404, six widths, OAuth initiation, and widget loader.
+- [x] TypeScript, ESLint, Prettier, Vitest 52/3 skipped, elevated webpack build, focused P12 public E2E 5/5, diff check, node seed syntax, and tracked-file secret scan passed.
 
 ## Remaining
-- [x] Encrypt endpoint secrets in Vault; revoke/cancel on removal; rotation, strict tenant invariants and bounded lease recovery.
-- [x] SSRF-safe public HTTPS delivery, no redirects, safe error codes; strict signature receiver verification proof.
-- [x] Complete mutation feedback/confirmation, edit/retry/history/loading/error and platform integration reality checks.
-- [x] Restore live-generated types and run meaningful live tenant/role/queue/signature/UI tests and full final phase gate.
-- [x] Owner rotation of the exposed local Supabase token/service credential verified through the authenticated smoke and metadata-only server query; no values were read or printed.
-- [x] Set VERIFYING, run the final phase gate, and complete P10 with the handoff updated.
+- [ ] Rotate credentials exposed during the P13 `.env` inspection (MANUAL-010).
+- [ ] Connect Vercel inspection, confirm deployment commit parity, configure/validate production-only env values, and rerun deployment smoke (MANUAL-011).
+- [ ] Resolve the existing Gemini model/quota gate and verify all ten real-provider scenarios (MANUAL-008).
+- [ ] Run the demo seed in a dedicated owner-approved workspace and execute the full deployed golden journey, including knowledge indexing, widget message, realtime inbox, AI evidence/handoff, human reply, ticket, analytics, and role denial.
+- [ ] Re-run the complete phase gate, consolidate/commit the coherent tree, then set VERIFYING → COMPLETE.
 
-## Current schema/migrations
-P09 changes were already uncommitted on session entry and remain preserved. Local P10 migrations through `20261011141000` are applied by Supabase MCP; Supabase reports the latest applied remote version as `20261011114641`. Webhook-worker v5 and the minute cron are active. Final live delivery/retry/cleanup probes passed, and the owner credential rotation is verified.
+## Schema/integrations
+- Supabase production project: `xviumgygixcklrbuynoh`, region `ap-south-1`, status ACTIVE_HEALTHY.
+- Remote migrations through `20261012163227_p13_reproducibility_trigger_hardening`; Edge functions `knowledge-worker` v9, `ai-worker` v13, `webhook-worker` v5 active.
+- Optional analytics is intentionally off. Stripe is unselected. P07 Gemini real-provider verification remains blocked by owner quota/model setup.
+- Vercel MCP is not installed/available in this session; browser verification of the recorded deployment is the current runtime evidence.
 
-## Current integrations
-Supabase MCP available. Vercel MCP unavailable in this session. Existing Supabase knowledge/AI/workflow cron retained. P07 Gemini quota remains its separate prior gate.
-
-## Known failures or blockers
-The prior MANUAL-009 exposure was rotated by the owner and verified without reading or printing replacement values. The sandbox command runner still fails before execution due to an E: volume error; elevated repository commands work. P10 final gates pass. P07 Gemini quota remains a separate prior blocker.
+## Known failures / blockers
+- MANUAL-010 is blocking because credential values were printed during this session's ignored `.env` inspection; never print or commit them.
+- MANUAL-011 is blocking production commit/env parity and Vercel runtime inspection.
+- The full Playwright command stalled before reporting on this Windows host; the focused P12 public file and dedicated production smoke passed. Re-run the complete suite in a reliable host before final phase completion.
+- The current production deployment may predate the uncommitted P12/P13 tree; do not claim the deployed app includes this tree until Vercel metadata proves it.
 
 ## Next exact actions
-1. Preserve the P10 implementation and evidence; no P10 action remains.
-2. Keep P07 MANUAL-008/Gemini quota as the separate active blocker when resuming AI-provider work.
+1. Owner completes MANUAL-010 and confirms rotation without sharing secrets.
+2. Owner connects Vercel, redeploys the current tree with production env parity, and shares only URL/commit metadata.
+3. Verify metadata-only Supabase access, Edge workers, Vercel logs, Brevo links, OAuth callback, and deployment parity.
+4. Run the dedicated demo seed and full deployed golden journey after Gemini quota/model verification.
+5. Re-run the full phase gate, commit coherent changes, and only then set VERIFYING → COMPLETE.

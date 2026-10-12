@@ -196,3 +196,55 @@ Context: P10 permits optional billing/webhooks but requires real integration sta
 Decision: Select outgoing webhooks, retain Stripe/Slack as unselected and hide checkout. Use Supabase cron/Edge leased delivery, Vault encryption, metadata-only payloads, endpoint/event uniqueness, bounded retries, public IPv4 HTTPS transport with DNS pinning and no redirects, immutable event identity, receiver timestamp/HMAC validation, role-checked mutations, safe delivery history and revocation/cancellation. Derive platform states from provider probes or persisted evidence, distinguishing configured/pending checks from successful connections. No fabricated plans or client upgrade state; the only available application entitlement is the server-owned portfolio feature set.
 Consequences: Connected requires delivery/provider evidence. Endpoint removal revokes secrets and cancels pending work while retaining history. IPv6-only/private/plain HTTP destinations are intentionally unsupported. No new package dependency. Existing P08 automation trigger must remain intact.
 Files affected: supabase/migrations, supabase/functions/webhook-worker and _shared/webhook*, lib/integrations, lib/billing, app/app/settings/integrations, tests, docs/integrations.md.
+
+## ADR-020 — P11 security hardening and dependency remediation
+
+Date: 2026-10-11
+Status: accepted
+Context: The hostile P11 review found a polymorphic trigger runtime failure, missing browser security headers, auth abuse controls absent from server actions, and two high-severity production dependency advisories.
+Decision: Replace generic-trigger direct field access with JSON row access in a versioned migration, use a service-only atomic database rate-limit backstop when Redis is not configured, explicitly set the authenticated Realtime token before subscribing, enforce a widget-compatible CSP and cross-origin loader policy, and upgrade Next.js to 16.3.8 with source-map-js 1.2.2 override. Keep worker-only SECURITY DEFINER RPCs service-role-only; retain role-checked authenticated RPCs with fixed search paths and live penetration proof.
+Alternatives considered: weakening the migration test, disabling Realtime, allowing unauthenticated broad table access, leaving advisories unresolved, and using a report-only CSP as the final policy.
+Consequences: P04 support writes, P05 widget/Realtime flow, P08 automation, P10 integration UI, tenant attack suites, headers smoke, production build, unit/static gates and dependency audit pass. Supabase advisor output remains limited to previously reviewed service-only INFOs, role-checked SECURITY DEFINER WARNs, sparse unused indexes, and the provider-plan leaked-password WARN.
+Files affected: supabase/migrations/20261011121955_p11_trigger_hardening.sql, app/(auth)/actions.ts, components/support/inbox-realtime.tsx, next.config.ts, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, tests/live/p05-widget.mjs, tests/unit/auth-security.test.ts.
+
+## ADR-016 — Deterministic Windows test pool and powered-by removal
+
+Date: 2026-10-12
+Status: accepted
+Context: The default Vitest command intermittently lost the temporary `server-only` SSR alias under the Windows fork pool, and the production response exposed the framework signature header.
+Decision: Run Vitest in the thread pool with file parallelism disabled so the repository test command is deterministic on the supported Windows environment. Disable Next's `X-Powered-By` header and add an E2E regression assertion for the security header baseline.
+Consequences: `vitest run` passes without special flags; public and widget responses retain their intended CSP behavior while omitting framework fingerprinting.
+Files affected: `vitest.config.ts`, `next.config.ts`, `tests/e2e/foundation.spec.ts`.
+
+## ADR-021 — P12 browser gate uses direct Next webpack dev server
+
+Date: 2026-10-12
+Status: accepted
+Context: The P12 route/control audit required a repeatable browser gate. The repository’s pnpm web-server shim attempted a package-manager bootstrap on Windows, and Next 16’s default Turbopack dev server panicked while writing the project CSS endpoint in this environment.
+Decision: Run Playwright’s local web server with `node node_modules/next/dist/bin/next dev --webpack` so browser verification uses the same webpack path as the passing production build and does not depend on pnpm shim behavior.
+Consequences: The full 19-test Playwright suite runs successfully on the supported Windows environment. Production deployment behavior is unchanged; the production gate remains `next build --webpack`.
+Files affected: `playwright.config.ts`, `tests/e2e/p12-public.spec.ts`.
+
+## ADR-022 — P12 role-safe controls and mobile clipping
+
+Date: 2026-10-12
+Status: accepted
+Context: The authenticated P12 audit found viewer-visible support mutation controls, an automation action without its required ticket fields, silent automation/integration mutation failures, and a 320px overflow caused by a visually hidden filter label inheriting mobile `width: 100%`.
+Decision: Enforce viewer read-only behavior in both rendered controls and support server actions; expose required automation ticket fields only for the selected action; route automation/integration destructive actions through action-state feedback and confirmation; define a clipped `.sr-only` utility and constrain hidden filter labels to 1px on mobile.
+Consequences: Viewer routes remain inspectable without write controls or RPC escalation, automation actions are schema-complete, destructive failures are visible, and the real 320px inbox route has no document overflow.
+Files affected: `app/app/support-actions.ts`, `app/app/inbox/[conversationId]/page.tsx`, `app/app/customers`, `app/app/tickets`, `app/app/automations`, `app/app/settings/integrations`, `app/globals.css`, `components/support/support-forms.tsx`, `tests/live/p12-app-audit.mjs`.
+
+## ADR-021 — P13 reproducible seed and migration-order repair
+
+Date: 2026-10-12
+Status: accepted for P13 implementation; release proof pending owner gates
+
+Context: The portfolio release needs a real demo workspace path and a fresh clone must preserve the P11 trigger fix. Local migration filenames place the P11 trigger hardening before a later P10 invariant migration that recreated the unsafe direct-row trigger functions. The production Supabase history was applied through MCP with provider-assigned timestamps, so local and remote migration names also need explicit parity evidence.
+
+Decision: Add an idempotent `scripts/seed-demo.mjs` guarded by `ALLOW_DEMO_SEED=1`. It uses a dedicated owner account, role-checked Auth/RPC paths, exact widget origin, real knowledge ingestion, and no seeded AI answer or fake metrics. Add a final P13 migration that reapplies JSON row access to automation and webhook triggers after every P10 migration. Apply that migration to SupportSphere and keep the provider-assigned version `20261012163227` in the repository filename.
+
+Alternatives considered: embedding demo arrays in UI, direct fake AI rows, seeding a ready source without ingestion evidence, relying on migration filename order without a final invariant pass, or silently editing already-applied migrations.
+
+Consequences: A portfolio operator can create repeatable demo state in the real database without exposing secrets. Fresh clones and the current project share the trigger-safe final state. P13 remains blocked until credential rotation, Vercel environment/deployment inspection, and real Gemini provider proof are complete.
+
+Files affected: `scripts/seed-demo.mjs`, `docs/demo-seed.md`, `README.md`, `supabase/migrations/20261012163227_p13_reproducibility_trigger_hardening.sql`, `.agent/*`.

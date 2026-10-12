@@ -385,3 +385,80 @@ Status: **COMPLETE**.
 - A final visibility migration, `20261011141000_p10_webhook_visibility`, grants authenticated users access only to the non-secret `revoked_at` metadata required to exclude revoked endpoints. No endpoint secret column or secret value is exposed.
 - Final direct gates passed: TypeScript, ESLint, Prettier, Vitest 51 passed / 3 skipped, webpack production build, Playwright 13 passed, authenticated P10 smoke, and `git diff --check`.
 - Supabase MCP reports migrations through `20261011114641`, active `webhook-worker` v5, active minute cron, zero retained webhook endpoints/deliveries, and only the previously recorded security/performance advisor notices. P07 Gemini quota remains a separate blocker.
+
+## P11 hostile security review — 2026-10-11
+
+| Finding / requirement | Reproduction or proof | Fix / status |
+| --- | --- | --- |
+| P1 trigger runtime failure | Live P04 attack suite hit `record "new" has no field "priority"` on message insert | Migration `20261011121955_p11_trigger_hardening` uses JSON row access in automation/webhook triggers; P04 suite passed after application. CLOSED |
+| P1 dependency vulnerabilities | `pnpm audit --prod --audit-level high` reported Next SSRF and source-map-js DoS | Next 16.3.8, eslint-config-next 16.3.8, source-map-js 1.2.2 override; audit now reports no known vulnerabilities. CLOSED |
+| Auth abuse/rate limits | Server actions previously bypassed central buckets | Login/signup/recovery use separate IP+email buckets through Redis or service-only atomic Postgres backstop; unit coverage and live auth flows pass. CLOSED |
+| CSP/security headers | Production server header smoke checked `/` and `/widget/unavailable` | Enforced CSP, HSTS in production, nosniff, referrer, permissions, COOP, widget-compatible frame policy and cross-origin loader policy. CLOSED |
+| Tenant IDOR/RLS/roles | Live P01/P03/P04 suites passed after migration; MCP policies/advisors inspected | No cross-tenant reads/writes or viewer escalation observed; intentional SECURITY DEFINER warnings have role checks or service-only grants. CLOSED |
+| Storage/widget/Realtime abuse | P05 golden host→widget→inbox→reply→reload and hostile origin/session/rate tests passed; strict authenticated Realtime event assertion passed | Exact origin/bootstrap/session checks, private storage and RLS remain enforced. CLOSED |
+| Automation/integration regressions | P08 and P10 authenticated UI smokes passed at 320–1024px | Trigger repair preserved automation; integration state and webhook UI remain real. CLOSED |
+| Prompt injection / secret leakage | Unit AI workflow suite and source/log scan; worker uses untrusted evidence context and redaction | No client/service credential exposure found; controlled injection suite passes. Real Gemini provider verification remains separately tracked in P07 MANUAL-008. REVIEWED |
+| Webhook DNS TOCTOU | Worker revalidates public DNS immediately before HTTPS fetch; no redirect/private IPv4 allowed | Residual DNS rebinding window remains a documented low-probability owner-configured endpoint risk; no high-severity advisor finding. REVIEWED |
+| Auth leaked-password advisor | Supabase security advisor reports provider-level WARN; official docs limit control to Pro+ | No application migration can enable it on current plan; documented provider limitation, no app high-severity finding. REVIEWED |
+
+P11 commands/evidence: `node_modules/.bin/tsc --noEmit` PASS; `node_modules/.bin/eslint .` PASS; `node_modules/.bin/prettier --check .` PASS; Vitest 52 passed / 3 opt-in skipped; elevated `node_modules/.bin/next build --webpack` PASS on Next 16.3.8; `pnpm audit --prod --audit-level high` PASS with no known vulnerabilities; live P01/P03/P04 security suites PASS; live P05 widget PASS; live P08/P10 authenticated UI PASS; production header smoke PASS; `git diff --check` PASS. Supabase MCP migration `20261011121955_p11_trigger_hardening`, security/performance advisors and tenant policies inspected. Vercel MCP was unavailable.
+`node_modules/.bin/playwright test` PASS — 13 tests. Final live P05 strict Realtime run passed after enforced CSP and widget-compatible cross-origin headers. `pnpm install` updated the committed lockfile to Next 16.3.8/source-map-js 1.2.2.
+
+## P11 verification pass — 2026-10-12
+
+| Requirement | Automated proof | Manual/MCP proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Tenant/RLS/IDOR and role boundaries | Existing live P01/P03/P04 attack suites recorded in prior P11 gate | Supabase tables, migration history, and policies/advisors inspected | PASS | No high-severity advisor finding. |
+| Auth, reset, OAuth, abuse controls | 16 auth security assertions; 52 unit tests total; auth actions use Redis/service-only atomic fallback | Existing live auth/reset/OAuth evidence retained | PASS | Password reset remains OTP + scoped HttpOnly cookie. |
+| Upload, widget, realtime, URL/webhook abuse | Existing live P05/P10 hostile and authenticated probes; unit webhook/security suites | Supabase security/performance advisors rerun | PASS | Intentional INFO/WARN findings only; P07 provider gate remains separate. |
+| Security headers and client secret isolation | E2E header regression (14 Playwright tests); built client secret scan clean | Production header smoke: CSP/HSTS/nosniff/referrer/permissions/COOP present; X-Powered-By absent | PASS | Widget CSP preserves cross-origin framing. |
+| Dependency and build hygiene | `pnpm audit --prod --audit-level high` clean; typecheck/lint/format/build pass; `git diff --check` pass | — | PASS | Next 16.3.8 and source-map-js 1.2.2 override are locked. |
+| Responsive/accessibility/public UX regression | 14 Playwright tests across mobile/desktop widths pass | — | PASS | No overflow, metadata, mobile navigation, or keyboard regressions observed. |
+
+## P12 final phase gate — 2026-10-12
+
+| Requirement | Automated proof | Manual/MCP proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Public route inventory and content | `tests/e2e/p12-public.spec.ts` covers `/`, all implemented marketing/legal routes, widget fallback, and custom 404; all return expected status and one H1 | Production-build browser audit visited public/auth routes and found no page errors | PASS | `/app`, invite, and widget session routes remain protected/dynamic and are covered by prior authenticated phase smokes |
+| SEO metadata and crawl assets | P12 route test checks title/description/canonical behavior; existing `p02-public.spec.ts` checks robots/sitemap; `publicMetadata` centralizes canonical/Open Graph rules | Production build generated `/robots.txt` and `/sitemap.xml`; local no-origin mode correctly disallows crawling | PASS | Production canonical requires the configured `NEXT_PUBLIC_APP_URL` owner setting already recorded in P02 |
+| Links, logo, navigation, and 404 | P12 internal-link audit passes; mobile menu and clickable wordmarks are exercised; custom 404 returns 404 with home CTA | Browser audit found zero broken internal routes | PASS | No dead marketing controls found |
+| Responsive and mobile behavior | P12 route audit passes at 320/360/390/768/1024/1440; existing P02 fixed-control collision checks pass | Production-build visual smoke found no horizontal overflow | PASS | Sticky CTA and cookie notice overlap checks remain in P02 suite |
+| Loading, error, empty, and form feedback | Existing app route implementations provide segment loading/error and real empty/error states; auth/contact E2E suites pass | P12 live audit exercised real empty/populated/error/validation/success paths | PASS | No new data or mutation path was introduced in P12 |
+| Keyboard, focus, reduced motion, and consent | P12 verifies skip-link focus, mobile disclosure, cookie dismissal persistence; existing marketing reduced-motion and auth keyboard tests pass | Browser audit confirms no console errors on public routes | PASS | Optional analytics remains disabled; cookie notice only stores its dismissal state |
+| Widget fallback semantics | `/widget/unavailable` now has a descriptive metadata field and an accessible H1/labelled main | Browser production-build smoke passes | PASS | Internal noindex route intentionally has no canonical |
+| Static, unit, E2E, and production gates | TypeScript PASS; ESLint PASS; Prettier PASS; Vitest 52 passed / 3 skipped; Playwright 19 passed; webpack production build PASS; `git diff --check` PASS | — | PASS | Playwright server uses direct Next webpack dev command to avoid pnpm/Turbopack Windows shims |
+| Authenticated route/control inventory | `tests/live/p12-app-audit.mjs` passed 153 checks against real Supabase fixtures: all app routes, detail routes, settings, automations, knowledge, support writes, field errors, populated states, role variants, focus and console checks | Disposable workspace/user/source/ticket/conversation/automation fixtures were removed; Supabase MCP confirms RLS and migration state | PASS | Passed at 320/360/390/768/1024/1440px; no overflow or page/console errors |
+| Mobile overflow repair | Live audit identified `.sr-only` filter label width expansion to 337px at 320px and reproduced it in the real inbox route | CSS fix re-audited in the final 153-check live run | PASS | `.sr-only` clipping plus mobile filter width override now prevents document expansion |
+| Role and mutation safety | Live viewer variant hid support writes and direct viewer RPC mutation failed; server actions re-check role; automation and integration failures now surface feedback | Real owner workspace role switched owner → admin → agent → viewer and restored/cleaned | PASS | Viewer retains read access and notification read state; no write control or RPC escalation remained |
+
+Supabase MCP final inspection: remote migrations through `20261011121955_p11_trigger_hardening`; all 39 public tables have RLS enabled. Security advisor output remains the documented five service-only RLS INFOs, eleven role-checked SECURITY DEFINER WARNs, and provider-plan leaked-password WARN. No schema change was introduced in P12. Vercel MCP was unavailable in this session; production-origin/canonical evidence remains the owner-configured P02 deployment record.
+
+## P13 production deployment and portfolio proof — 2026-10-12
+
+| Requirement | Automated proof | Live/MCP proof | Status | Notes |
+| --- | --- | --- | --- | --- |
+| Reproducible demo seed | `node --check scripts/seed-demo.mjs`; script uses Auth, RLS/RPCs, widget config, real ingestion queue, explicit `ALLOW_DEMO_SEED=1`; no AI output/analytics mock | Runbook in `docs/demo-seed.md`; not executed against owner data in this pass | PASS | Owner must provide a dedicated demo account/origin before running the seed |
+| Portfolio README | README now documents product, Mermaid architecture, stack, setup, migrations/types, seed, RAG/AI graph, security, golden journey, provider caveats, limitations, acknowledgments, and reviewed screenshot | `docs/screenshots/production-home.png` visually reviewed from the production origin | PASS | README states P13 and Gemini limitations honestly |
+| Fresh-clone migration order | P13 migration `20261012163227_p13_reproducibility_trigger_hardening.sql` reapplies JSON-safe automation/webhook triggers after later P10 files | Applied through Supabase MCP; migration list includes `20261012163227`; `pg_get_functiondef` reports both trigger functions JSON-safe | PASS | No table/type change; generated-types MCP call completed |
+| Supabase production | — | Project `xviumgygixcklrbuynoh` ACTIVE_HEALTHY; migrations through P13; 39 public tables RLS-enabled; knowledge/AI/automation/webhook workers and five cron jobs active | PASS | Advisor output remains documented INFO/WARN set: five intentional no-policy service tables, eleven role-checked SECURITY DEFINER RPCs, leaked-password provider WARN, sparse unused-index INFOs |
+| Production public deployment | — | `node tests/live/p02-production.mjs` passed 12 public pages, 14 internal targets, six widths, SEO, keyboard, console, 404; robots/sitemap/widget loader returned HTTP 200 | PASS | Recorded origin `https://support-sphere-psi.vercel.app` is reachable |
+| OAuth callback origin | — | `node tests/live/p02-auth-origin.mjs` passed exact production Google callback initiation | PASS | Full sign-in callback still requires deployment/provider environment parity |
+| Static release gate | TypeScript PASS; ESLint PASS; Prettier PASS; Vitest 52 passed / 3 skipped; elevated webpack build PASS; `git diff --check` PASS; tracked-file secret scan clean | — | PASS | First sandbox build hit Windows `.next` EPERM; elevated rerun passed |
+| Browser suite | Existing P12 gate was 19/19; current `node_modules/.bin/playwright test` stalled before report on this Windows host and was stopped | Dedicated production smoke passed | PARTIAL | Re-run full suite where the configured Playwright webServer starts reliably |
+| Manual owner gates | — | Credential values were printed during configuration inspection and must be rotated; Vercel connector/env parity and Gemini quota/model verification remain unresolved | BLOCKED_MANUAL | See MANUAL-010, MANUAL-011, and existing MANUAL-008 |
+| Full deployed golden journey | — | Not claimed; requires demo seed, knowledge indexing, real widget message, AI evidence/handoff, human reply, ticket, analytics, and provider/runtime secrets | BLOCKED_MANUAL | Do not mark P13 complete until owner gates are verified |
+| Repository cleanliness | `git status` shows prior uncommitted P12 changes plus P13 files; no tracked secrets | — | BLOCKED | Consolidate/commit the coherent P12/P13 work after manual gates and final verification |
+
+### P13 commands
+
+- `node_modules/.bin/tsc --noEmit` — PASS
+- `node_modules/.bin/eslint .` — PASS
+- `node_modules/.bin/prettier --check .` — PASS
+- `node_modules/.bin/vitest run --pool=threads --no-file-parallelism` — 52 passed, 3 skipped
+- `node_modules/.bin/next build --webpack` — PASS with elevated filesystem access after sandbox `.next` EPERM
+- `node_modules/.bin/playwright test` — stalled before report on this Windows host; stopped; focused `tests/e2e/p12-public.spec.ts` — 5 passed
+- `node tests/live/p02-production.mjs` against `https://support-sphere-psi.vercel.app` — PASS
+- `node tests/live/p02-auth-origin.mjs` — PASS
+- `git diff --check` — PASS
+- Supabase MCP migration/table/function/cron/advisor inspection — PASS with documented existing notices
+- Tracked-file secret scan — PASS; only placeholders/test patterns matched

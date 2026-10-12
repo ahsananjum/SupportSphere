@@ -176,3 +176,46 @@ Do NOT paste: tokens, service/secret keys, legacy JWT secret, database passwords
 Store result in: ignored local environment, Supabase secret/account settings, Vercel server-only environment variables.
 Agent verification: public client authentication succeeded in the authenticated integrations smoke, and the replacement server credential succeeded in a metadata-only Supabase query. The live smoke and fixture cleanup were rerun with no values logged. The owner confirmed the old credentials were revoked; provider revocation details are not echoed here.
 Blocking phase: P10
+
+## MANUAL-010 — Rotate credentials exposed during P13 inspection
+
+Status: PENDING
+
+Why: The ignored local `.env` contains non-placeholder Supabase, Brevo, and access credentials. A configuration inspection printed credential values into the session tool output. Treat the affected values as compromised before using this checkout for production verification.
+
+Steps:
+
+1. In Supabase Dashboard → Project Settings → API, revoke/rotate the exposed service credential and personal access token. Update only the local ignored env file and the Vercel/Supabase secret stores that use the replacement values.
+2. In Brevo → SMTP & API → API keys, revoke the exposed API key and create a replacement. Keep the sender identity unchanged only if its verification remains valid.
+3. Check Vercel Project Settings → Environment Variables and Supabase Edge Function Secrets for the affected names; replace values without pasting them into chat or source.
+4. Re-run a metadata-only Supabase query and the authenticated application smoke after rotation. Do not print secret values.
+
+Do NOT paste: any API key, service credential, access token, password, OAuth secret, or full `.env` contents into chat, logs, screenshots, or commits.
+
+Store result in: provider dashboards, Vercel/Supabase secret stores, and the ignored local env file only.
+
+Agent verification: confirm Supabase project metadata, Edge Function health, authenticated app access, and Brevo test delivery without reading or logging secret values.
+
+Blocking phase: P13
+
+## MANUAL-011 — Connect Vercel production inspection and release secrets
+
+Status: PENDING
+
+Why: P13 requires proof that the deployed Vercel production project uses the current repository commit and complete production environment. The Vercel connector is available but not installed in this session, so deployment commit, runtime logs, and environment names cannot be inspected through MCP. The public origin alone cannot prove server-only Redis, job, Brevo, or AI configuration.
+
+Steps:
+
+1. Install/connect the Vercel plugin for the Vercel account that owns project `support-sphere`, then expose the project to the agent without sharing an account token in chat.
+2. In Vercel Project → Settings → Environment Variables, set the exact production values for `NEXT_PUBLIC_APP_URL=https://support-sphere-psi.vercel.app`, Supabase public URL/publishable key, server-only Supabase credential, Redis REST URL/token, Brevo API/sender values, job provider values, and selected AI values. Keep analytics unset because the product choice is off; keep Stripe unset because billing is unselected.
+3. Redeploy the current branch and record the deployment URL, deployment commit SHA, and environment names. Do not paste any secret values into chat.
+4. In Supabase Auth URL Configuration, verify the production site URL and `/auth/callback` allow-list match the exact origin. Keep Google OAuth client secrets in Google/Supabase only.
+5. Tell the agent only the non-secret deployment URL/commit and that the production environment variables were updated. The agent will run the read-only golden journey, inspect Vercel logs, and verify OAuth/email links.
+
+Do NOT paste: Vercel tokens, provider secrets, OAuth client secrets, Supabase service keys, Redis/Brevo/job/AI credentials, or customer data.
+
+Store result in: Vercel environment variables, provider dashboards, and Supabase Auth configuration.
+
+Agent verification: Vercel deployment status/logs, production commit parity, environment validation behavior, browser console, OAuth callback, email-link origin, mobile smoke, and the full golden journey.
+
+Blocking phase: P13

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
 import { getTicket } from '../../../../lib/support/queries';
 import { updateTicket } from '../../support-actions';
+import { SubmitButton } from '../../../../components/shared/submit-button';
 
 export const metadata = {
   title: 'Ticket',
@@ -68,53 +69,57 @@ export default async function TicketPage({
             <p className="page-intro">No events recorded.</p>
           )}
         </section>
-        <aside className="workspace-card">
-          <p className="eyebrow">ROUTING</p>
-          <form action={updateTicket} className="form-stack">
-            <input type="hidden" name="ticketId" value={ticket.id} />
-            <div className="field">
-              <label htmlFor="ticket-status">Status</label>
-              <select
-                id="ticket-status"
-                name="status"
-                defaultValue={ticket.status}
-              >
-                <option value="open">Open</option>
-                <option value="in_progress">In progress</option>
-                <option value="pending">Pending</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="ticket-priority">Priority</label>
-              <select
-                id="ticket-priority"
-                name="priority"
-                defaultValue={ticket.priority}
-              >
-                <option value="low">Low</option>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="ticket-assignee">Assignment</label>
-              <select
-                id="ticket-assignee"
-                name="assignee"
-                defaultValue={ticket.assignee_user_id ? 'me' : ''}
-              >
-                <option value="">Unassigned</option>
-                <option value="me">Assign to me</option>
-              </select>
-            </div>
-            <button className="secondary-button" type="submit">
-              Save ticket
-            </button>
-          </form>
-        </aside>
+        {active.role !== 'viewer' && (
+          <aside className="workspace-card">
+            <p className="eyebrow">ROUTING</p>
+            <form action={updateTicket} className="form-stack">
+              <input type="hidden" name="ticketId" value={ticket.id} />
+              <div className="field">
+                <label htmlFor="ticket-status">Status</label>
+                <select
+                  id="ticket-status"
+                  name="status"
+                  defaultValue={ticket.status}
+                >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="pending">Pending</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="ticket-priority">Priority</label>
+                <select
+                  id="ticket-priority"
+                  name="priority"
+                  defaultValue={ticket.priority}
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+              <div className="field">
+                <label htmlFor="ticket-assignee">Assignment</label>
+                <select
+                  id="ticket-assignee"
+                  name="assignee"
+                  defaultValue={ticket.assignee_user_id ? 'me' : ''}
+                >
+                  <option value="">Unassigned</option>
+                  <option value="me">Assign to me</option>
+                </select>
+              </div>
+              <SubmitButton
+                idle="Save ticket"
+                busy="Saving…"
+                className="secondary-button"
+              />
+            </form>
+          </aside>
+        )}
       </div>
     </div>
   );

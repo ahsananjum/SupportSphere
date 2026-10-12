@@ -1,11 +1,12 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { initialFormState } from '../../../lib/action-state';
 import { createAutomationRule } from './actions';
 import { SubmitButton } from '../../../components/shared/submit-button';
 
 export function AutomationForm() {
+  const [actionType, setActionType] = useState('notify');
   const [state, action] = useActionState(
     createAutomationRule,
     initialFormState,
@@ -26,6 +27,7 @@ export function AutomationForm() {
             required
             maxLength={120}
             placeholder="Urgent conversations"
+            defaultValue={state.values?.name}
           />
         </label>
         <label>
@@ -66,7 +68,11 @@ export function AutomationForm() {
         </div>
         <label>
           Action
-          <select name="actionType" defaultValue="notify">
+          <select
+            name="actionType"
+            value={actionType}
+            onChange={(event) => setActionType(event.target.value)}
+          >
             <option value="notify">Notify the support team</option>
             <option value="set_priority">Set priority</option>
             <option value="set_status">Set status</option>
@@ -75,36 +81,80 @@ export function AutomationForm() {
             <option value="invoke_ai_draft">Queue AI draft</option>
           </select>
         </label>
-        <label>
-          Action value (for priority/status)
-          <select name="actionValue" defaultValue="urgent">
-            <option value="urgent">Urgent</option>
-            <option value="high">High</option>
-            <option value="normal">Normal</option>
-            <option value="low">Low</option>
-            <option value="open">Open</option>
-            <option value="pending">Pending</option>
-            <option value="closed">Closed</option>
-            <option value="in_progress">In progress</option>
-            <option value="resolved">Resolved</option>
-          </select>
-        </label>
-        <label>
-          Notification title
-          <input
-            name="notifyTitle"
-            maxLength={120}
-            placeholder="Automation matched"
-          />
-        </label>
-        <label>
-          Notification body
-          <textarea
-            name="notifyBody"
-            maxLength={400}
-            placeholder="A support event matched this rule."
-          />
-        </label>
+        {(actionType === 'set_priority' || actionType === 'set_status') && (
+          <label>
+            Action value (for priority/status)
+            <select
+              key={actionType}
+              name="actionValue"
+              defaultValue={actionType === 'set_priority' ? 'urgent' : 'open'}
+            >
+              {(actionType === 'set_priority'
+                ? ['urgent', 'high', 'normal', 'low']
+                : ['open', 'pending', 'closed', 'in_progress', 'resolved']
+              ).map((value) => (
+                <option value={value} key={value}>
+                  {value.replaceAll('_', ' ')}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {actionType === 'create_ticket' && (
+          <>
+            <label>
+              Ticket title
+              <input
+                name="ticketTitle"
+                required
+                maxLength={240}
+                defaultValue={state.values?.ticketTitle}
+              />
+            </label>
+            <label>
+              Ticket description
+              <textarea
+                name="ticketDescription"
+                maxLength={40000}
+                defaultValue={state.values?.ticketDescription}
+              />
+            </label>
+            <label>
+              Ticket priority
+              <select name="ticketPriority" defaultValue="normal">
+                {['low', 'normal', 'high', 'urgent'].map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+        {actionType === 'notify' && (
+          <>
+            <label>
+              Notification title
+              <input
+                name="notifyTitle"
+                maxLength={120}
+                placeholder="Automation matched"
+                required
+                defaultValue={state.values?.notifyTitle}
+              />
+            </label>
+            <label>
+              Notification body
+              <textarea
+                name="notifyBody"
+                maxLength={400}
+                placeholder="A support event matched this rule."
+                required
+                defaultValue={state.values?.notifyBody}
+              />
+            </label>
+          </>
+        )}
         <label className="checkbox-label">
           <input type="checkbox" name="enabled" defaultChecked />
           Run this rule when matching events arrive

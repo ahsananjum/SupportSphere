@@ -79,7 +79,7 @@ export async function createWebhookEndpoint(
   revalidatePath('/app/settings/integrations');
   return {
     success:
-      'Endpoint connected. Copy the signing secret now; it will not be shown again.',
+      'Endpoint saved. Copy the signing secret now; it will not be shown again. Connection is verified after a successful delivery.',
     secret,
   };
 }
@@ -127,33 +127,61 @@ export async function updateWebhookEndpoint(
   return { success: 'Endpoint settings saved.' };
 }
 
-export async function deleteWebhookEndpoint(formData: FormData) {
+export async function deleteWebhookEndpoint(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = z.string().uuid().safeParse(formData.get('endpointId'));
-  if (!id.success) return;
+  if (!id.success || formData.get('confirm') !== 'on')
+    return { message: 'Confirm revocation before removing this endpoint.' };
   const { supabase, active } = await getWorkspaceContext();
-  if (!active || !canManage(active.role)) return;
-  await supabase.rpc('delete_webhook_endpoint', {
+  if (!active || !canManage(active.role))
+    return { message: 'Only owners and admins can manage integrations.' };
+  const { error } = await supabase.rpc('delete_webhook_endpoint', {
     p_workspace_id: active.id,
     p_endpoint_id: id.data,
   });
+  if (error) {
+    logEvent('webhook.revoke', 'failed', {
+      workspaceId: active.id,
+      errorClass: error.code,
+    });
+    return {
+      message: 'The endpoint could not be revoked. Refresh and try again.',
+    };
+  }
   revalidatePath('/app/settings/integrations');
+  return { success: 'Endpoint revoked. Queued deliveries were canceled.' };
 }
 
-export async function sendWebhookTest(formData: FormData) {
+export async function sendWebhookTest(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = z.string().uuid().safeParse(formData.get('endpointId'));
-  if (!id.success) return;
+  if (!id.success)
+    return { message: 'This endpoint is unavailable. Refresh to retry.' };
   const { supabase, active } = await getWorkspaceContext();
-  if (!active || !canManage(active.role)) return;
+  if (!active || !canManage(active.role))
+    return { message: 'Only owners and admins can manage integrations.' };
   const { error } = await supabase.rpc('enqueue_webhook_test', {
     p_workspace_id: active.id,
     p_endpoint_id: id.data,
   });
-  if (error)
+  if (error) {
     logEvent('webhook.test', 'failed', {
       workspaceId: active.id,
       errorClass: error.code,
     });
+    return {
+      message:
+        'The test could not be queued. Check that the endpoint is enabled and try again shortly.',
+    };
+  }
   revalidatePath('/app/settings/integrations');
+  return {
+    success: 'Signed test queued. Delivery status appears in Recent attempts.',
+  };
 }
 
 export async function rotateWebhookSecret(

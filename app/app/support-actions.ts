@@ -30,6 +30,9 @@ function formValues(formData: FormData): Record<string, string> {
     ]),
   );
 }
+function canWriteSupport(role: string) {
+  return role !== 'viewer';
+}
 // Supabase's generated RPC types currently flatten nullable PostgreSQL
 // parameters to strings. Keep the runtime null semantics used by the
 // SECURITY DEFINER functions while preserving the generated schema file.
@@ -56,6 +59,8 @@ export async function createCustomer(
   const { supabase, active } = await getWorkspaceContext();
   if (!active)
     return { message: 'Create a workspace before adding customers.' };
+  if (!canWriteSupport(active.role))
+    return { message: 'Viewer access is read-only for support records.' };
   const { data, error } = await supabase.rpc('create_or_get_customer', {
     p_workspace_id: active.id,
     p_name: parsed.data.name,
@@ -80,12 +85,20 @@ export async function createConversation(
   });
   if (!parsed.success)
     return {
+      fields: Object.fromEntries(
+        parsed.error.issues.map((issue) => [
+          String(issue.path[0] ?? 'form'),
+          issue.message,
+        ]),
+      ),
       message: 'Choose a customer and add a subject.',
       values: formValues(formData),
     };
   const { supabase, active } = await getWorkspaceContext();
   if (!active)
     return { message: 'Create a workspace before starting a conversation.' };
+  if (!canWriteSupport(active.role))
+    return { message: 'Viewer access is read-only for support records.' };
   const { data, error } = await supabase.rpc('create_conversation', {
     p_workspace_id: active.id,
     p_customer_id: parsed.data.customerId,
@@ -108,11 +121,14 @@ export async function sendMessage(
   });
   if (!parsed.success)
     return {
+      fields: { body: 'Write a message before sending.' },
       message: 'Write a message before sending.',
       values: formValues(formData),
     };
   const { supabase, active } = await getWorkspaceContext();
   if (!active) return { message: 'Your workspace is unavailable.' };
+  if (!canWriteSupport(active.role))
+    return { message: 'Viewer access is read-only for support records.' };
   const { data, error } = await supabase.rpc('send_message', {
     p_workspace_id: active.id,
     p_conversation_id: parsed.data.conversationId,
@@ -145,11 +161,19 @@ export async function createTicket(
   });
   if (!parsed.success)
     return {
+      fields: Object.fromEntries(
+        parsed.error.issues.map((issue) => [
+          String(issue.path[0] ?? 'form'),
+          issue.message,
+        ]),
+      ),
       message: 'Add a title and valid ticket details.',
       values: formValues(formData),
     };
   const { supabase, active } = await getWorkspaceContext();
   if (!active) return { message: 'Your workspace is unavailable.' };
+  if (!canWriteSupport(active.role))
+    return { message: 'Viewer access is read-only for support records.' };
   const { data, error } = await supabase.rpc('create_ticket', {
     p_workspace_id: active.id,
     p_title: parsed.data.title,
@@ -171,6 +195,8 @@ export async function updateConversation(formData: FormData) {
   const { supabase, active, user } = await getWorkspaceContext();
   const id = String(formData.get('conversationId') ?? '');
   if (!active || !id) redirect('/app/inbox?error=invalid');
+  if (!canWriteSupport(active.role))
+    redirect(`/app/inbox/${id}?error=permission`);
   const { error } = await supabase.rpc('update_conversation', {
     p_workspace_id: active.id,
     p_conversation_id: id,
@@ -186,6 +212,8 @@ export async function updateTicket(formData: FormData) {
   const { supabase, active, user } = await getWorkspaceContext();
   const id = String(formData.get('ticketId') ?? '');
   if (!active || !id) redirect('/app/tickets?error=invalid');
+  if (!canWriteSupport(active.role))
+    redirect(`/app/tickets/${id}?error=permission`);
   const { error } = await supabase.rpc('update_ticket', {
     p_workspace_id: active.id,
     p_ticket_id: id,

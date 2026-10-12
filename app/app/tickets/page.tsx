@@ -46,12 +46,14 @@ export default async function TicketsPage({
             Track work that needs a durable owner, status, and timeline.
           </p>
         </div>
-        <details className="create-disclosure">
-          <summary className="primary-button">Create ticket</summary>
-          <div className="disclosure-panel">
-            <TicketForm />
-          </div>
-        </details>
+        {active.role !== 'viewer' && (
+          <details className="create-disclosure">
+            <summary className="primary-button">Create ticket</summary>
+            <div className="disclosure-panel">
+              <TicketForm />
+            </div>
+          </details>
+        )}
       </div>
       <form className="filter-bar" role="search">
         <label className="sr-only" htmlFor="ticket-search">

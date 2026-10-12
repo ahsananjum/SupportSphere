@@ -44,12 +44,14 @@ export default async function CustomersPage({
             tickets.
           </p>
         </div>
-        <details className="create-disclosure">
-          <summary className="primary-button">Add customer</summary>
-          <div className="disclosure-panel">
-            <CustomerForm />
-          </div>
-        </details>
+        {active.role !== 'viewer' && (
+          <details className="create-disclosure">
+            <summary className="primary-button">Add customer</summary>
+            <div className="disclosure-panel">
+              <CustomerForm />
+            </div>
+          </details>
+        )}
       </div>
       <form className="filter-bar" role="search">
         <label className="sr-only" htmlFor="customer-search">

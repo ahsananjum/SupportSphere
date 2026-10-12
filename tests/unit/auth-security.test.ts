@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { safeNextPath } from '../../lib/auth/redirect';
 import { inviteSchema, workspaceSchema } from '../../lib/validation/auth';
+import { RATE_LIMITS } from '../../lib/redis/rate-limit';
 
 describe('post-auth redirects', () => {
   it.each([
@@ -24,6 +25,18 @@ describe('post-auth redirects', () => {
     '/app%2f%2fevil.example',
   ])('rejects unsafe path %s', (path) => {
     expect(safeNextPath(path)).toBe('/app');
+  });
+});
+
+describe('authentication abuse controls', () => {
+  it('keeps auth buckets bounded when the optional Redis limiter is configured', () => {
+    expect(RATE_LIMITS.auth).toEqual({
+      limit: 10,
+      windowSeconds: 60,
+      failOpen: false,
+    });
+    expect(RATE_LIMITS.signupInvite.failOpen).toBe(false);
+    expect(RATE_LIMITS.forgotPassword.failOpen).toBe(false);
   });
 });
 

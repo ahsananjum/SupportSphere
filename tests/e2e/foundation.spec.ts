@@ -13,3 +13,21 @@ test('foundation page renders without mobile overflow', async ({ page }) => {
     expect(overflow, `horizontal overflow at ${width}px`).toBe(false);
   }
 });
+
+test('response headers expose the security baseline', async ({ request }) => {
+  const response = await request.get('/');
+  expect(response.headers()['x-content-type-options']).toBe('nosniff');
+  expect(response.headers()['referrer-policy']).toBe(
+    'strict-origin-when-cross-origin',
+  );
+  expect(response.headers()['content-security-policy']).toContain(
+    "frame-ancestors 'self'",
+  );
+  expect(response.headers()['x-powered-by']).toBeUndefined();
+
+  const widget = await request.get('/widget/unavailable');
+  expect(widget.headers()['content-security-policy']).toContain(
+    'frame-ancestors *',
+  );
+  expect(widget.headers()['x-powered-by']).toBeUndefined();
+});

@@ -20,43 +20,52 @@ export function InboxRealtime({
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     );
+    let disposed = false;
     const refresh = () => router.refresh();
-    const channel = supabase
-      .channel(`inbox:${workspaceId}:${conversationId ?? 'list'}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `workspace_id=eq.${workspaceId}`,
-        },
-        (event) => {
-          const row = event.new as { id?: string; conversation_id?: string };
-          if (conversationId && row.conversation_id !== conversationId) return;
-          if (row.id && seen.current.has(row.id)) return;
-          if (row.id) seen.current.add(row.id);
-          if (seen.current.size > 300) seen.current.clear();
-          refresh();
-        },
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'conversations',
-          filter: `workspace_id=eq.${workspaceId}`,
-        },
-        (event) => {
-          const row = event.new as { id?: string };
-          if (!conversationId || row.id === conversationId) refresh();
-        },
-      )
-      .subscribe((status) => {
-        setConnected(status === 'SUBSCRIBED');
-        if (status === 'SUBSCRIBED') refresh();
-      });
+    let channel: ReturnType<typeof supabase.channel> | undefined;
+    void (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (disposed) return;
+      if (data.session?.access_token)
+        supabase.realtime.setAuth(data.session.access_token);
+      channel = supabase
+        .channel(`inbox:${workspaceId}:${conversationId ?? 'list'}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `workspace_id=eq.${workspaceId}`,
+          },
+          (event) => {
+            const row = event.new as { id?: string; conversation_id?: string };
+            if (conversationId && row.conversation_id !== conversationId)
+              return;
+            if (row.id && seen.current.has(row.id)) return;
+            if (row.id) seen.current.add(row.id);
+            if (seen.current.size > 300) seen.current.clear();
+            refresh();
+          },
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'conversations',
+            filter: `workspace_id=eq.${workspaceId}`,
+          },
+          (event) => {
+            const row = event.new as { id?: string };
+            if (!conversationId || row.id === conversationId) refresh();
+          },
+        )
+        .subscribe((status) => {
+          setConnected(status === 'SUBSCRIBED');
+          if (status === 'SUBSCRIBED') refresh();
+        });
+    })();
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') refresh();
     }, 4000);
@@ -66,7 +75,8 @@ export function InboxRealtime({
       clearInterval(timer);
       window.removeEventListener('online', refresh);
       window.removeEventListener('focus', refresh);
-      void supabase.removeChannel(channel);
+      disposed = true;
+      if (channel) void supabase.removeChannel(channel);
     };
   }, [workspaceId, conversationId, router]);
   return (

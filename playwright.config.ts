@@ -5,7 +5,9 @@ const baseURL = 'http://127.0.0.1:3100';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
-  workers: 2,
+  // Next's webpack dev compiler serializes CSS endpoint writes on Windows;
+  // concurrent workers can abort an otherwise valid navigation mid-rebuild.
+  workers: 1,
   timeout: 90_000,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
@@ -14,7 +16,8 @@ export default defineConfig({
     ...devices['Desktop Chrome'],
   },
   webServer: {
-    command: 'pnpm dev --hostname 127.0.0.1 --port 3100',
+    command:
+      'node node_modules/next/dist/bin/next dev --webpack --hostname 127.0.0.1 --port 3100',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

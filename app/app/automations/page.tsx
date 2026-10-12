@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { AutomationForm } from './automation-form';
-import { deleteAutomationRule, toggleAutomationRule } from './actions';
-import { SubmitButton } from '../../../components/shared/submit-button';
+import { RuleControls } from './rule-controls';
 
 export const metadata: Metadata = {
   title: 'Automations',
@@ -68,24 +67,11 @@ export default async function AutomationsPage() {
                   <small>Version {rule.version}</small>
                 </div>
                 {canManage && (
-                  <div className="record-actions">
-                    <form action={toggleAutomationRule}>
-                      <input type="hidden" name="ruleId" value={rule.id} />
-                      <SubmitButton
-                        idle={rule.enabled ? 'Disable' : 'Enable'}
-                        busy="Saving…"
-                        className="secondary-button"
-                      />
-                    </form>
-                    <form action={deleteAutomationRule}>
-                      <input type="hidden" name="ruleId" value={rule.id} />
-                      <SubmitButton
-                        idle="Delete"
-                        busy="Deleting…"
-                        className="text-button"
-                      />
-                    </form>
-                  </div>
+                  <RuleControls
+                    ruleId={rule.id}
+                    enabled={rule.enabled}
+                    name={rule.name}
+                  />
                 )}
               </li>
             ))}

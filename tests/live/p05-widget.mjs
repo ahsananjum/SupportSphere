@@ -104,21 +104,15 @@ try {
   });
   await agentPage.goto(`${app}/app/inbox`);
   await agentPage.getByText('Live updates on').waitFor({ timeout: 12000 });
+  const ownerSession = await owner.client.auth.getSession();
+  assert(
+    ownerSession.data.session?.access_token,
+    'Owner session missing for Realtime',
+  );
+  owner.client.realtime.setAuth(ownerSession.data.session.access_token);
   let resolveOwnerEvent;
-  const ownerEvent = new Promise((resolve, reject) => {
-    const timer = setTimeout(
-      () =>
-        reject(
-          new Error(
-            'Owner did not receive the customer Realtime message event',
-          ),
-        ),
-      30000,
-    );
-    resolveOwnerEvent = () => {
-      clearTimeout(timer);
-      resolve();
-    };
+  const ownerEvent = new Promise((resolve) => {
+    resolveOwnerEvent = resolve;
   });
   const ownerChannel = owner.client.channel(`p05-owner-${randomUUID()}`).on(
     'postgres_changes',
@@ -180,7 +174,21 @@ try {
     .fill('Can someone help with my order?');
   await frame.getByRole('button', { name: 'Send', exact: false }).click();
   await frame.getByText('Can someone help with my order?').waitFor();
-  await ownerEvent;
+  let eventTimer;
+  await Promise.race([
+    ownerEvent,
+    new Promise((_, reject) => {
+      eventTimer = setTimeout(
+        () =>
+          reject(
+            new Error(
+              'Owner did not receive the customer Realtime message event',
+            ),
+          ),
+        12000,
+      );
+    }),
+  ]).finally(() => clearTimeout(eventTimer));
   await owner.client.removeChannel(ownerChannel);
   await agentPage.getByText('Website conversation').waitFor({ timeout: 12000 });
   await agentPage.getByText('Website conversation').click();

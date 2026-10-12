@@ -9,6 +9,7 @@ import {
 import { updateConversation } from '../../support-actions';
 import { InboxRealtime } from '../../../../components/support/inbox-realtime';
 import { releaseAiHandoff } from '../../ai/actions';
+import { SubmitButton } from '../../../../components/shared/submit-button';
 
 export const metadata = {
   title: 'Conversation',
@@ -49,7 +50,10 @@ export default async function ConversationPage({
         ← Inbox
       </Link>
       <div className="conversation-layout">
-        <main className="conversation-main">
+        <section
+          className="conversation-main"
+          aria-label="Conversation timeline"
+        >
           <div className="page-heading">
             <p className="eyebrow">
               CONVERSATION / {conversation.channel.toUpperCase()}
@@ -84,9 +88,11 @@ export default async function ConversationPage({
                     name="conversationId"
                     value={conversation.id}
                   />
-                  <button className="secondary-button">
-                    Release AI handoff
-                  </button>
+                  <SubmitButton
+                    idle="Release AI handoff"
+                    busy="Releasing…"
+                    className="secondary-button"
+                  />
                 </form>
               )}
             </section>
@@ -148,16 +154,23 @@ export default async function ConversationPage({
               </Link>
             </section>
           )}
-          <Composer
-            key={latestAiRun?.id ?? 'none'}
-            conversationId={conversation.id}
-            initialBody={
-              latestAiRun?.decision === 'draft'
-                ? (latestAiRun.output_text ?? '')
-                : ''
-            }
-          />
-        </main>
+          {active.role !== 'viewer' ? (
+            <Composer
+              key={latestAiRun?.id ?? 'none'}
+              conversationId={conversation.id}
+              initialBody={
+                latestAiRun?.decision === 'draft'
+                  ? (latestAiRun.output_text ?? '')
+                  : ''
+              }
+            />
+          ) : (
+            <p className="field-help">
+              Your viewer role can read this conversation. Contact a workspace
+              admin for permission to reply.
+            </p>
+          )}
+        </section>
         <aside className="conversation-inspector">
           <section className="inspector-card">
             <p className="eyebrow">CUSTOMER</p>
@@ -171,65 +184,73 @@ export default async function ConversationPage({
               View customer ↗
             </Link>
           </section>
-          <section className="inspector-card">
-            <p className="eyebrow">ROUTING</p>
-            <form action={updateConversation} className="form-stack">
-              <input
-                type="hidden"
-                name="conversationId"
-                value={conversation.id}
+          {active.role !== 'viewer' && (
+            <>
+              <section className="inspector-card">
+                <p className="eyebrow">ROUTING</p>
+                <form action={updateConversation} className="form-stack">
+                  <input
+                    type="hidden"
+                    name="conversationId"
+                    value={conversation.id}
+                  />
+                  <div className="field">
+                    <label htmlFor="conversation-status">Status</label>
+                    <select
+                      id="conversation-status"
+                      name="status"
+                      defaultValue={conversation.status}
+                    >
+                      <option value="open">Open</option>
+                      <option value="pending">Pending</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="conversation-priority">Priority</label>
+                    <select
+                      id="conversation-priority"
+                      name="priority"
+                      defaultValue={conversation.priority}
+                    >
+                      <option value="low">Low</option>
+                      <option value="normal">Normal</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="conversation-assignee">Assignment</label>
+                    <select
+                      id="conversation-assignee"
+                      name="assignee"
+                      defaultValue={conversation.assignee_user_id ? 'me' : ''}
+                    >
+                      <option value="">Unassigned</option>
+                      <option value="me">Assign to me</option>
+                    </select>
+                  </div>
+                  <SubmitButton
+                    idle="Save routing"
+                    busy="Saving…"
+                    className="secondary-button"
+                  />
+                </form>
+              </section>
+            </>
+          )}
+          {active.role !== 'viewer' && (
+            <section className="inspector-card">
+              <p className="eyebrow">TICKET</p>
+              <p className="page-intro">
+                Create a durable work item from this conversation.
+              </p>
+              <TicketForm
+                customerId={conversation.customer_id}
+                conversationId={conversation.id}
               />
-              <div className="field">
-                <label htmlFor="conversation-status">Status</label>
-                <select
-                  id="conversation-status"
-                  name="status"
-                  defaultValue={conversation.status}
-                >
-                  <option value="open">Open</option>
-                  <option value="pending">Pending</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="conversation-priority">Priority</label>
-                <select
-                  id="conversation-priority"
-                  name="priority"
-                  defaultValue={conversation.priority}
-                >
-                  <option value="low">Low</option>
-                  <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="conversation-assignee">Assignment</label>
-                <select
-                  id="conversation-assignee"
-                  name="assignee"
-                  defaultValue={conversation.assignee_user_id ? 'me' : ''}
-                >
-                  <option value="">Unassigned</option>
-                  <option value="me">Assign to me</option>
-                </select>
-              </div>
-              <button className="secondary-button" type="submit">
-                Save routing
-              </button>
-            </form>
-          </section>
-          <section className="inspector-card">
-            <p className="eyebrow">TICKET</p>
-            <p className="page-intro">
-              Create a durable work item from this conversation.
-            </p>
-            <TicketForm
-              customerId={conversation.customer_id}
-              conversationId={conversation.id}
-            />
-          </section>
+            </section>
+          )}
         </aside>
       </div>
     </div>
