@@ -1,0 +1,5 @@
+Synthetic Lunar Report Export Guide.
+This article describes a fictional product used only for SupportSphere testing.
+To export a lunar report as PDF, open Settings, select Reports, then choose Export PDF.
+CSV export is unavailable.
+The export process does not change billing, account ownership, or customer permissions.

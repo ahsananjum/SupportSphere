@@ -267,3 +267,20 @@ Next exact actions:
 5. Re-run the full static/browser/mobile/security/secret gate; commit coherent P12/P13 changes; only then set VERIFYING → COMPLETE.
 
 The complete testing guide is now at `docs/verification-runbook.md` and linked from README. It is documentation-only, passed formatting/diff/credential-pattern checks, and was committed as `485a82e`. P13 remains BLOCKED_MANUAL for the previously recorded owner gates.
+
+## Owner follow-along guide handoff — 2026-10-13
+
+Status: BLOCKED_MANUAL. Active phase remains P13.
+
+Owner requested a guide with every test input provided, requiring only following steps and observing behaviour. TESTING_GUIDE.md is now the primary owner entry point: 65 identified checks covering public/auth/onboarding/support/tickets/knowledge/widget/team/notifications/automations/AI/webhooks/analytics/tenant isolation/mobile/accessibility/providers, plus expected outcomes, explanations, negatives, troubleshooting, and cleanup. docs/owner-test-results.md contains matching blank result rows. docs/test-inputs/ contains the exact reusable TXT/Markdown upload fixtures. The only owner substitutions are private emails/passwords, generated keys/URLs, and the tested origin. README and the technical runbook link the new guide.
+
+No application code, migration, database records, or provider configuration changed. Targeted formatting, 29 local links, all 65 test IDs, fixture consistency, blank results, credential-like pattern scan, and diff checks passed. Application test suites were not rerun for this documentation-only change. No .env values were read and no production behaviour was newly tested.
+
+Source review findings are in guide section 19; they include missing UI paths, list limits without pagination, incomplete filters/tags/assignment/edit controls, evaluation-case/policy mismatches, and unproven full migration replay. Treat them as required reconciliation work rather than silently marking them complete. Prior deployed trigger inspection does not prove the full migration chain works from an empty database.
+
+Next exact actions:
+
+1. Owner resolves existing MANUAL-010/011 before authenticated production testing; MANUAL-008 remains necessary for real AI proof.
+2. Owner follows TESTING_GUIDE.md from R01 with a fresh empty QA workspace and fills the results sheet; do not run demo seed before onboarding/empty tests.
+3. Developer reproduces reported failures, reconciles section 19 with the root requirements, and verifies direct backend/RLS/provider/security evidence in the same P13 phase.
+4. Verify isolated migration replay and deployment commit parity; finish the real deployed golden journey and full release gate before changing phase status.

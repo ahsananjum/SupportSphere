@@ -1,5 +1,7 @@
 # SupportSphere verification runbook
 
+For a browser-first walkthrough with supplied inputs, exact controls, expected results, and requirement gaps, use [TESTING_GUIDE.md](../TESTING_GUIDE.md). This file is the technical companion.
+
 This is the repeatable procedure for proving what SupportSphere currently implements. It is written from the repository, migrations, tests, and recorded production evidence. A green UI is not enough: each check below proves a different layer of the product.
 
 The runbook has two modes:
@@ -22,8 +24,6 @@ Truthful current limitations:
 - The current public origin is https://support-sphere-psi.vercel.app.
 - Vercel MCP is not connected in this session, so public reachability is proven but deployment commit and server-only environment parity still need owner verification.
 
-
-
 ## 2. Safety rules before testing
 
 1. Use a dedicated test/demo workspace. Never use a real customer workspace for destructive tests.
@@ -32,8 +32,6 @@ Truthful current limitations:
 4. Do not enable AI auto-send for real customers while Gemini verification is incomplete.
 5. Live scripts create disposable users/workspaces and should clean them in finally blocks. If a script stops unexpectedly, inspect Supabase for retained p## fixtures and remove only the named test rows.
 6. Use the exact project ref xviumgygixcklrbuynoh when a live script requires one. Never point SupportSphere tests at an unrelated Supabase project.
-
-
 
 ## 3. Prepare the machine
 
@@ -57,8 +55,6 @@ For local public/auth work, configure at minimum:
 
 For server-backed local work, add the server-only values required by that path. Do not add them to NEXT_PUBLIC variables. The complete variable inventory is in .env.example and lib/validation/env.ts.
 
-
-
 ## 4. Start and smoke-test the local app
 
 Start the app:
@@ -76,8 +72,6 @@ Open http://localhost:3000 and verify:
 
 This smoke catches broken route modules, missing metadata, dead navigation, missing auth protection, and server errors before deeper testing.
 
-
-
 ## 5. Run the repository quality gate
 
 Run each command from the repository root:
@@ -94,7 +88,7 @@ Expected results:
 - pnpm lint: no ESLint violations.
 - pnpm format:check: every tracked source/document uses repository formatting.
 - pnpm test: the current baseline is 52 passing tests and 3 opt-in skips. Skips are provider/live gates, not silent production successes.
-- pnpm build: webpack production build compiles all routes and generates static assets.
+- pnpm build: the package's default Next production build. For the explicit webpack build used in the recorded gate, run pnpm exec next build --webpack.
 
 On this Windows host, the first sandboxed build may fail with an .next directory EPERM. Rerun the exact build with elevated filesystem access; do not change source to mask that host permission issue.
 
@@ -105,30 +99,26 @@ After every code change, run:
 
 A final release requires an understandable, clean working tree and no tracked secrets.
 
-
-
 ## 6. Understand what the unit/security tests prove
 
 pnpm test discovers unit and security tests under tests/.
 
-| Test file | What it proves |
-| --- | --- |
-| tests/unit/env.test.ts | Provider URL/key validation, server-secret requirements, and Stripe test-mode-only validation. |
-| tests/unit/auth-security.test.ts | Auth validation, recovery/rate-limit behavior, and safe auth failure handling. |
-| tests/unit/workspace-validation.test.ts | Workspace/onboarding input limits and accepted enums. |
-| tests/unit/knowledge-pipeline.test.ts | Text normalization, chunking, content limits, and ingestion decisions. |
-| tests/unit/ai-workflow.test.ts | Deterministic AI policy/evidence/sensitive escalation decisions; this does not prove Gemini availability. |
-| tests/unit/automation.test.ts | Validated automation triggers/actions, dedupe, and retry decisions. |
-| tests/unit/redis-workflows.test.ts | Namespaced Redis keys, TTL/lock behavior, and fallback policy. |
-| tests/unit/webhooks.test.ts | Webhook lifecycle, retries, terminal errors, and state transitions. |
-| tests/unit/webhook-signature.test.ts | HMAC signature format, timestamp/replay checks, and tamper rejection. |
-| tests/security/p01-attacks.test.ts | Auth/tenant isolation and role boundary attacks. |
-| tests/security/p03-attacks.test.ts | Workspace/member/settings/notification authorization attacks. |
-| tests/security/p04-attacks.test.ts | Customer/conversation/message/ticket IDOR, viewer mutation, dedupe, and numbering safety. |
+| Test file                               | What it proves                                                                                            |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| tests/unit/env.test.ts                  | Provider URL/key validation, server-secret requirements, and Stripe test-mode-only validation.            |
+| tests/unit/auth-security.test.ts        | Auth validation, recovery/rate-limit behavior, and safe auth failure handling.                            |
+| tests/unit/workspace-validation.test.ts | Workspace/onboarding input limits and accepted enums.                                                     |
+| tests/unit/knowledge-pipeline.test.ts   | Text normalization, chunking, content limits, and ingestion decisions.                                    |
+| tests/unit/ai-workflow.test.ts          | Deterministic AI policy/evidence/sensitive escalation decisions; this does not prove Gemini availability. |
+| tests/unit/automation.test.ts           | Validated automation triggers/actions, dedupe, and retry decisions.                                       |
+| tests/unit/redis-workflows.test.ts      | Namespaced Redis keys, TTL/lock behavior, and fallback policy.                                            |
+| tests/unit/webhooks.test.ts             | Webhook lifecycle, retries, terminal errors, and state transitions.                                       |
+| tests/unit/webhook-signature.test.ts    | HMAC signature format, timestamp/replay checks, and tamper rejection.                                     |
+| tests/security/p01-attacks.test.ts      | Auth/tenant isolation and role boundary attacks.                                                          |
+| tests/security/p03-attacks.test.ts      | Workspace/member/settings/notification authorization attacks.                                             |
+| tests/security/p04-attacks.test.ts      | Customer/conversation/message/ticket IDOR, viewer mutation, dedupe, and numbering safety.                 |
 
 A passing unit test proves a deterministic rule in isolation. It does not prove an external provider, deployment, browser, or live RLS policy.
-
-
 
 ## 7. Run the browser E2E suite
 
@@ -148,22 +138,18 @@ If the full command stalls on Windows before producing a report, run the focused
 
 The current focused baseline is 5 passed. The previous P12 gate recorded 19 passed for the complete browser suite.
 
-
-
 ## 8. Inspect and apply Supabase migrations safely
 
 SupportSphere uses imperative migrations under supabase/migrations/. Never edit an already-applied migration to repair production. Add a new migration, review it, apply it, regenerate types, and rerun advisors.
 
-Before applying anything, inspect the actual project through Supabase MCP or the CLI:
-
-    npx supabase migration list --project-ref xviumgygixcklrbuynoh
+Before applying anything, inspect the actual project and migration history through Supabase MCP. If using the CLI, first verify its installed version and project linkage; do not assume a project-ref flag is supported by the migration list command.
 
 Apply the reviewed migration using the project connection:
 
     npx supabase db push --db-url "$env:SUPABASE_DB_URL"
     npx supabase gen types typescript --project-id xviumgygixcklrbuynoh > lib/supabase/database.types.ts
 
-The P13 production state includes migration 20261012163227_p13_reproducibility_trigger_hardening. It reapplies JSON-safe automation/webhook trigger functions after later P10 migrations, preventing a fresh-clone ordering regression.
+The recorded P13 production state includes migration 20261012163227_p13_reproducibility_trigger_hardening. It reapplies JSON-safe automation/webhook trigger functions after later P10 migrations. This verifies the resulting functions on that project; it does not prove the entire migration chain replays successfully on an empty database. See TESTING_GUIDE.md section 19 for the ordering/history concern and isolate a full replay before claiming reproducibility.
 
 After a migration, verify:
 
@@ -175,8 +161,6 @@ After a migration, verify:
 6. A focused live insert/update/delete probe exercises the changed function or table.
 
 Current Supabase evidence is ACTIVE_HEALTHY, 39 public tables with RLS, active knowledge/AI/automation/webhook workers, and five active cron jobs. Existing advisor notices are documented in .agent/QA.md; do not silently dismiss a new finding as expected.
-
-
 
 ## 9. Run the real demo seed
 
@@ -204,39 +188,35 @@ Verify the resulting records in the application and, if needed, with read-only S
 - Knowledge source is queued and later reaches ready with documents/chunks.
 - No AI response was seeded. The seeded agent reply must not be described as AI output.
 
-
-
 ## 10. Run the live phase suites
 
 Live suites are opt-in because they create real Supabase/Auth records and may send provider traffic. Set only the named non-secret project ref/base URL and load secrets from a private env file. Never run these against unrelated projects.
 
-| Script | Scope | Required live setup |
-| --- | --- | --- |
-| tests/live/p01-auth-mail.mjs | Confirmation/reset email delivery, absolute links, and Brevo path. | P01_LIVE_TEST_PROJECT_REF, P01_LIVE_TEST_EMAIL, Supabase service key, Brevo key, configured app URL. |
-| tests/live/p01-invite-ui.mjs | Invitation creation, delivery, acceptance, expiry/revoke behavior. | P01_LIVE_TEST_PROJECT_REF, owner email/workspace slug, Supabase keys. |
-| tests/live/p02-production.mjs | Public routes, metadata, canonical URLs, robots/sitemap, links, console, keyboard, 404, six widths. | P02_PRODUCTION_ORIGIN. |
-| tests/live/p02-auth-origin.mjs | Google OAuth initiation and exact /auth/callback?next=/app redirect. | P02_PRODUCTION_ORIGIN, P02_LIVE_TEST_PROJECT_REF. |
-| tests/live/p02-contact-ui.mjs | Real contact validation, persistence, delivery receipt, and mobile behavior. | P02_LIVE_TEST_EMAIL, P02_LIVE_TEST_PROJECT_REF, Supabase service key, local/deployed base URL. |
-| tests/live/p03-app-ui.mjs | Onboarding persistence, workspace settings, notifications, navigation, and responsive app shell. | P03_LIVE_TEST_PROJECT_REF, Supabase keys, optional P03_LIVE_BASE_URL. |
-| tests/live/p04-app-ui.mjs | Customer to conversation to messages/notes to ticket workflow and mobile states. | P04_LIVE_TEST_PROJECT_REF, Supabase keys, optional P04_LIVE_BASE_URL. |
-| tests/live/p05-widget.mjs | Host page to widget bootstrap to customer message to realtime inbox to reply, plus hostile origin/session/rate/storage checks. | P05_LIVE_TEST_PROJECT_REF, Supabase keys, optional P05_LIVE_BASE_URL, host server. |
-| tests/live/p06-app-ui.mjs | Knowledge paste/upload UI, indexing status, enable/disable/delete, validation, and mobile behavior. | P06_LIVE_TEST_PROJECT_REF, Supabase keys, optional P06_LIVE_BASE_URL. |
-| tests/live/p06-knowledge.mjs | Ingestion success/failure, malformed/oversized files, retry/recovery, content hash, storage/RLS. | P06_LIVE_TEST_PROJECT_REF, Supabase keys. |
-| tests/live/p07-app-ui.mjs | AI settings, draft/handoff UI, run inspector, feedback, and responsive states. | P07_LIVE_TEST_PROJECT_REF, Supabase keys, optional P07_LIVE_BASE_URL. |
-| tests/live/p07-ai.mjs | Controlled AI graph, RLS, policy modes, citations, handoff, retry, and terminal failure. | P07_LIVE_TEST_PROJECT_REF, Supabase keys, configured worker. |
-| tests/live/p07-gemini.mjs | Ten real Gemini provider scenarios using synthetic fixtures. | P07_GEMINI_TEST_PROJECT_REF, Supabase keys, real Gemini secrets/quota. This remains blocked until MANUAL-008 passes. |
-| tests/live/p08-app-ui.mjs | Real automation creation, toggle/delete confirmation, run state, responsive UI. | P08_LIVE_TEST_PROJECT_REF, Supabase keys, optional P08_LIVE_BASE_URL. |
-| tests/live/p09-app-ui.mjs | Analytics date ranges, empty/populated states, evaluation action, and mobile layout. | P09_LIVE_TEST_PROJECT_REF, Supabase keys, optional P09_LIVE_BASE_URL. |
-| tests/live/p10-app-ui.mjs | Webhook endpoint create/edit/rotate/test/revoke/history, real state, role checks, and mobile UI. | P10_LIVE_TEST_PROJECT_REF, Supabase keys, optional P10_LIVE_BASE_URL. |
-| tests/live/p12-app-audit.mjs | 153-check authenticated route/control/role/overflow/console audit with disposable fixtures. | P12_LIVE_TEST_PROJECT_REF, Supabase keys, optional P12_LIVE_BASE_URL. |
+| Script                         | Scope                                                                                                                          | Required live setup                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| tests/live/p01-auth-mail.mjs   | Confirmation/reset email delivery, absolute links, and Brevo path.                                                             | P01_LIVE_TEST_PROJECT_REF, P01_LIVE_TEST_EMAIL, Supabase service key, Brevo key, configured app URL.                 |
+| tests/live/p01-invite-ui.mjs   | Invitation creation, delivery, acceptance, expiry/revoke behavior.                                                             | P01_LIVE_TEST_PROJECT_REF, owner email/workspace slug, Supabase keys.                                                |
+| tests/live/p02-production.mjs  | Public routes, metadata, canonical URLs, robots/sitemap, links, console, keyboard, 404, six widths.                            | P02_PRODUCTION_ORIGIN.                                                                                               |
+| tests/live/p02-auth-origin.mjs | Google OAuth initiation and exact /auth/callback?next=/app redirect.                                                           | P02_PRODUCTION_ORIGIN, P02_LIVE_TEST_PROJECT_REF.                                                                    |
+| tests/live/p02-contact-ui.mjs  | Real contact validation, persistence, delivery receipt, and mobile behavior.                                                   | P02_LIVE_TEST_EMAIL, P02_LIVE_TEST_PROJECT_REF, Supabase service key, local/deployed base URL.                       |
+| tests/live/p03-app-ui.mjs      | Onboarding persistence, workspace settings, notifications, navigation, and responsive app shell.                               | P03_LIVE_TEST_PROJECT_REF, Supabase keys, optional P03_LIVE_BASE_URL.                                                |
+| tests/live/p04-app-ui.mjs      | Customer to conversation to messages/notes to ticket workflow and mobile states.                                               | P04_LIVE_TEST_PROJECT_REF, Supabase keys, optional P04_LIVE_BASE_URL.                                                |
+| tests/live/p05-widget.mjs      | Host page to widget bootstrap to customer message to realtime inbox to reply, plus hostile origin/session/rate/storage checks. | P05_LIVE_TEST_PROJECT_REF, Supabase keys, optional P05_LIVE_BASE_URL, host server.                                   |
+| tests/live/p06-app-ui.mjs      | Knowledge paste/upload UI, indexing status, enable/disable/delete, validation, and mobile behavior.                            | P06_LIVE_TEST_PROJECT_REF, Supabase keys, optional P06_LIVE_BASE_URL.                                                |
+| tests/live/p06-knowledge.mjs   | Ingestion success/failure, malformed/oversized files, retry/recovery, content hash, storage/RLS.                               | P06_LIVE_TEST_PROJECT_REF, Supabase keys.                                                                            |
+| tests/live/p07-app-ui.mjs      | AI settings, draft/handoff UI, run inspector, feedback, and responsive states.                                                 | P07_LIVE_TEST_PROJECT_REF, Supabase keys, optional P07_LIVE_BASE_URL.                                                |
+| tests/live/p07-ai.mjs          | Controlled AI graph, RLS, policy modes, citations, handoff, retry, and terminal failure.                                       | P07_LIVE_TEST_PROJECT_REF, Supabase keys, configured worker.                                                         |
+| tests/live/p07-gemini.mjs      | Ten real Gemini provider scenarios using synthetic fixtures.                                                                   | P07_GEMINI_TEST_PROJECT_REF, Supabase keys, real Gemini secrets/quota. This remains blocked until MANUAL-008 passes. |
+| tests/live/p08-app-ui.mjs      | Real automation creation, toggle/delete confirmation, run state, responsive UI.                                                | P08_LIVE_TEST_PROJECT_REF, Supabase keys, optional P08_LIVE_BASE_URL.                                                |
+| tests/live/p09-app-ui.mjs      | Analytics date ranges, empty/populated states, evaluation action, and mobile layout.                                           | P09_LIVE_TEST_PROJECT_REF, Supabase keys, optional P09_LIVE_BASE_URL.                                                |
+| tests/live/p10-app-ui.mjs      | Webhook endpoint create/edit/rotate/test/revoke/history, real state, role checks, and mobile UI.                               | P10_LIVE_TEST_PROJECT_REF, Supabase keys, optional P10_LIVE_BASE_URL.                                                |
+| tests/live/p12-app-audit.mjs   | 153-check authenticated route/control/role/overflow/console audit with disposable fixtures.                                    | P12_LIVE_TEST_PROJECT_REF, Supabase keys, optional P12_LIVE_BASE_URL.                                                |
 
 Typical local invocation after starting the correct app server:
 
     node --env-file=.env.live.local tests/live/p04-app-ui.mjs
 
 For every live script, save only safe evidence: pass count, status codes, entity counts, error classes, and cleanup counts. Never save message bodies, tokens, passwords, or provider secrets.
-
-
 
 ## 11. Verify authentication, email, and OAuth manually
 
@@ -245,7 +225,7 @@ Use a disposable email address and the configured real sender.
 ### Password signup/login/logout
 
 1. Open /signup.
-2. Submit invalid email, short password, and mismatched confirmation; verify field-level errors and no account is created.
+2. Submit invalid email and a short password; verify validation feedback and no account is created. Signup has no confirm-password field. Test mismatched confirmation on the reset-password form instead.
 3. Submit a valid account; verify the confirmation email arrives through the configured path.
 4. Open the confirmation link in a separate browser session; verify /auth/callback completes without a PKCE/token-hash error.
 5. Create a workspace and complete onboarding.
@@ -270,8 +250,6 @@ Use a disposable email address and the configured real sender.
 
 The read-only automated check is tests/live/p02-auth-origin.mjs; it proves initiation, while a real callback requires the owner-configured OAuth client.
 
-
-
 ## 12. Verify onboarding and workspace roles
 
 1. Create a workspace through the UI; refresh after every onboarding step.
@@ -284,8 +262,6 @@ The read-only automated check is tests/live/p02-auth-origin.mjs; it proves initi
 8. Attempt direct RPC/API mutations as viewer and as a different workspace member; expect safe permission errors and no changed rows.
 9. Attempt to remove/change the last owner; expect the database safety rule to reject it.
 10. Confirm sensitive role/membership mutations create audit rows.
-
-
 
 ## 13. Verify the support operating slice
 
@@ -301,8 +277,6 @@ The read-only automated check is tests/live/p02-auth-origin.mjs; it proves initi
 10. Test empty, search-no-results, loading, error, retry, and viewer read-only states.
 
 The strongest automated proof is tests/live/p04-app-ui.mjs plus tests/security/p04-attacks.test.ts.
-
-
 
 ## 14. Verify the external widget
 
@@ -321,8 +295,6 @@ Use tests/widget-host/index.html and tests/widget-host/server.mjs as the externa
 
 Run node --env-file=.env.live.local tests/live/p05-widget.mjs for the complete hostile and golden widget suite.
 
-
-
 ## 15. Verify knowledge ingestion and RAG preparation
 
 1. Open /app/knowledge as owner/admin.
@@ -338,8 +310,6 @@ Run node --env-file=.env.live.local tests/live/p05-widget.mjs for the complete h
 11. Confirm the scheduled worker has bounded retries, abandoned-upload recovery, and terminal failed state.
 
 Use tests/live/p06-app-ui.mjs, tests/live/p06-knowledge.mjs, tests/unit/knowledge-pipeline.test.ts, and docs/knowledge.md together. A ready source without documents/chunks is not valid evidence.
-
-
 
 ## 16. Verify AI safely
 
@@ -361,8 +331,6 @@ For the real provider gate, do not paste the Gemini key. The owner must configur
 
 Verify all ten synthetic scenarios: grounded answer, no evidence, sensitive request, injection attempt, low confidence, quality failure, provider outage/rate limit, draft-only mode, off mode, and successful transactional send/handoff. Inspect decisions, citations, steps, message rows, handoff reason, retry counts, and safe Edge logs. Clean every fixture. Do not display an AI accuracy percentage or claim real customer traffic is safe until all scenarios pass.
 
-
-
 ## 17. Verify automations and durable jobs
 
 1. Create a validated automation rule with a supported trigger/action.
@@ -377,8 +345,6 @@ Verify all ten synthetic scenarios: grounded answer, no evidence, sensitive requ
 10. Toggle and delete the rule with confirmation; verify the UI and direct mutation both enforce role checks.
 
 Use tests/live/p08-app-ui.mjs, tests/unit/automation.test.ts, tests/unit/redis-workflows.test.ts, docs/workflows.md, and Supabase cron/log inspection.
-
-
 
 ## 18. Verify webhooks/integrations
 
@@ -398,8 +364,6 @@ Stripe and Slack are not selected for this release. The implemented integration 
 
 Run node --env-file=.env.live.local tests/live/p10-app-ui.mjs, tests/unit/webhooks.test.ts, and tests/unit/webhook-signature.test.ts. Never log response bodies or endpoint secrets.
 
-
-
 ## 19. Verify analytics and evaluation
 
 1. Open /app/analytics with an empty workspace; verify a truthful empty state.
@@ -413,8 +377,6 @@ Run node --env-file=.env.live.local tests/live/p10-app-ui.mjs, tests/unit/webhoo
 8. Verify no optional marketing analytics request runs before/without consent; current product choice is analytics off.
 
 Use tests/live/p09-app-ui.mjs, tests/unit/analytics.test.ts, and docs/p12-route-control-inventory.md.
-
-
 
 ## 20. Verify SEO, accessibility, responsive behavior, and errors
 
@@ -452,8 +414,6 @@ Test widths 320, 360, 390, 768, 1024, and 1440 pixels. At each width verify no d
 
 For every async surface, deliberately test first load/skeleton, no-data/empty copy, validation error, permission denied, provider/network failure, retry path, and successful completion with refresh persistence. A spinner that never reaches an error state is a failed test.
 
-
-
 ## 21. Verify production deployment
 
 The production deployment must be checked after the current tree is redeployed.
@@ -476,8 +436,6 @@ Read-only browser proof:
 
 The public smoke proves reachability and browser behavior. It cannot prove hidden Vercel secrets or deployment commit parity; that is why the Vercel connector/manual step is required.
 
-
-
 ## 22. Execute the full deployed golden journey
 
 Use a dedicated demo owner/workspace and the exact deployed origin. Record a timestamp, safe result, fixture IDs if non-sensitive, and cleanup result in .agent/QA.md.
@@ -499,8 +457,6 @@ Use a dedicated demo owner/workspace and the exact deployed origin. Record a tim
 
 Do not mark the journey complete if the AI step is replaced by a fake row, a hardcoded response, or an unverified provider stub.
 
-
-
 ## 23. Inspect observability and provider state
 
 Use Supabase MCP or the dashboard to inspect, without exposing secrets:
@@ -515,8 +471,6 @@ Use Supabase MCP or the dashboard to inspect, without exposing secrets:
 Safe logs may contain route/job type, status, duration, correlation/request ID, provider status, and safe entity IDs. They must not contain passwords, reset/invitation tokens, service keys, full auth headers, private knowledge content, or full customer message bodies.
 
 For Vercel, inspect deployment status, commit SHA, build logs, function errors, and runtime logs through the connected Vercel integration. If the integration is unavailable, record that limitation; do not infer healthy server configuration from a successful landing page alone.
-
-
 
 ## 24. Run the final security and secret checks
 
@@ -539,8 +493,6 @@ Then verify:
 - webhook signatures/replay/idempotency hold,
 - AI tools cannot run arbitrary SQL/shell/HTTP,
 - no high-severity dependency/advisor finding is unreviewed.
-
-
 
 ## 25. Troubleshooting guide
 
@@ -576,8 +528,6 @@ Check NEXT_PUBLIC_APP_URL, Supabase Auth URL Configuration, Brevo sender/templat
 
 Compare the host page exact Origin with the saved widget origin, verify the public widget key, bootstrap proof, referrer, and session lifetime, then inspect safe route logs. Do not broaden origin matching.
 
-
-
 ## 26. Completion checklist
 
 Set .agent/STATE.md to VERIFYING only when every box below is objectively proven:
@@ -597,8 +547,6 @@ Set .agent/STATE.md to VERIFYING only when every box below is objectively proven
 - [ ] .agent/QA.md, .agent/HANDOFF.md, .agent/MANUAL_ACTIONS.md, and .agent/STATE.md describe the same truth.
 
 Only after the final gate passes should status change to COMPLETE. Until then, the correct status is BLOCKED_MANUAL or VERIFYING, never mostly complete.
-
-
 
 ## 27. Evidence recording template
 

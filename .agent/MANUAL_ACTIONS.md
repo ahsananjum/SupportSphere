@@ -1,5 +1,7 @@
 # Owner actions
 
+2026-10-13 testing-guide update: P13 remains BLOCKED_MANUAL. Existing MANUAL-008, MANUAL-010, and MANUAL-011 have not been verified by creating documentation. Use [TESTING_GUIDE.md](../TESTING_GUIDE.md) for the exact behaviour checks after the applicable gates are resolved; record safe results in [docs/owner-test-results.md](../docs/owner-test-results.md). No new owner setup or secret value was introduced in this pass.
+
 ## MANUAL-001 — Connect SupportSphere Supabase
 
 Status: VERIFIED — project `xviumgygixcklrbuynoh` connected, two P01 migrations applied, tables/RLS/advisors inspected.

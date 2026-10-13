@@ -468,3 +468,21 @@ Supabase MCP final inspection: remote migrations through `20261011121955_p11_tri
 Added `docs/verification-runbook.md`, linked from README, with repository-backed steps for local setup, static/unit/security/E2E/live checks, Supabase migrations/RLS/advisors, demo seeding, auth/OAuth/email, roles, support operations, widget, knowledge/RAG, AI, automations, webhooks, analytics, SEO/accessibility/mobile, deployment, observability, secret scans, troubleshooting, and the final P13 completion gate.
 
 Documentation proof: Prettier check passed for the runbook and README; `git diff --check` passed; credential-like pattern scan found no matches in the new docs. Commit `485a82e`.
+
+## Owner follow-along guide — 2026-10-13
+
+Status: BLOCKED_MANUAL (P13 unchanged).
+
+Added root TESTING_GUIDE.md with 65 identified hands-on checks, exact synthetic inputs, UI labels, expected results, reasoning, negative paths, conditional provider checks, cleanup, and a source-to-behaviour explanation. Added docs/owner-test-results.md with all 65 matching blank result rows plus actual invitation-expiry evidence, and reusable TXT/Markdown fixtures under docs/test-inputs/. README and the technical runbook now point to the owner guide.
+
+Source inspection found missing/unproven PRD UI paths and evaluation-policy/migration-history concerns; section 19 records them for reconciliation. This corrects the earlier implication that a final P13 trigger migration alone proved a full fresh-clone replay: only the resulting remote trigger definitions were inspected previously; full-chain isolated replay remains unproven. No deployed behaviour was executed or reclassified as passing in this documentation pass.
+
+Documentation validation:
+
+- Targeted Prettier write/check with --ignore-path .gitignore — PASS for TESTING_GUIDE.md, docs/owner-test-results.md, docs/test-inputs/qa-notes.md, README.md, and docs/verification-runbook.md. The default .prettierignore excludes Markdown, so the explicit override was required; agent-record updates were reviewed with diff checks.
+- Local Node validation — PASS: 29 local links across nine documents exist; all 65 test IDs match results rows; supplied lunar article matches the TXT fixture; result fields remain blank; credential-like pattern scan reports no values in the inspected documents. The first ID-check expression was faulty and was corrected before the successful validation; no guide row was missing.
+- git diff --check — PASS.
+- Application typecheck/lint/unit/browser/build tests — NOT RUN this pass: no application code, schema, or runtime configuration changed.
+- .env values were not read. MANUAL-008, MANUAL-010, and MANUAL-011 remain pending; no new credential or provider setup was fabricated.
+
+Next evidence must come from the owner executing the steps and the developer verifying backend/security/provider checks. These instructions and historical counts are not a new production test report.

@@ -1,7 +1,7 @@
 # Current State
 Active phase: P13
 Status: BLOCKED_MANUAL
-Last updated: 2026-10-12
+Last updated: 2026-10-13
 Current branch: master
 Last known completed-phase commit: 315c76c
 
@@ -18,6 +18,7 @@ Deploy and prove SupportSphere as a reproducible portfolio product, then complet
 - [x] TypeScript, ESLint, Prettier, Vitest 52/3 skipped, elevated webpack build, focused P12 public E2E 5/5, diff check, node seed syntax, and tracked-file secret scan passed.
 
 ## Remaining
+- [ ] Owner executes TESTING_GUIDE.md using supplied synthetic inputs and records results in docs/owner-test-results.md; developer verifies/reconciles the source-level requirement gaps in its section 19.
 - [ ] Rotate credentials exposed during the P13 `.env` inspection (MANUAL-010).
 - [ ] Connect Vercel inspection, confirm deployment commit parity, configure/validate production-only env values, and rerun deployment smoke (MANUAL-011).
 - [ ] Resolve the existing Gemini model/quota gate and verify all ten real-provider scenarios (MANUAL-008).
@@ -31,10 +32,11 @@ Deploy and prove SupportSphere as a reproducible portfolio product, then complet
 - Vercel MCP is not installed/available in this session; browser verification of the recorded deployment is the current runtime evidence.
 
 ## Known failures / blockers
-- MANUAL-010 is blocking because credential values were printed during this session's ignored `.env` inspection; never print or commit them.
+- The 2026-10-13 documentation review found unproven/missing PRD UI paths and evaluation/migration-parity concerns listed in TESTING_GUIDE.md section 19. These are source-based findings, not newly executed production test results; do not claim full requirements coverage from earlier UI passes.
+- MANUAL-010 is blocking because credential values were printed during the earlier 2026-10-12 ignored `.env` inspection; never print or commit them. The 2026-10-13 documentation pass did not read env values.
 - MANUAL-011 is blocking production commit/env parity and Vercel runtime inspection.
 - The full Playwright command stalled before reporting on this Windows host; the focused P12 public file and dedicated production smoke passed. Re-run the complete suite in a reliable host before final phase completion.
-- The current production deployment may predate the uncommitted P12/P13 tree; do not claim the deployed app includes this tree until Vercel metadata proves it.
+- The current production deployment may predate the committed P12/P13 package; do not claim the deployed app includes the intended commit until Vercel metadata proves it.
 
 ## Next exact actions
 1. Owner completes MANUAL-010 and confirms rotation without sharing secrets.
