@@ -146,7 +146,7 @@ Blocking phase: P01
 
 ## MANUAL-008 — Configure Gemini for P07
 
-Status: BLOCKED — secret names are present and `gemini-3.8-flash` is reachable, but the Google AI Studio free-tier quota returned `PROVIDER_RATE_LIMIT` during subsequent real scheduled-worker runs. P07 completion remains blocked.
+Status: PENDING_VERIFICATION — owner reports AI enabled on 2026-10-17. Read-only MCP confirms active ai-worker v14, active minute cron, and deployed source parity, but no AI runs created since 2026-10-13 were present. Do not assert a continuing quota failure or request setup again without current evidence. Execute AI_TESTING_GUIDE.md scenarios and inspect actual results before marking verified. Earlier model/quota failures and the setup steps below are historical troubleshooting context, not a currently reproduced outage.
 
 Why: The deployed controlled worker needs a real Google AI Studio API key and a `generateContent` model that supports native structured JSON. Controlled tests cannot prove real grounding and injection resistance. Google’s free tier has project/model quotas and may use submitted content to improve its products; verification uses synthetic data only.
 

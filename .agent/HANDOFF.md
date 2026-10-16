@@ -284,3 +284,22 @@ Next exact actions:
 2. Owner follows TESTING_GUIDE.md from R01 with a fresh empty QA workspace and fills the results sheet; do not run demo seed before onboarding/empty tests.
 3. Developer reproduces reported failures, reconciles section 19 with the root requirements, and verifies direct backend/RLS/provider/security evidence in the same P13 phase.
 4. Verify isolated migration replay and deployment commit parity; finish the real deployed golden journey and full release gate before changing phase status.
+
+## AI-only owner testing guide — 2026-10-17
+
+Status: BLOCKED_MANUAL. Active phase: P13.
+
+Owner reports AI enabled and requested a complete AI-only from-scratch guide with all prerequisites and inputs. Added AI_TESTING_GUIDE.md (42 primary tests), docs/ai-test-results.md (125 blank primary/subcase rows), and six synthetic knowledge files in docs/test-inputs/ai/. Includes account/workspace/onboarding, knowledge readiness, external widget/customer sessions, modes, structured triage variations, real cited draft/auto-send, human review/handoff/release, feedback, retrieval/source lifecycle, sensitive cases, stale-send guards, injection/redaction, quality/provider failures, quotas/dedupe, AI automations, notifications/tickets, analytics/evaluation, roles/isolation, mobile/accessibility, backend/operator checks, requirement mapping, cleanup. Only private emails/passwords and generated app values require owner substitution. README, general guide, and docs/ai.md link the new guide.
+
+Read-only Supabase MCP: project healthy, migrations through 20261012163227, knowledge-worker v10 / ai-worker v14 / webhook-worker v6 active, five cron jobs active, ten inspected AI/knowledge/evaluation tables RLS-enabled. Deployed AI entrypoint/shared files match local source after newline normalization. No AI runs created since 2026-10-13 were present, so real provider enablement was not newly proven or disproven. Security advisor categories/remediation links recorded in the guide. No Vercel tool available; current web commit parity remains unverified. No app code, migration, DB rows, credentials, or provider configuration changed; no .env values were read.
+
+Validation: focused AI Vitest 15/15 passed; explicit Markdown Prettier check passed; 50 local links and 10 heading links resolve; all 42 primary IDs match results rows; 125 rows blank; five inline fixtures match supplied text; six fixtures total; credential-like scan of 13 files found no matches; git diff --check passed. Full app/build/browser/live-provider suites were not rerun for documentation-only edits.
+
+MANUAL-008 now PENDING_VERIFICATION: owner-reported enabled, not another presumed setup request. MANUAL-010/011 remain unresolved in repository truth. New source-based concerns are explicitly testable: generic AI automation jobs lack a demonstrated consumer; handoff priority changes can suppress escalation-trigger automations; evaluation refund/reason expectations need policy alignment. No new production mutation reproduced those concerns in this pass.
+
+Next exact actions:
+
+1. Owner uses AI_TESTING_GUIDE.md from AI01 with fresh synthetic accounts/workspace and fills docs/ai-test-results.md. Follow private-value substitutions; do not seed or send greetings before each test input.
+2. Verify a real grounded Gemini draft and assisted reply, then Off/Draft-only/sensitive/unknown/injection/handoff/feedback/role/tenant results and conditional subcases. Close MANUAL-008 only with actual scenario evidence.
+3. Developer verifies direct backend/race/security proof, downstream automation consumption, Normal-priority escalation events, and evaluation-policy alignment; repair confirmed required gaps in P13.
+4. Resolve other manual release gates, prove deployment parity and isolated migration replay, execute the deployed golden journey, and run the full phase gate before VERIFYING/COMPLETE.

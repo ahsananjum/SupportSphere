@@ -1,0 +1,4 @@
+Outside Workspace Telescope Procedure.
+This is synthetic information restricted to the Outside QA workspace.
+The Outside workspace telescope calibration phrase is ORCHID-OUTSIDE-ONLY-7429.
+To calibrate the fictional telescope, select Observatory, then Calibration, then Apply.

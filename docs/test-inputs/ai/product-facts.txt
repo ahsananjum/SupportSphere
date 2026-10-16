@@ -1,0 +1,6 @@
+Lunar Reports product facts.
+This is a fictional product for SupportSphere AI testing.
+Lunar Reports supports PDF report export.
+CSV export is unavailable.
+The export format is PDF, not a spreadsheet format.
+No public uptime guarantee is stated in this article.

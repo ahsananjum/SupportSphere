@@ -1,5 +1,7 @@
 # SupportSphere: follow-along testing guide with exact inputs
 
+**17 October AI update:** the owner reports AI enabled. For a self-contained AI-only run with all prerequisites and exact inputs, use [AI_TESTING_GUIDE.md](AI_TESTING_GUIDE.md) and its [results sheet](docs/ai-test-results.md). The provider-blocked wording below records the 13 October baseline; current success must be established through actual new runs.
+
 Prepared from the repository on **13 October 2026**. This guide tells you what to open, what to type, what to click, and what should happen. You do not need to invent customer names, messages, knowledge content, or automation rules.
 
 Use this guide for hands-on behaviour checks. The [technical verification runbook](docs/verification-runbook.md) contains automated test suites and deeper checks.

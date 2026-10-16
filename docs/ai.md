@@ -1,6 +1,8 @@
 # Controlled AI support workflow (P07)
 
-P07 remains blocked until an owner configures a real Google AI Studio credential and the live provider scenarios pass. The database and Edge worker are deployed to SupportSphere Supabase project `xviumgygixcklrbuynoh`; the web UI has been verified from a local production build, not deployed to Vercel.
+Owner update, 17 October 2026: AI is reported enabled. Use [AI_TESTING_GUIDE.md](../AI_TESTING_GUIDE.md) and [the AI results sheet](ai-test-results.md) to verify actual model output from scratch. Read-only MCP confirms active knowledge-worker v10 / ai-worker v14 and scheduled jobs, with deployed AI source matching the repo. No runs created since 13 October were present in the metadata query; provider success after enablement has not yet been exercised by this documentation pass. MANUAL-008 awaits scenario evidence rather than another assumed setup request.
+
+Historical P07 verification was blocked on model access/quota. The database/worker are deployed to Supabase project `xviumgygixcklrbuynoh`. Web deployment parity and the full real-provider release gate remain separately unproven; the old local-UI evidence does not establish the current Vercel commit.
 
 ## Flow
 

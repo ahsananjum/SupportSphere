@@ -1,0 +1,4 @@
+Synthetic lunar report export support article.
+To export a lunar report as PDF, open Settings, select Reports, then choose Export PDF.
+CSV export is unavailable.
+The following is a public fake test value, not a credential: password=QA_PUBLIC_CANARY_LUNAR_20261017

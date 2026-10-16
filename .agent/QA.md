@@ -486,3 +486,29 @@ Documentation validation:
 - .env values were not read. MANUAL-008, MANUAL-010, and MANUAL-011 remain pending; no new credential or provider setup was fabricated.
 
 Next evidence must come from the owner executing the steps and the developer verifying backend/security/provider checks. These instructions and historical counts are not a new production test report.
+
+## AI-only follow-along guide and enablement inspection — 2026-10-17
+
+Status: BLOCKED_MANUAL (P13 unchanged). Owner reports AI enabled; MANUAL-008 is now PENDING_VERIFICATION rather than asserting a continuing historical quota outage. No setup was requested again without current failure evidence.
+
+Deliverables: root AI_TESTING_GUIDE.md with 42 primary tests, 125 blank primary/subcase result rows in docs/ai-test-results.md, and six exact synthetic knowledge fixtures under docs/test-inputs/ai/. Guide is self-contained from signup/onboarding through indexed evidence, external widget, real drafts/auto-replies, triage variations, citations, feedback, safety/handoff/release, in-flight guards, injection/redaction, failures/limits, workflows, evaluation, role/tenant boundaries, mobile/accessibility, backend proof, cleanup, and PRD coverage mapping. README, TESTING_GUIDE.md, and docs/ai.md point to it. No app code, schema, migration, fixture records, secret values, or provider settings changed.
+
+| Check | Actual evidence | Result / limit |
+| --- | --- | --- |
+| Project/migrations | Supabase MCP reports SupportSphere xviumgygixcklrbuynoh ACTIVE_HEALTHY, migrations through 20261012163227 | PASS for metadata; not fresh-clone migration replay |
+| Deployed workers | knowledge-worker v10, ai-worker v14, webhook-worker v6 ACTIVE | PASS for deployment metadata; not provider-output proof |
+| Deployed AI source parity | Retrieved ai-worker bundle; entrypoint, shared ai.ts, shared ai-provider.ts equal local after line-ending/outer-whitespace normalization | PASS |
+| Scheduled jobs | All five current cron jobs active; AI and knowledge workers every minute | PASS for scheduling metadata; no global queue claim/invocation performed |
+| Schema/RLS | Inspected column metadata and RLS on ten AI/knowledge/evaluation tables; AI tables have authenticated SELECT policies | PASS for inspection only; fresh direct attack suite not executed |
+| Recent AI activity | Read-only aggregate query for ai_runs created since 2026-10-13 returned no rows; config aggregate includes one draft_only and eleven off workspaces | No fresh provider success/failure can be inferred; owner scenarios remain to be executed |
+| Security advisor | Three reported categories: service-only RLS-without-policy INFO, authenticated SECURITY DEFINER WARN, Auth leaked-password WARN | Recorded with remediation links in guide; no claim all privileged-function warnings were newly audited/resolved |
+| Focused AI contract tests | node_modules/.bin/vitest run tests/unit/ai-workflow.test.ts | PASS: 15 tests, 1 file; controlled test outputs are not new Gemini proof |
+| Markdown formatting | node_modules/.bin/prettier --ignore-path .gitignore --check AI_TESTING_GUIDE.md docs/ai-test-results.md docs/test-inputs/ai/onboarding-steps.md README.md TESTING_GUIDE.md docs/ai.md | PASS; explicit override needed because default ignore excludes Markdown |
+| Documentation integrity | Local Node check: 50 local links, 10 heading links, 42 unique primary IDs and matching rows, all 125 result rows blank, five inline text fixtures equal supplied files, six supplied files total | PASS |
+| Credential-like pattern check | New/linked docs, six fixtures, current state/manual records: 13 files; no credential-like matches | PASS for those files; no ignored env read and no full production secret-value scan claimed |
+| Diff check | git diff --check | PASS; CRLF normalization notices only |
+| App typecheck/lint/build/full browser/provider scenario gate | Not rerun for documentation-only change | NOT RUN; no app/DB configuration changed, no production messages sent |
+
+Source review findings carried into the guide: generic ai.triage/ai.draft jobs have no demonstrated downstream consumer (the only live function containing those job-type strings is apply_automation_action); priority_changed preceding escalation in an else-if can suppress an escalation automation when handoff also raises priority; built-in evaluation refund auto-send/reason expectations conflict with actual policy; some trace fields, list pagination, and linked-ticket navigation are absent from the current UI. These are source-based concerns, not newly reproduced production writes. Do not claim complete feature coverage until reconciled and tested.
+
+Next: owner performs AI01 onward with private account details and exact supplied synthetic content; records real run/model/decision/citation/message evidence and all subcases. Developer verifies remaining backend/race/security coverage and repairs confirmed required gaps within P13. MANUAL-010/011 and the remaining release acceptance criteria stay open until independently verified.

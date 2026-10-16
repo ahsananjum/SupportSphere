@@ -1,5 +1,7 @@
 # SupportSphere
 
+**AI-only testing from scratch:** use [AI_TESTING_GUIDE.md](AI_TESTING_GUIDE.md), the [AI results sheet](docs/ai-test-results.md), and the [supplied AI knowledge files](docs/test-inputs/ai/). Includes every prerequisite, exact prompts, expected gates, human handoff, feedback, analytics, and known coverage limits.
+
 **Hands-on testing:** start with [the follow-along guide with exact inputs](TESTING_GUIDE.md), its [results sheet](docs/owner-test-results.md), and the supplied [test files](docs/test-inputs/). The guide also lists source-level requirement gaps that must not be mistaken for completed features.
 
 SupportSphere is a production-shaped, multi-tenant customer-support workspace for teams that want customer context, approved knowledge, durable workflows, and human-controlled AI in one place. The product is a portfolio deployment, but its core paths use real Supabase Auth/Postgres/RLS/Storage/Realtime records rather than UI fixtures.
