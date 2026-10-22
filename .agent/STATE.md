@@ -4,7 +4,7 @@ Updated: 2026-10-23 (Asia/Karachi)
 Active phase: U6
 Status: COMPLETE
 Current slice: U6 complete by explicit owner scope waiver; P13 remains separate BLOCKED_MANUAL
-Branch/HEAD: master/b41498223dd109dd61ac4441ceace229c74f8a83 + preserved dirty approved U0–U5/U6 work
+Branch/HEAD: master/9c3da042739166bd1938a4a787a62815db53f211 (pushed to origin/master)
 Separate release: P13 / BLOCKED_MANUAL
 
 ## Scope reconciliation
