@@ -4,6 +4,7 @@ import { getAnalytics } from '../../../lib/analytics/queries';
 import {
   defaultAnalyticsDates,
   metricDefinitions,
+  validateAnalyticsDates,
 } from '../../../lib/analytics/definitions';
 import { runEvaluation } from './actions';
 import { SubmitButton } from '../../../components/shared/submit-button';
@@ -52,22 +53,19 @@ export default async function AnalyticsPage({
     );
   const params = await searchParams;
   const defaults = defaultAnalyticsDates();
-  const from =
-    params.from && /^\d{4}-\d{2}-\d{2}$/.test(params.from)
-      ? params.from
-      : defaults.from;
-  const to =
-    params.to && /^\d{4}-\d{2}-\d{2}$/.test(params.to)
-      ? params.to
-      : defaults.to;
+  const from = params.from ?? defaults.from;
+  const to = params.to ?? defaults.to;
+  const dateErrors = validateAnalyticsDates(from, to);
+  const invalidDates = Object.keys(dateErrors).length > 0;
   let analytics: Awaited<ReturnType<typeof getAnalytics>> | null = null;
   let loadError = false;
   try {
-    analytics = await getAnalytics(supabase, active.id, {
-      from,
-      to: to && from && to < from ? from : to,
-      timezone: active.timezone,
-    });
+    if (!invalidDates)
+      analytics = await getAnalytics(supabase, active.id, {
+        from,
+        to,
+        timezone: active.timezone,
+      });
   } catch {
     loadError = true;
   }
@@ -103,11 +101,32 @@ export default async function AnalyticsPage({
           type="date"
           name="from"
           defaultValue={from}
+          aria-invalid={Boolean(dateErrors.from)}
+          aria-describedby={
+            dateErrors.from ? 'analytics-from-error' : undefined
+          }
         />
         <label htmlFor="analytics-to">To</label>
-        <input id="analytics-to" type="date" name="to" defaultValue={to} />
+        <input
+          id="analytics-to"
+          type="date"
+          name="to"
+          defaultValue={to}
+          aria-invalid={Boolean(dateErrors.to)}
+          aria-describedby={dateErrors.to ? 'analytics-to-error' : undefined}
+        />
         <button className="secondary-button">Apply range</button>
       </form>
+      {dateErrors.from && (
+        <p id="analytics-from-error" role="alert" className="field-error">
+          {dateErrors.from}
+        </p>
+      )}
+      {dateErrors.to && (
+        <p id="analytics-to-error" role="alert" className="field-error">
+          {dateErrors.to}
+        </p>
+      )}
       {params.error && (
         <p role="alert" className="form-error">
           {params.error}
@@ -118,7 +137,9 @@ export default async function AnalyticsPage({
           Evaluation run saved from persisted AI records.
         </p>
       )}
-      {loadError || !analytics ? (
+      {invalidDates ? (
+        <p role="status">Correct the date range to load metrics.</p>
+      ) : loadError || !analytics ? (
         <section className="workspace-card error-state">
           <h2>Analytics unavailable</h2>
           <p>We could not read this workspace’s records. Refresh to retry.</p>
@@ -218,14 +239,21 @@ export default async function AnalyticsPage({
             />
           </form>
         )}
-        <p className="analytics-muted">
-          {cases.data?.length
-            ? `${cases.data.length} curated cases available.`
-            : 'Cases will be created when an admin starts a run.'}{' '}
-          {latest.data
-            ? `Latest: ${latest.data.passed_cases}/${latest.data.total_cases} passed.`
-            : 'No run yet.'}
-        </p>
+        {cases.error || latest.error ? (
+          <p className="form-error" role="alert">
+            Evaluation data is unavailable. Refresh to retry; no empty result or
+            score is implied.
+          </p>
+        ) : (
+          <p className="analytics-muted">
+            {cases.data?.length
+              ? `${cases.data.length} curated cases available.`
+              : 'Cases will be created when an admin starts a run.'}{' '}
+            {latest.data
+              ? `Latest: ${latest.data.passed_cases}/${latest.data.total_cases} passed.`
+              : 'No run yet.'}
+          </p>
+        )}
       </section>
     </div>
   );

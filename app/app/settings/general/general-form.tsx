@@ -1,6 +1,11 @@
 'use client';
 
 import { useActionState } from 'react';
+import {
+  FieldError,
+  FormFeedback,
+  fieldDescription,
+} from '../../../../components/shared/form-feedback';
 import { initialFormState } from '../../../../lib/action-state';
 import { saveGeneralSettings } from '../../workspace-actions';
 
@@ -13,6 +18,17 @@ type Defaults = {
   supportEmail: string;
   websiteOrigin: string;
 };
+const timezoneOptions = [
+  'UTC',
+  'Asia/Karachi',
+  'Asia/Kolkata',
+  'Asia/Dubai',
+  'Europe/London',
+  'Europe/Berlin',
+  'America/New_York',
+  'America/Los_Angeles',
+  'Australia/Sydney',
+];
 const fields: {
   key: keyof Defaults;
   label: string;
@@ -56,59 +72,73 @@ export function GeneralForm({ defaults }: { defaults: Defaults }) {
     initialFormState,
   );
   return (
-    <form action={action} className="form-stack general-form">
+    <form
+      action={action}
+      className="form-stack general-form"
+      aria-busy={pending}
+      onReset={(event) => event.preventDefault()}
+    >
       {fields.map(({ key, label, type, required, help }) => (
         <div className="field" key={key}>
           <label htmlFor={key}>{label}</label>
-          <input
-            id={key}
-            name={key}
-            type={type ?? 'text'}
-            required={required}
-            defaultValue={state.values?.[key] ?? defaults[key]}
-            minLength={required ? (key === 'slug' ? 3 : 2) : undefined}
-            maxLength={
-              key === 'slug'
-                ? 48
-                : key === 'name' || key === 'timezone'
-                  ? 100
-                  : key === 'websiteOrigin'
-                    ? 255
-                    : key === 'supportEmail'
-                      ? 320
-                      : 120
-            }
-            aria-invalid={Boolean(state.fields?.[key])}
-            aria-describedby={
-              state.fields?.[key]
-                ? key + '-error'
-                : help
-                  ? key + '-help'
-                  : undefined
-            }
-          />
+          {key === 'timezone' ? (
+            <select
+              id={key}
+              name={key}
+              required={required}
+              defaultValue={state.values?.[key] ?? defaults[key]}
+              aria-invalid={Boolean(state.fields?.[key])}
+              aria-describedby={fieldDescription(
+                key,
+                state.fields?.[key],
+                help,
+              )}
+            >
+              {!timezoneOptions.includes(defaults.timezone) && (
+                <option value={defaults.timezone}>{defaults.timezone}</option>
+              )}
+              {timezoneOptions.map((timezone) => (
+                <option key={timezone} value={timezone}>
+                  {timezone}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id={key}
+              name={key}
+              type={type ?? 'text'}
+              required={required}
+              defaultValue={state.values?.[key] ?? defaults[key]}
+              minLength={required ? (key === 'slug' ? 3 : 2) : undefined}
+              maxLength={
+                key === 'slug'
+                  ? 48
+                  : key === 'name'
+                    ? 100
+                    : key === 'websiteOrigin'
+                      ? 255
+                      : key === 'supportEmail'
+                        ? 320
+                        : 120
+              }
+              aria-invalid={Boolean(state.fields?.[key])}
+              aria-describedby={fieldDescription(
+                key,
+                state.fields?.[key],
+                help,
+              )}
+            />
+          )}
           {help && (
             <p id={key + '-help'} className="field-help">
               {help}
             </p>
           )}
-          {state.fields?.[key] && (
-            <p id={key + '-error'} className="field-error">
-              {state.fields[key]}
-            </p>
-          )}
+          <FieldError id={key} error={state.fields?.[key]} />
         </div>
       ))}
-      {state.message && (
-        <p role="alert" className="form-error">
-          {state.message}
-        </p>
-      )}
-      {state.success && (
-        <p role="status" className="form-success">
-          {state.success}
-        </p>
-      )}
+      <FormFeedback state={state} pending={pending} busy="Saving settings…" />
       <button type="submit" className="primary-button" disabled={pending}>
         {pending ? 'Saving settings…' : 'Save settings'}
       </button>

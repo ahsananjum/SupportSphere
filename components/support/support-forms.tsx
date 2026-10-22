@@ -1,7 +1,9 @@
 'use client';
+import { DraftAdoption } from '../ai/draft-adoption';
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { FormFeedback, FieldError } from '../shared/form-feedback';
 import { initialFormState } from '../../lib/action-state';
 import {
   createConversation,
@@ -10,37 +12,18 @@ import {
   sendMessage,
 } from '../../app/app/support-actions';
 
-function Feedback({ state }: { state: typeof initialFormState }) {
-  return state.message ? (
-    <p className="form-error" role="alert">
-      {state.message}
-    </p>
-  ) : state.success ? (
-    <p className="form-success" role="status">
-      {state.success}
-    </p>
-  ) : null;
-}
-function FieldError({
-  state,
-  name,
-}: {
-  state: typeof initialFormState;
-  name: string;
-}) {
-  return state.fields?.[name] ? (
-    <p id={`${name}-error`} className="field-error" role="alert">
-      {state.fields[name]}
-    </p>
-  ) : null;
-}
 export function CustomerForm() {
   const [state, action, pending] = useActionState(
     createCustomer,
     initialFormState,
   );
   return (
-    <form action={action} className="form-stack support-form">
+    <form
+      action={action}
+      className="form-stack support-form"
+      aria-busy={pending}
+      onReset={(event) => event.preventDefault()}
+    >
       <div className="field">
         <label htmlFor="customer-name">Name</label>
         <input
@@ -50,9 +33,11 @@ export function CustomerForm() {
           maxLength={160}
           defaultValue={state.values?.name}
           aria-invalid={Boolean(state.fields?.name)}
-          aria-describedby={state.fields?.name ? 'name-error' : undefined}
+          aria-describedby={
+            state.fields?.name ? 'customer-name-error' : undefined
+          }
         />
-        <FieldError state={state} name="name" />
+        <FieldError id="customer-name" error={state.fields?.name} />
       </div>
       <div className="field">
         <label htmlFor="customer-email">Email</label>
@@ -63,9 +48,11 @@ export function CustomerForm() {
           maxLength={320}
           defaultValue={state.values?.email}
           aria-invalid={Boolean(state.fields?.email)}
-          aria-describedby={state.fields?.email ? 'email-error' : undefined}
+          aria-describedby={
+            state.fields?.email ? 'customer-email-error' : undefined
+          }
         />
-        <FieldError state={state} name="email" />
+        <FieldError id="customer-email" error={state.fields?.email} />
       </div>
       <div className="field">
         <label htmlFor="customer-phone">
@@ -77,7 +64,11 @@ export function CustomerForm() {
           maxLength={60}
           defaultValue={state.values?.phone}
           aria-invalid={Boolean(state.fields?.phone)}
+          aria-describedby={
+            state.fields?.phone ? 'customer-phone-error' : undefined
+          }
         />
+        <FieldError id="customer-phone" error={state.fields?.phone} />
       </div>
       <div className="field">
         <label htmlFor="customer-company">
@@ -89,9 +80,13 @@ export function CustomerForm() {
           maxLength={160}
           defaultValue={state.values?.company}
           aria-invalid={Boolean(state.fields?.company)}
+          aria-describedby={
+            state.fields?.company ? 'customer-company-error' : undefined
+          }
         />
+        <FieldError id="customer-company" error={state.fields?.company} />
       </div>
-      <Feedback state={state} />
+      <FormFeedback state={state} pending={pending} busy="Saving…" />
       <button className="primary-button" disabled={pending}>
         {pending ? 'Saving…' : 'Save customer'}
       </button>
@@ -104,7 +99,12 @@ export function ConversationForm({ customerId }: { customerId: string }) {
     initialFormState,
   );
   return (
-    <form action={action} className="form-stack support-form">
+    <form
+      action={action}
+      className="form-stack support-form"
+      aria-busy={pending}
+      onReset={(event) => event.preventDefault()}
+    >
       <input type="hidden" name="customerId" value={customerId} />
       <div className="field">
         <label htmlFor="conversation-subject">Subject</label>
@@ -115,9 +115,11 @@ export function ConversationForm({ customerId }: { customerId: string }) {
           maxLength={240}
           defaultValue={state.values?.subject}
           aria-invalid={Boolean(state.fields?.subject)}
-          aria-describedby={state.fields?.subject ? 'subject-error' : undefined}
+          aria-describedby={
+            state.fields?.subject ? 'conversation-subject-error' : undefined
+          }
         />
-        <FieldError state={state} name="subject" />
+        <FieldError id="conversation-subject" error={state.fields?.subject} />
       </div>
       <div className="field">
         <label htmlFor="conversation-channel">Channel</label>
@@ -128,7 +130,7 @@ export function ConversationForm({ customerId }: { customerId: string }) {
           <option value="api">API</option>
         </select>
       </div>
-      <Feedback state={state} />
+      <FormFeedback state={state} pending={pending} busy="Saving…" />
       <button className="primary-button" disabled={pending}>
         {pending ? 'Starting…' : 'Start conversation'}
       </button>
@@ -147,7 +149,12 @@ export function TicketForm({
     initialFormState,
   );
   return (
-    <form action={action} className="form-stack support-form">
+    <form
+      action={action}
+      className="form-stack support-form"
+      aria-busy={pending}
+      onReset={(event) => event.preventDefault()}
+    >
       <input type="hidden" name="customerId" value={customerId} />
       <input type="hidden" name="conversationId" value={conversationId} />
       <div className="field">
@@ -159,9 +166,11 @@ export function TicketForm({
           maxLength={240}
           defaultValue={state.values?.title}
           aria-invalid={Boolean(state.fields?.title)}
-          aria-describedby={state.fields?.title ? 'title-error' : undefined}
+          aria-describedby={
+            state.fields?.title ? 'ticket-title-error' : undefined
+          }
         />
-        <FieldError state={state} name="title" />
+        <FieldError id="ticket-title" error={state.fields?.title} />
       </div>
       <div className="field">
         <label htmlFor="ticket-description">Description</label>
@@ -172,7 +181,11 @@ export function TicketForm({
           maxLength={40000}
           defaultValue={state.values?.description}
           aria-invalid={Boolean(state.fields?.description)}
+          aria-describedby={
+            state.fields?.description ? 'ticket-description-error' : undefined
+          }
         />
+        <FieldError id="ticket-description" error={state.fields?.description} />
       </div>
       <div className="field">
         <label htmlFor="ticket-priority">Priority</label>
@@ -198,7 +211,7 @@ export function TicketForm({
           defaultValue={state.values?.category}
         />
       </div>
-      <Feedback state={state} />
+      <FormFeedback state={state} pending={pending} busy="Saving…" />
       <button className="primary-button" disabled={pending}>
         {pending ? 'Creating…' : 'Create ticket'}
       </button>
@@ -208,20 +221,40 @@ export function TicketForm({
 export function Composer({
   conversationId,
   initialBody = '',
+  recipient = 'this customer',
+  draftRunId = '',
 }: {
   conversationId: string;
   initialBody?: string;
+  recipient?: string;
+  draftRunId?: string;
 }) {
-  const clientId = useRef(globalThis.crypto.randomUUID());
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const [body, setBody] = useState('');
+  const [internal, setInternal] = useState(false);
+  const submission = useRef<{ payload: string; id: string } | null>(null);
   const submitMessage = async (
     state: typeof initialFormState,
     formData: FormData,
   ) => {
-    formData.set('clientId', clientId.current);
-    const next = await sendMessage(state, formData);
-    if (next.success) clientId.current = globalThis.crypto.randomUUID();
-    return next;
+    const sentBody = String(formData.get('body') ?? '');
+    const payload = JSON.stringify([sentBody, formData.get('internal')]);
+    if (submission.current?.payload !== payload)
+      submission.current = { payload, id: globalThis.crypto.randomUUID() };
+    formData.set('clientId', submission.current.id);
+    try {
+      const next = await sendMessage(state, formData);
+      if (next.success) {
+        submission.current = null;
+        setBody((current) => (current === sentBody ? '' : current));
+      }
+      return next;
+    } catch {
+      return {
+        message:
+          'We could not confirm this send. Your draft is preserved. Retry to check the same message.',
+      };
+    }
   };
   const [state, action, pending] = useActionState(
     submitMessage,
@@ -233,8 +266,22 @@ export function Composer({
     router.refresh();
   }, [router, state.success]);
   return (
-    <form action={action} className="composer">
+    <form
+      action={action}
+      className="composer"
+      aria-busy={pending}
+      onReset={(event) => event.preventDefault()}
+    >
       <input type="hidden" name="conversationId" value={conversationId} />
+      <p
+        className={internal ? 'form-notice' : 'field-help'}
+        id="composer-audience"
+        role="status"
+      >
+        {internal
+          ? 'Internal note · Only your workspace team can see this.'
+          : `Public reply · Visible to ${recipient} in this conversation.`}
+      </p>
       <div className="field">
         <label htmlFor="message-body">Reply</label>
         <textarea
@@ -245,19 +292,50 @@ export function Composer({
           required
           maxLength={20000}
           placeholder="Write a clear, helpful reply…"
-          defaultValue={state.values?.body ?? initialBody}
+          value={body}
+          onChange={(event) => setBody(event.target.value)}
+          readOnly={pending}
           aria-invalid={Boolean(state.fields?.body)}
-          aria-describedby={state.fields?.body ? 'body-error' : undefined}
+          aria-describedby={
+            state.fields?.body
+              ? 'composer-audience message-body-error'
+              : 'composer-audience'
+          }
         />
-        <FieldError state={state} name="body" />
+        <FieldError id="message-body" error={state.fields?.body} />
       </div>
       <label className="check-row">
-        <input type="checkbox" name="internal" /> Internal note
+        <input
+          type="checkbox"
+          name="internal"
+          checked={internal}
+          onChange={(event) => setInternal(event.target.checked)}
+          disabled={pending}
+        />{' '}
+        Internal note
       </label>
+      {initialBody && (
+        <DraftAdoption
+          draft={initialBody}
+          runId={draftRunId}
+          body={body}
+          pending={pending}
+          onAdopt={(text) => {
+            setBody(text);
+            bodyRef.current?.focus();
+          }}
+        />
+      )}
       <div className="composer-actions">
-        <Feedback state={state} />
+        <FormFeedback state={state} pending={pending} busy="Saving…" />
         <button className="primary-button" disabled={pending}>
-          {pending ? 'Sending…' : 'Send message'}
+          {pending
+            ? internal
+              ? 'Saving note…'
+              : 'Sending…'
+            : internal
+              ? 'Save internal note'
+              : 'Send message'}
         </button>
       </div>
     </form>

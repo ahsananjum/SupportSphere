@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'motion/react';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useRef, useEffect } from 'react';
 import { initialFormState } from '../../lib/action-state';
 import {
   logIn,
@@ -16,9 +15,9 @@ type Mode = 'login' | 'signup' | 'forgot' | 'reset';
 
 const config = {
   login: {
-    title: 'Sign In or Join Now!',
-    intro: 'login or create your SupportSphere account.',
-    button: 'Continue With Email',
+    title: 'Sign in to your workspace',
+    intro: 'Use your existing account, or create an account below.',
+    button: 'Continue with email',
   },
   signup: {
     title: 'Create your account',
@@ -103,6 +102,8 @@ export function AuthForm({
   const [userStep, setUserStep] = useState<'email' | 'password' | null>(null);
   const [enteredEmail, setEnteredEmail] = useState('');
   const [clientEmailError, setClientEmailError] = useState('');
+  const emailInput = useRef<HTMLInputElement>(null);
+  const passwordInput = useRef<HTMLInputElement>(null);
 
   const currentEmail = enteredEmail || state.email || '';
   const step =
@@ -111,6 +112,11 @@ export function AuthForm({
       : state.fields?.password || state.message
         ? 'password'
         : 'email';
+
+  useEffect(() => {
+    if (mode === 'login' && userStep !== null)
+      (step === 'password' ? passwordInput : emailInput).current?.focus();
+  }, [mode, step, userStep]);
 
   const handleContinueWithEmail = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -128,12 +134,7 @@ export function AuthForm({
   };
 
   return (
-    <motion.section
-      aria-labelledby="auth-title"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-    >
+    <section aria-labelledby="auth-title">
       <div className="auth-header">
         <h1 id="auth-title" className="auth-title">
           {details.title}
@@ -151,17 +152,14 @@ export function AuthForm({
         <>
           <form action={signInWithGoogle} className="oauth-form">
             {next && <input type="hidden" name="next" value={next} />}
-            <motion.button
+            <button
               type="submit"
               className="oauth-pill-button"
               aria-label="Continue with Google"
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
             >
               <GoogleIcon />
               <span>Continue with Google</span>
-            </motion.button>
+            </button>
           </form>
 
           <div className="auth-divider" role="separator" aria-label="or">
@@ -204,16 +202,9 @@ export function AuthForm({
 
           {/* Email input for login step 1 */}
           {mode === 'login' && (
-            <AnimatePresence mode="wait">
+            <>
               {step === 'email' ? (
-                <motion.div
-                  key="step-email-input"
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 8 }}
-                  transition={{ duration: 0.2 }}
-                  className="field"
-                >
+                <div key="step-email-input" className="field">
                   <label htmlFor="email">
                     Email address
                     <span className="auth-label-hint">
@@ -226,7 +217,7 @@ export function AuthForm({
                     </span>
                     <input
                       id="email"
-                      suppressHydrationWarning
+                      ref={emailInput}
                       name="email"
                       type="email"
                       autoComplete="email"
@@ -261,27 +252,28 @@ export function AuthForm({
                       Forgot password?
                     </Link>
                   </div>
-                  <motion.button
+                  <button
                     type="button"
                     className="primary-button"
                     onClick={handleContinueWithEmail}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.15 }}
                   >
-                    Continue With Email
-                  </motion.button>
-                </motion.div>
+                    Continue with email
+                  </button>
+                </div>
               ) : (
-                <motion.div
-                  key="step-password-input"
-                  initial={{ opacity: 0, x: 8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -8 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <div key="step-password-input">
                   <div className="auth-email-badge">
-                    <span>{currentEmail}</span>
+                    <label className="sr-only" htmlFor="login-username">
+                      Email address
+                    </label>
+                    <input
+                      id="login-username"
+                      name="email"
+                      type="email"
+                      autoComplete="username"
+                      value={currentEmail}
+                      readOnly
+                    />
                     <button
                       type="button"
                       className="auth-change-email-btn"
@@ -290,7 +282,6 @@ export function AuthForm({
                       Change
                     </button>
                   </div>
-                  <input type="hidden" name="email" value={currentEmail} />
 
                   <div className="field">
                     <div className="field-header-row">
@@ -304,6 +295,7 @@ export function AuthForm({
                     </div>
                     <input
                       id="password"
+                      ref={passwordInput}
                       name="password"
                       type="password"
                       autoComplete="current-password"
@@ -322,9 +314,9 @@ export function AuthForm({
                       </p>
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </>
           )}
 
           {/* Email input for non-login modes */}
@@ -420,29 +412,28 @@ export function AuthForm({
 
           {/* Render primary submit button for non-step-1-login */}
           {(mode !== 'login' || step === 'password') && (
-            <motion.button
-              className="primary-button"
-              type="submit"
-              disabled={pending}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.15 }}
-            >
+            <button className="primary-button" type="submit" disabled={pending}>
               {pending
                 ? 'Please wait…'
                 : mode === 'login'
                   ? 'Sign in'
                   : details.button}
-            </motion.button>
+            </button>
           )}
         </form>
       )}
 
       {(mode === 'login' || mode === 'signup') && (
         <p className="auth-disclaimer">
-          By clicking continue, you agree to our{' '}
-          <span className="auth-legal-term">Terms of Service</span> and{' '}
-          <span className="auth-legal-term">Privacy Policy</span>.
+          By continuing, you agree to our{' '}
+          <Link href="/terms" className="auth-legal-term">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" className="auth-legal-term">
+            Privacy Policy
+          </Link>
+          .
         </p>
       )}
 
@@ -451,7 +442,7 @@ export function AuthForm({
           <span>
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="auth-link-highlight">
-              <strong>Join Now</strong>
+              <strong>Create account</strong>
             </Link>
           </span>
           <Link href="/forgot-password" className="auth-link-subtle">
@@ -472,6 +463,6 @@ export function AuthForm({
           <Link href="/login">Back to sign in</Link>
         </p>
       )}
-    </motion.section>
+    </section>
   );
 }

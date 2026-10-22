@@ -9,7 +9,7 @@ The runbook has two modes:
 - **Local/repository verification** proves code, types, validation, UI states, migrations, and tests.
 - **Live/deployed verification** proves provider configuration, real Auth, real email, real Supabase data, workers, deployment parity, and the production golden journey.
 
-The current phase is **P13 / BLOCKED_MANUAL**. The public deployment and Supabase project have been verified, but credential rotation, Vercel environment/commit inspection, and the Gemini quota gate still prevent a complete release claim. Never report a blocked check as passed.
+**Current work:** approved U0–U6 upgrade program; U6 local repository, isolated and browser proof is recorded in `.agent/QA.md`, while human device/usability and hosted/provider/deployment gates remain open. See [execution](upgrade-execution.md), [phase prompts](upgrade-prompts/README.md) and [testing protocol](upgrade-testing.md). **Separate release track:** P13 / BLOCKED_MANUAL. Credential rotation, deployment/env parity and fresh real-provider evidence remain required. Previous quota errors are historical; owner reports AI enabled, awaiting scenario proof. Never report a blocked/skipped check as passed. Update actual commands, tests and this runbook with each implemented slice.
 
 ## 1. Understand the release boundary
 
@@ -17,7 +17,7 @@ SupportSphere is a Next.js App Router application. The browser talks to Next.js,
 
 Truthful current limitations:
 
-- Gemini real-provider verification is blocked by model/quota availability. Keep AI mode off in demo data until the gate passes.
+- Gemini real-provider scenarios remain unverified; do not assume historical quota failure is current. Keep demo AI off until its applicable gate passes.
 - Stripe is intentionally unselected; do not test or claim billing.
 - Optional analytics is intentionally disabled; the cookie notice says so.
 - URL and DOCX knowledge inputs are intentionally unavailable.

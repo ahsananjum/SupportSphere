@@ -1,10 +1,25 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getWorkspaceContext } from '../../../../../lib/workspaces/context';
-import { submitAiFeedback } from '../../actions';
+import { AutomatedActionState } from '../../../../../components/shared/automated-action-state';
+import { PageHeading } from '../../../../../components/shared/page-heading';
+import { Disclosure } from '../../../../../components/shared/disclosure';
+import { Timestamp } from '../../../../../components/shared/record-state';
+import { AiFeedbackForm } from '../../../../../components/ai/feedback-form';
+import { ReviewRefresh } from '../../../../../components/ai/review-refresh';
+import { AiEvidence } from '../../../../../components/ai/run-evidence';
+import { readRunEvidence } from '../../../../../lib/ai/evidence';
+import {
+  aiNextAction,
+  qualityLabel,
+  aiStepLabel,
+  aiStepStatus,
+} from '../../../../../lib/ai/review';
+import { statusLabel } from '../../../../../lib/ui/presentation';
+import { aiModeLabel } from '../../../../../lib/ai/policy';
 
 export const metadata = {
-  title: 'AI run inspector',
+  title: 'AI run review',
   robots: { index: false, follow: false },
 };
 export default async function AiRunPage({
@@ -15,278 +30,261 @@ export default async function AiRunPage({
   searchParams: Promise<{ notice?: string; error?: string }>;
 }) {
   const { supabase, active } = await getWorkspaceContext();
-  const { runId } = await params;
-  const notice = await searchParams;
+  const { runId } = await params,
+    notice = await searchParams;
   if (!active) notFound();
-  const { data: run, error } = await supabase
+  const result = await supabase
     .from('ai_runs')
     .select('*')
     .eq('workspace_id', active.id)
     .eq('id', runId)
     .maybeSingle();
-  if (error || !run) notFound();
-  const [stepsResult, citationsResult, feedbackResult] = await Promise.all([
+  if (result.error)
+    return (
+      <section className="workspace-card">
+        <h1>Run unavailable</h1>
+        <p role="alert">The run could not be loaded.</p>
+        <ReviewRefresh />
+      </section>
+    );
+  const run = result.data;
+  if (!run) notFound();
+  const [steps, evidence, feedback, policy] = await Promise.all([
     supabase
       .from('ai_run_steps')
       .select('*')
       .eq('workspace_id', active.id)
       .eq('run_id', run.id)
-      .order('created_at')
       .order('ordinal'),
-    supabase
-      .from('ai_citations')
-      .select('*')
-      .eq('workspace_id', active.id)
-      .eq('run_id', run.id)
-      .order('created_at')
-      .order('ordinal'),
+    readRunEvidence(supabase, active.id, run.id),
     supabase
       .from('ai_feedback')
       .select('id,rating,reason,comment,created_at')
       .eq('workspace_id', active.id)
       .eq('run_id', run.id)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('ai_agent_configs')
+      .select('mode,version')
+      .eq('workspace_id', active.id)
+      .maybeSingle(),
   ]);
-  const loadError =
-    stepsResult.error || citationsResult.error || feedbackResult.error;
-  const triage =
-    run.triage && typeof run.triage === 'object' && !Array.isArray(run.triage)
-      ? (run.triage as Record<string, unknown>)
+  const object = (v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? (v as Record<string, unknown>)
       : null;
-  const quality =
-    run.quality &&
-    typeof run.quality === 'object' &&
-    !Array.isArray(run.quality)
-      ? (run.quality as Record<string, unknown>)
-      : null;
+  const triage = object(run.triage),
+    quality = object(run.quality);
+  const text = (v: unknown) => (typeof v === 'string' ? v : 'Not recorded');
   return (
     <div className="support-page ai-run-page">
       <Link href="/app/ai/runs" className="back-link">
         ← AI runs
       </Link>
-      <div className="page-heading">
-        <p className="eyebrow">AI / SUPPORT RESPONSE</p>
-        <h1>Run {run.id.slice(0, 8)}</h1>
-        <p className="page-intro">
-          {run.status} · {run.decision ?? 'Decision pending'} ·{' '}
-          {run.reason_code ?? 'No reason recorded'}
+      <PageHeading
+        eyebrow="AI / SUPPORT RESPONSE"
+        title={`Run ${run.id.slice(0, 8)}`}
+        description="Review the saved outcome and evidence before deciding what to do."
+      />
+      <AutomatedActionState kind="ai" run={run} heading />
+      <section className="workspace-card" aria-labelledby="next-action-heading">
+        <h2 id="next-action-heading">Next action</h2>
+        <p>{aiNextAction(run)}</p>
+        {run.conversation_id ? (
+          <p>
+            <Link href={`/app/inbox/${run.conversation_id}`}>
+              Open conversation ↗
+            </Link>
+          </p>
+        ) : (
+          <p>The conversation is no longer available.</p>
+        )}
+        <p>
+          <Link href="/app/knowledge">Review knowledge sources</Link>
         </p>
-      </div>
-      {notice.notice && (
-        <p role="status" className="form-success">
-          Feedback saved.
+        <p className="field-help">
+          Recorded policy version {run.policy_version}.{' '}
+          {policy.error || !policy.data
+            ? 'Current policy unavailable.'
+            : `Current policy: ${aiModeLabel(policy.data.mode)}, version ${policy.data.version}.`}
         </p>
-      )}
-      {notice.error && (
-        <p role="alert" className="form-error">
-          Feedback could not be saved. Retry.
+        {policy.data && policy.data.version !== run.policy_version && (
+          <p className="form-notice">
+            Policy changed since this run. This recorded result does not
+            authorize new automatic work.
+          </p>
+        )}
+        {['owner', 'admin'].includes(active.role) && (
+          <p>
+            <Link href="/app/settings/ai">Review AI policy</Link>
+          </p>
+        )}
+        <ReviewRefresh />
+      </section>
+      <section className="workspace-card">
+        <h2>Answer</h2>
+        {run.output_text ? (
+          <p className="ai-output">{run.output_text}</p>
+        ) : (
+          <p>No answer was recorded for this run.</p>
+        )}
+        <AiEvidence evidence={evidence} />
+      </section>
+      <section className="workspace-card">
+        <h2>Triage and quality</h2>
+        <p>
+          Intent:{' '}
+          {triage?.intent ? statusLabel(text(triage.intent)) : 'Not recorded'} ·
+          Priority:{' '}
+          {triage?.priority
+            ? statusLabel(text(triage.priority))
+            : 'Not recorded'}
         </p>
-      )}
-      {loadError ? (
-        <section className="workspace-card error-state">
-          <h2>Trace unavailable</h2>
-          <p>Refresh to load the complete run.</p>
-          <Link href={`/app/ai/runs/${run.id}`} className="secondary-button">
-            Retry
-          </Link>
-        </section>
-      ) : (
-        <>
-          <section className="workspace-card ai-run-summary">
-            <h2>Decision</h2>
-            <dl className="ai-facts">
-              <div>
-                <dt>Status</dt>
-                <dd>{run.status}</dd>
+        {typeof triage?.summary === 'string' && <p>{triage.summary}</p>}
+        <p>
+          Human escalation requested:{' '}
+          {triage?.escalate === true
+            ? 'Yes'
+            : triage?.escalate === false
+              ? 'No'
+              : 'Not recorded'}
+          .
+        </p>
+        <p>
+          Quality: {qualityLabel(quality?.passed)} · Grounding:{' '}
+          {qualityLabel(quality?.grounded)} · Safety:{' '}
+          {qualityLabel(quality?.safe)} · Tone: {qualityLabel(quality?.tone_ok)}
+        </p>
+        {typeof quality?.reason === 'string' && (
+          <p>Review note: {quality.reason}</p>
+        )}
+      </section>
+      <Disclosure label="Technical details">
+        <section className="workspace-card">
+          <h2>Recorded execution</h2>
+          <dl className="ai-facts">
+            {Object.entries({
+              'Run ID': run.id,
+              'Run type': run.run_type,
+              Status: statusLabel(run.status),
+              Disposition: run.decision
+                ? statusLabel(run.decision)
+                : 'Not recorded',
+              'Technical reason code': run.reason_code ?? 'Not recorded',
+              'Error code': run.error_code ?? 'None recorded',
+              'Prompt version': run.prompt_version,
+              'Policy version': run.policy_version,
+              'Provider / model': `${run.provider ?? 'Not recorded'} / ${run.model ?? 'Not recorded'}`,
+              Attempts: run.attempt,
+              Latency:
+                run.latency_ms === null
+                  ? 'Not recorded'
+                  : `${run.latency_ms} ms`,
+              Confidence: run.confidence ?? 'Not recorded',
+              'Evidence score': run.evidence_score ?? 'Not recorded',
+              Tokens: `${run.input_tokens ?? 'Not recorded'} in / ${run.output_tokens ?? 'Not recorded'} out`,
+            }).map(([key, value]) => (
+              <div key={key}>
+                <dt>{key}</dt>
+                <dd>{value}</dd>
               </div>
-              <div>
-                <dt>Disposition</dt>
-                <dd>{run.decision ?? 'Pending'}</dd>
-              </div>
-              <div>
-                <dt>Reason</dt>
-                <dd>{run.reason_code ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Prompt version</dt>
-                <dd>{run.prompt_version}</dd>
-              </div>
-              <div>
-                <dt>Policy version</dt>
-                <dd>{run.policy_version}</dd>
-              </div>
-              <div>
-                <dt>Provider / model</dt>
-                <dd>
-                  {run.provider ?? '—'} / {run.model ?? '—'}
-                </dd>
-              </div>
-              <div>
-                <dt>Attempts</dt>
-                <dd>{run.attempt}</dd>
-              </div>
-              <div>
-                <dt>Latency</dt>
-                <dd>
-                  {run.latency_ms === null ? '—' : `${run.latency_ms} ms`}
-                </dd>
-              </div>
-              <div>
-                <dt>Confidence</dt>
-                <dd>{run.confidence ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Evidence score</dt>
-                <dd>{run.evidence_score ?? '—'}</dd>
-              </div>
-              <div>
-                <dt>Tokens</dt>
-                <dd>
-                  {run.input_tokens ?? '—'} in / {run.output_tokens ?? '—'} out
-                </dd>
-              </div>
-              <div>
-                <dt>Created</dt>
-                <dd>
-                  <time dateTime={run.created_at}>
-                    {new Date(run.created_at).toLocaleString()}
-                  </time>
-                </dd>
-              </div>
-              <div>
-                <dt>Completed</dt>
-                <dd>
-                  {run.completed_at ? (
-                    <time dateTime={run.completed_at}>
-                      {new Date(run.completed_at).toLocaleString()}
-                    </time>
-                  ) : (
-                    '—'
-                  )}
-                </dd>
-              </div>
-            </dl>
-            {run.error_code && (
-              <p role="alert">Provider error: {run.error_code}</p>
-            )}
-            {run.conversation_id && (
-              <Link
-                href={`/app/inbox/${run.conversation_id}`}
-                className="quiet-link"
-              >
-                Open conversation ↗
-              </Link>
-            )}
-          </section>
-          <section className="workspace-card">
-            <h2>Triage and quality</h2>
-            <p>
-              Intent: {String(triage?.intent ?? '—')} · Priority:{' '}
-              {String(triage?.priority ?? '—')} · Escalation:{' '}
-              {String(triage?.escalate ?? '—')}
-            </p>
-            {typeof triage?.summary === 'string' && <p>{triage.summary}</p>}
-            <p>
-              Quality: {quality ? String(quality.passed) : 'Not run'} ·
-              Grounded: {quality ? String(quality.grounded) : '—'} · Safe:{' '}
-              {quality ? String(quality.safe) : '—'}
-            </p>
-            {typeof quality?.reason === 'string' && (
-              <p>Review note: {quality.reason}</p>
-            )}
-          </section>
-          <section className="workspace-card">
-            <h2>Step timeline</h2>
-            {stepsResult.data?.length ? (
-              <ol className="ai-step-list">
-                {stepsResult.data.map((s) => (
-                  <li key={s.id}>
-                    <strong>{s.step_type}</strong> · {s.status} ·{' '}
-                    {s.duration_ms} ms
-                    {s.metadata &&
-                      Object.keys(s.metadata as object).length > 0 && (
-                        <pre>{JSON.stringify(s.metadata)}</pre>
-                      )}
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p>No step trace was recorded for this run.</p>
-            )}
-          </section>
-          <section className="workspace-card">
-            <h2>Evidence and citations</h2>
-            {citationsResult.data?.length ? (
-              <ol className="ai-citation-list">
-                {citationsResult.data.map((c) => (
-                  <li key={c.id}>
-                    <strong>
-                      [{c.ordinal}] Evidence score {c.score}
-                    </strong>
-                    <p>{c.snippet}</p>
-                    <small>
-                      Source {c.source_id?.slice(0, 8) ?? 'removed'} · Chunk{' '}
-                      {c.chunk_id?.slice(0, 8) ?? 'removed'}
-                    </small>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p>No reliable citation was used.</p>
-            )}
-          </section>
-          <section className="workspace-card">
-            <h2>Output</h2>
-            {run.output_text ? (
-              <p className="ai-output">{run.output_text}</p>
-            ) : (
-              <p>No answer was generated for this run.</p>
-            )}
-          </section>
-          <section className="workspace-card">
-            <h2>Human feedback</h2>
-            {feedbackResult.data?.length ? (
-              <ul className="ai-feedback-list">
-                {feedbackResult.data.map((f) => (
-                  <li key={f.id}>
-                    <strong>{f.rating}</strong>
-                    {f.reason && ` · ${f.reason}`}
-                    {f.comment && <p>{f.comment}</p>}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No feedback yet.</p>
-            )}
-            {['owner', 'admin', 'agent'].includes(active.role) && (
-              <form action={submitAiFeedback} className="form-stack">
-                <input type="hidden" name="runId" value={run.id} />
-                <div className="field">
-                  <label htmlFor="ai-rating">Rating</label>
-                  <select id="ai-rating" name="rating" required>
-                    <option value="helpful">Helpful</option>
-                    <option value="unhelpful">Unhelpful</option>
-                  </select>
-                </div>
-                <div className="field">
-                  <label htmlFor="ai-reason">Reason</label>
-                  <input id="ai-reason" name="reason" maxLength={80} />
-                </div>
-                <div className="field">
-                  <label htmlFor="ai-comment">Comment</label>
-                  <textarea
-                    id="ai-comment"
-                    name="comment"
-                    maxLength={500}
-                    rows={3}
+            ))}
+            <div>
+              <dt>Created</dt>
+              <dd>
+                <Timestamp value={run.created_at} timezone={active.timezone} />
+              </dd>
+            </div>
+            <div>
+              <dt>Completed</dt>
+              <dd>
+                {run.completed_at ? (
+                  <Timestamp
+                    value={run.completed_at}
+                    timezone={active.timezone}
                   />
-                </div>
-                <button className="secondary-button">Save feedback</button>
-              </form>
-            )}
-          </section>
-        </>
-      )}
+                ) : (
+                  'Not recorded'
+                )}
+              </dd>
+            </div>
+          </dl>
+          <h3>Citation metadata</h3>
+          {evidence.error ? (
+            <p>Citation metadata unavailable.</p>
+          ) : (
+            <pre className="ai-output">
+              {JSON.stringify(
+                evidence.citations.map(
+                  ({ ordinal, source_id, chunk_id, score }) => ({
+                    ordinal,
+                    source_id,
+                    chunk_id,
+                    score,
+                  }),
+                ),
+                null,
+                2,
+              )}
+            </pre>
+          )}
+          <h3>Step timeline</h3>
+          {steps.error ? (
+            <>
+              <p role="alert">Step trace unavailable.</p>
+              <ReviewRefresh />
+            </>
+          ) : steps.data?.length ? (
+            <ol className="ai-step-list">
+              {steps.data.map((s) => (
+                <li key={s.id}>
+                  <strong>{aiStepLabel(s.step_type)}</strong> ·{' '}
+                  {aiStepStatus(s.status)} · {s.duration_ms} ms
+                  {s.metadata && (
+                    <pre>{JSON.stringify(s.metadata, null, 2)}</pre>
+                  )}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p>No step trace was recorded for this run.</p>
+          )}
+        </section>
+      </Disclosure>
+      <section className="workspace-card">
+        <h2>Human feedback</h2>
+        {notice.notice && (
+          <p role="status" className="form-success">
+            Feedback saved.
+          </p>
+        )}
+        {notice.error && (
+          <p role="alert" className="form-error">
+            Feedback could not be saved. Retry.
+          </p>
+        )}
+        {feedback.error ? (
+          <>
+            <p role="alert">Feedback history unavailable.</p>
+            <ReviewRefresh />
+          </>
+        ) : feedback.data?.length ? (
+          <ul className="ai-feedback-list">
+            {feedback.data.map((f) => (
+              <li key={f.id}>
+                <strong>{statusLabel(f.rating)}</strong>
+                {f.reason && ` · ${f.reason}`}
+                {f.comment && <p>{f.comment}</p>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No feedback yet.</p>
+        )}
+        {['owner', 'admin', 'agent'].includes(active.role) && (
+          <AiFeedbackForm runId={run.id} />
+        )}
+      </section>
     </div>
   );
 }

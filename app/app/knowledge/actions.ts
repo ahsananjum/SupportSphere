@@ -49,6 +49,12 @@ export async function createTextSource(
   if (!parsed.success)
     return {
       message: 'Add a name and up to 80,000 characters of text.',
+      fields: Object.fromEntries(
+        parsed.error.issues.map((issue) => [
+          String(issue.path[0]),
+          issue.message,
+        ]),
+      ),
       values: { name, content },
     };
   const context = await writableContext();
@@ -183,7 +189,7 @@ export async function uploadKnowledgeSource(
     return {
       message: enqueued.error.message.includes('JOB_LIMIT')
         ? 'Too many indexing requests in this workspace. Try again after an hour.'
-        : 'The file uploaded, but indexing could not start. Retry the upload.',
+        : 'The file uploaded, but indexing was not confirmed. Check the source before uploading again; upload recovery may still queue it.',
       values: { name },
     };
   }
@@ -263,6 +269,11 @@ export async function changeKnowledgeSource(
   logEvent('knowledge.change', 'succeeded', { workspaceId, sourceId });
   if (operation === 'delete') redirect('/app/knowledge');
   return {
-    success: 'Source updated.',
+    success:
+      operation === 'retry' || operation === 'reindex'
+        ? 'Indexing queued. This source is unavailable to AI until indexing succeeds.'
+        : operation === 'disable'
+          ? 'Source disabled. New AI retrieval excludes it.'
+          : 'Source enabled. AI can use it only when indexing is ready.',
   };
 }

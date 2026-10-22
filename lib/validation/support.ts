@@ -26,3 +26,21 @@ export const ticketSchema = z.object({
   customerId: z.string().uuid().optional().or(z.literal('')),
   conversationId: z.string().uuid().optional().or(z.literal('')),
 });
+
+export const customerEditSchema = z
+  .object({
+    name: text(160),
+    email: z.string().trim().email().max(320).or(z.literal('')),
+    phone: text(60),
+    company: text(160),
+  })
+  .partial()
+  .strict();
+export const ticketEditSchema = z
+  .object({
+    title: text(240).min(1),
+    description: text(40000),
+    category: text(80),
+  })
+  .partial()
+  .strict();

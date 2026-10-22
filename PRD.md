@@ -1,6 +1,6 @@
 # SupportSphere — Product Requirements Document (PRD)
 
-> Version: 1.0<br>
+> Version: 1.1 — approved upgrade requirements, 2026-10-18<br>
 > Status: execution source of truth<br>
 > Product: AI-native multi-tenant customer-support SaaS<br>
 > Deployment target: Vercel<br>
@@ -9,13 +9,31 @@
 
 ## 0. How an AI coding agent must use this file
 
-This PRD is a contract, not inspiration. Before implementing any feature the agent MUST read `RULES.md`, the active phase in `PHASES.md`, relevant `ARCHITECTURE.md` sections, `DESIGN.md`, and all `.agent/*.md` state files. A feature is not complete because its UI exists. It is complete only when persistence, authorization, validation, error/loading/empty/success states, responsive behavior, tests, and observability are complete where applicable.
+This PRD is a contract, not inspiration. Before implementation read RULES, active PHASES, relevant ARCHITECTURE/DESIGN, and the current state/progress/test/handoff/manual-gate packet in `docs/upgrade-execution.md`. Read historical logs selectively. Completion requires persistence, authorization, validation, error/loading/empty/success states, responsive behavior, tests and observability where applicable.
 
 Source-of-truth order when documents appear to conflict:
 
-`RULES.md` → `ARCHITECTURE.md` → `PRD.md` → `DESIGN.md` → `PHASES.md` → implementation notes.
+Latest owner instructions → approved upgrade amendments / `docs/upgrade-execution.md` → RULES → ARCHITECTURE → PRD → DESIGN → PHASES → implementation notes. The roadmap owns scope; STATE owns progress; observed evidence establishes completion.
 
 The agent must never silently invent requirements that materially change security, billing, retention, authentication, data ownership, or customer-visible behavior. Record such a decision in `.agent/DECISIONS.md` first.
+
+## 0.1 Approved improvement requirements
+
+The owner approved [the assessment](docs/app-assessment-2026-10-18.md) and [U0–U6 roadmap](docs/upgrade-roadmap.md) on 18 October 2026, then requested persistent loops, evolving tests/docs and human-controlled automation. These are upgrade requirements, not claims of implementation.
+
+| Contract       | Required behavior                                                                                                                                        | Delivery                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| UPG-CORRECT    | Preserve actual assignee/authorship/drafts, accurate terminal states/metrics, consumed jobs and applicable event fan-out.                                | U0, U2                             |
+| UPG-UI         | Consistent hierarchy, grouped role-aware navigation, shared fields/states/confirmations and scoped styles.                                               | U1–U5                              |
+| UPG-SUPPORT    | Traverse all records, preserve queue context, edit existing fields, show relationships/history and operational overview.                                 | U2                                 |
+| UPG-EVIDENCE   | Library readiness, named citations beside deliberate draft review and understandable outcome/reason/action.                                              | U3                                 |
+| UPG-AUTOMATION | Routine existing work executes only within explicit policy with durable identity, bounded retry, stale checks, human override and actionable exceptions. | U0.8, U1.7, U2.9, U3.7, U4.7, U6.8 |
+| UPG-MOBILE     | Form-first auth, usable detail/context/composer/widget, keyboard/focus/zoom/reduced motion and actual phone review.                                      | U1–U6                              |
+| UPG-PROOF      | Every slice enhances relevant meaningful tests/docs and saves the exact resume packet.                                                                   | Every phase                        |
+
+Follow [automation-and-human-control](docs/automation-and-human-control.md). Existing Off/draft-only/assisted modes, sensitive gates and transactional final send remain authoritative. No autonomous sensitive business action, new provider, retention system or unrelated feature is authorized. Viewer notification-read authority remains unchanged unless explicitly decided and verified.
+
+Stripe, Slack and optional marketing tracking remain unselected. URL/DOCX ingestion and attachments remain outside this polish program unless separately scoped. Baseline omissions remain gaps until proven fixed; real-provider/credential/deployed release evidence remains required at U6/P13.
 
 ---
 
@@ -690,6 +708,8 @@ Record important actions:
 
 ## FR-027 Error UX
 
+The U1 reference surfaces use shared headings/field feedback/state panels and explicit workspace timestamps. Mobile navigation groups existing authorized destinations and restores focus after dismissal. Destructive confirmations identify their target, start on Cancel, and submit the original action only after Confirm. Source behavior/examples and actual manual steps are in [UI foundation](docs/ui-foundation.md); acceptance remains tied to current QA/progress rather than this description.
+
 Every async feature must consider:
 
 - initial loading,
@@ -976,3 +996,13 @@ Prepared against public documentation available on 2026-09-26:
 - https://vercel.com/changelog/mcp-server-support-on-vercel
 
 Pricing, quotas, free-tier limits, and provider capabilities change. Agents must verify current official documentation before relying on a plan feature or quota.
+
+### U2 support acceptance implemented locally
+
+UPG-SUPPORT now includes complete root queue traversal and safe return context; customer/conversation/ticket relationships; patch-based existing-field corrections; eligible teammate assignment; readable stored history; and exact operational overview queues. UPG-AUTOMATION captures and revalidates support revisions at the transactional execution boundary so later human work stops stale automatic effects. Earlier committed effects remain visible and cannot be recalled. Tags, unread-state producers, real-provider/deployed proof and actual-device review retain their separately assigned scope and evidence requirements. See docs/support-workflow.md and current QA for actual local proof and release limits.
+
+## U3 local knowledge and AI review contract
+
+Knowledge is a searchable, stably paged library before optional creation. Readiness reflects enabled/status/indexed content and recorded ingestion attempts without progress estimates. Named citations and historical-source fallbacks stay beside draft review. Use this draft is deliberate human editing, with a replacement choice bound to current writing/suggestion/policy. Run review leads with outcome/reason/evidence/next action; technical trace is optional. Policy/handoff consequences are explicit; release alone sends/replays nothing.
+
+The final database send locks current cited source/chunk rows and rechecks ready/enabled/tenant/score eligibility. Changed evidence downgrades to human review; invalid removed citations cannot commit a send. Lease expiry is checked after row-lock waits. Existing sensitive/mode/quality/ownership/freshness/revision/rule/idempotency gates and roles remain authoritative. Exact local acceptance is recorded in QA; real-provider/deployed proof remains U6/P13.

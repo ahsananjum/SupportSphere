@@ -3,16 +3,21 @@
 import { useActionState } from 'react';
 import { initialFormState } from '../../../lib/action-state';
 import { toggleAutomationRule, deleteAutomationRule } from './actions';
+import { Disclosure } from '../../../components/shared/disclosure';
+import { RuleEditForm } from './rule-edit-form';
+import type { AutomationRuleRecord } from '../../../lib/automation/schema';
 import { SubmitButton } from '../../../components/shared/submit-button';
 
 export function RuleControls({
   ruleId,
   enabled,
   name,
+  rule,
 }: {
   ruleId: string;
   enabled: boolean;
   name: string;
+  rule: AutomationRuleRecord;
 }) {
   const [toggleState, toggle] = useActionState(
     toggleAutomationRule,
@@ -24,6 +29,9 @@ export function RuleControls({
   );
   return (
     <div className="record-actions">
+      <Disclosure label="Edit rule">
+        <RuleEditForm rule={rule} />
+      </Disclosure>
       <form action={toggle}>
         <input type="hidden" name="ruleId" value={ruleId} />
         <SubmitButton

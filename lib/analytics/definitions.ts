@@ -14,7 +14,7 @@ export const metricDefinitions = {
   ticketStatusPriority:
     'Tickets created in the interval grouped by status and priority.',
   firstResponse:
-    'Average first agent response minus first customer message, per conversation with both events.',
+    'Average first agent response minus first customer message, for conversations whose first agent response occurs in the interval. Includes AI agent replies; excludes notes.',
   resolution:
     'Average resolved_at minus created_at for tickets with resolved_at in the interval.',
   categories: 'Tickets created in the interval grouped by non-empty category.',
@@ -28,6 +28,20 @@ export const metricDefinitions = {
 
 export type AnalyticsRange = { from: string; to: string; timezone: string };
 
+export function validateAnalyticsDates(from: string, to: string) {
+  const valid = (date: string) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+    Number(date.slice(0, 4)) >= 100 &&
+    Number.isFinite(Date.parse(date + 'T00:00:00Z')) &&
+    new Date(date + 'T00:00:00Z').toISOString().slice(0, 10) === date;
+  const fields: Record<string, string> = {};
+  if (!valid(from)) fields.from = 'Enter a valid start date.';
+  if (!valid(to)) fields.to = 'Enter a valid end date.';
+  if (!fields.from && !fields.to && to < from)
+    fields.to = 'End date must be on or after the start date.';
+  return fields;
+}
+
 export function defaultAnalyticsDates() {
   const to = new Date().toISOString().slice(0, 10);
   return {
@@ -39,7 +53,7 @@ export function defaultAnalyticsDates() {
 export function localDateToUtc(date: string, timezone: string): Date {
   const [year, month, day] = date.split('-').map(Number);
   const guess = new Date(Date.UTC(year, month - 1, day));
-  const parts = new Intl.DateTimeFormat('en-US', {
+  const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric',
     month: '2-digit',
@@ -48,19 +62,25 @@ export function localDateToUtc(date: string, timezone: string): Date {
     minute: '2-digit',
     second: '2-digit',
     hour12: false,
-  }).formatToParts(guess);
-  const values = Object.fromEntries(
-    parts.map((part) => [part.type, part.value]),
-  );
-  const asUtc = Date.UTC(
-    Number(values.year),
-    Number(values.month) - 1,
-    Number(values.day),
-    Number(values.hour) % 24,
-    Number(values.minute),
-    Number(values.second),
-  );
-  return new Date(guess.getTime() - (asUtc - guess.getTime()));
+  });
+  let result = guess;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const values = Object.fromEntries(
+      formatter.formatToParts(result).map((part) => [part.type, part.value]),
+    );
+    const asUtc = Date.UTC(
+      Number(values.year),
+      Number(values.month) - 1,
+      Number(values.day),
+      Number(values.hour) % 24,
+      Number(values.minute),
+      Number(values.second),
+    );
+    const correction = guess.getTime() - asUtc;
+    if (correction === 0) return result;
+    result = new Date(result.getTime() + correction);
+  }
+  throw new Error('Calendar boundary unavailable in this timezone.');
 }
 
 export function rangeToUtc(from: string, to: string, timezone: string) {

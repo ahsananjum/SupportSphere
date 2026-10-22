@@ -56,14 +56,15 @@ function inputFrom(formData: FormData): AutomationRuleInput {
     conditions: {
       priority: text(formData.get('conditionPriority')) || undefined,
       status: text(formData.get('conditionStatus')) || undefined,
+      tagId: text(formData.get('conditionTagId')) || undefined,
     },
     actions: [parseAction(formData)],
     enabled: formData.get('enabled') === 'on',
   } as AutomationRuleInput;
 }
-export async function createAutomationRule(
-  _state: FormState,
+async function saveRule(
   formData: FormData,
+  expectedVersion?: number,
 ): Promise<FormState> {
   let raw: AutomationRuleInput;
   try {
@@ -88,27 +89,62 @@ export async function createAutomationRule(
     return {
       message: 'Only workspace owners and admins can manage automations.',
     };
-  const { error } = await supabase.rpc('create_automation_rule', {
-    p_workspace_id: active.id,
-    p_name: parsed.data.name,
-    p_trigger_type: parsed.data.triggerType,
-    p_conditions: parsed.data.conditions,
-    p_actions: parsed.data.actions,
-    p_enabled: parsed.data.enabled,
-  });
-  if (error) {
-    logEvent('automation.rule', 'failed', {
-      workspaceId: active.id,
-      errorClass: error.code,
-    });
+  const rpc =
+    expectedVersion === undefined
+      ? 'create_automation_rule'
+      : 'update_automation_rule_versioned';
+  const args =
+    expectedVersion === undefined
+      ? {
+          p_workspace_id: active.id,
+          p_name: parsed.data.name,
+          p_trigger_type: parsed.data.triggerType,
+          p_conditions: parsed.data.conditions,
+          p_actions: parsed.data.actions,
+          p_enabled: parsed.data.enabled,
+        }
+      : {
+          p_workspace_id: active.id,
+          p_rule_id: text(formData.get('ruleId')),
+          p_expected_version: expectedVersion,
+          p_name: parsed.data.name,
+          p_trigger_type: parsed.data.triggerType,
+          p_conditions: parsed.data.conditions,
+          p_actions: parsed.data.actions,
+          p_enabled: parsed.data.enabled,
+        };
+  const { error } = await supabase.rpc(
+    rpc as 'create_automation_rule',
+    args as never,
+  );
+  if (error)
     return {
-      message: error.message.includes('duplicate')
-        ? 'Use a different rule name.'
+      message: error.message.includes('AUTOMATION_VERSION_CONFLICT')
+        ? 'This rule changed in another tab. Refresh it before saving.'
         : 'The automation could not be saved. Check the fields and retry.',
     };
-  }
   revalidatePath('/app/automations');
-  return { success: 'Automation rule saved.' };
+  return {
+    success:
+      expectedVersion === undefined
+        ? 'Automation rule saved.'
+        : 'Automation rule updated.',
+  };
+}
+export async function createAutomationRule(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return saveRule(formData);
+}
+export async function updateAutomationRule(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const version = Number(formData.get('version'));
+  return Number.isInteger(version) && version > 0
+    ? saveRule(formData, version)
+    : { message: 'This rule version is unavailable. Refresh and try again.' };
 }
 export async function toggleAutomationRule(
   _state: FormState,

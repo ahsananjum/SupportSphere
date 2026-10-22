@@ -2,6 +2,12 @@
 
 > Binding rules to prevent partial implementation, hallucinated completion, security shortcuts, context drift, and repository mess.
 
+## Approved upgrade amendment — 2026-10-18
+
+The owner approved [the roadmap](docs/upgrade-roadmap.md) and requested phased implementation loops, persistent context, evolving tests/docs and automation with human control. [The execution contract](docs/upgrade-execution.md) governs U0–U6; [the automation contract](docs/automation-and-human-control.md) defines its boundaries. This supersedes historical instructions to treat P13 as the only active work. P13 remains a blocked release gate, not completed or waived. Documentation preparation does not start U0.
+
+Improve existing features and supporting controls only. Section 9's adjacent-feature checks stay inside this scope. Preserve security, tenant, retention and human-sensitive action constraints. Routine authorized reversible implementation/checks/docs need no repeated permission. Prepare consequential external actions for concrete review and follow actual user/tool authority.
+
 ## 1. Prime directive
 
 Do not make something that merely looks implemented. Complete the active phase end-to-end.
@@ -33,9 +39,9 @@ At the start of every coding session:
 4. Read relevant `PRD.md` sections.
 5. Read relevant `ARCHITECTURE.md` sections.
 6. Read `DESIGN.md`.
-7. Read all `.agent/*.md` files.
+7. Read STATE, the current HANDOFF packet, active UPGRADE_PROGRESS/UPGRADE_TEST_MATRIX rows and the MANUAL_ACTIONS summary. Read relevant dated QA/DECISIONS/history as needed, rather than reloading all history each loop.
 8. Inspect recent commit(s)/diff.
-9. Identify active phase, remaining acceptance criteria, blockers, applied migrations, manual actions, and failing tests.
+9. Identify active upgrade phase/slice and test IDs, separate P13 blockers, applied migrations, pending operations, manual actions and failing tests. Reconcile the checkpoint with actual git/runtime evidence.
 10. Update `.agent/STATE.md` with the current execution checklist.
 11. Only then change code.
 
@@ -64,6 +70,7 @@ Template:
 
 ```md
 # Current State
+
 Active phase: P00
 Status: IN_PROGRESS | BLOCKED_MANUAL | VERIFYING | COMPLETE
 Last updated:
@@ -71,24 +78,31 @@ Current branch:
 Last known good commit:
 
 ## Objective
+
 ...
 
 ## Completed in this phase
+
 - [x]
 
 ## Remaining
+
 - [ ]
 
 ## Current schema/migrations
+
 ...
 
 ## Current integrations
+
 ...
 
 ## Known failures
+
 ...
 
 ## Next exact actions
+
 1.
 2.
 3.
@@ -102,6 +116,7 @@ Append-only ADR-style decisions:
 
 ```md
 ## ADR-007 — Use iframe for widget isolation
+
 Date:
 Status: accepted
 Context:
@@ -125,11 +140,10 @@ Only owner-required actions:
 
 ```md
 ## MANUAL-004 — Verify Brevo sender domain
+
 Status: PENDING
 Why:
-Steps:
-1.
-2.
+Steps: 1. 2.
 Do NOT paste:
 Store result in:
 Agent verification:
@@ -150,6 +164,8 @@ End-of-session handoff:
 
 Update these before ending work on an active phase.
 
+For upgrades maintain `.agent/UPGRADE_PROGRESS.md` and `.agent/UPGRADE_TEST_MATRIX.md` too. Checkpoint after every verified slice, before context/session boundaries, and before/after consequential operations, using `docs/upgrade-execution.md`. Never infer a completed send/migration/deployment from an intended command. Keep current STATE concise and current HANDOFF first; retain dated history below.
+
 ---
 
 # 4. Anti-hallucination reset procedure
@@ -159,7 +175,7 @@ If uncertain about project state:
 1. STOP changing code.
 2. Read `.agent/STATE.md`.
 3. Inspect actual files and schema using repo/Supabase MCP.
-4. Read active phase acceptance criteria.
+4. Read the active U-phase criteria and exact next slice; keep P13 release status separate.
 5. Compare implementation to reality.
 6. Correct stale state.
 7. Continue.
@@ -692,7 +708,7 @@ When owner action is required:
    - where to store it,
    - what secret NOT to send in chat/source,
    - how completion will be verified.
-5. Answer owner troubleshooting questions without exiting phase.
+5. Answer owner troubleshooting questions without exiting the blocked phase; continue independent authorized slices there when possible. P13 blockers do not prohibit safe local U-phase work. Required blocked acceptance cannot be marked passed.
 6. After owner says done, verify via app/MCP/provider behavior when possible.
 7. Continue remaining phase checklist.
 
@@ -800,7 +816,6 @@ There must be no required-feature:
 - missing rate limit,
 - fake/non-durable queue.
 
-
 # Database & Migration Guidelines
 
 - When executing database migrations for project `xviumgygixcklrbuynoh`, run commands directly using the CLI:
@@ -809,4 +824,6 @@ There must be no required-feature:
   `SUPABASE_ACCESS_TOKEN=$SUPABASE_ACCESS_TOKEN npx supabase db push`
 - Do not stop or ask the user to manually paste SQL into the Supabase Dashboard unless the command returns an unresolvable exit code.
 - Always regenerate TypeScript definitions immediately after applying a migration:
-  `npx supabase gen types typescript --project-id xviumgygixcklrbuynoh > types/database.types.ts`
+  `npx supabase gen types typescript --project-id xviumgygixcklrbuynoh > lib/supabase/database.types.ts`
+
+Use an explicitly isolated target and its actual ref for U0–U5 migration/integration testing; never substitute production automatically. Review target, impact and installed CLI help. Existing credential/deployment gates still govern production work.

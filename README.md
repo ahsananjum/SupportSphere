@@ -1,5 +1,7 @@
 # SupportSphere
 
+**Approved upgrade program:** read the [assessment](docs/app-assessment-2026-10-18.md), [U0–U6 roadmap](docs/upgrade-roadmap.md), [execution/checkpoint contract](docs/upgrade-execution.md), [human-controlled automation plan](docs/automation-and-human-control.md), and [copyable phase prompts](docs/upgrade-prompts/README.md). U0 is complete for approved local/isolated scope; U1 is complete for its approved local UI/isolated scope; U2 is complete for its approved local/isolated support workflow scope; U3 is complete for its assigned local/isolated knowledge/evidence/policy scope; U4 is next eligible and has not started. Shared controls and task steps are in [UI foundation](docs/ui-foundation.md) and [support workflow](docs/support-workflow.md). [Current state](.agent/STATE.md) keeps upgrade progress separate from P13 release blockers.
+
 **AI-only testing from scratch:** use [AI_TESTING_GUIDE.md](AI_TESTING_GUIDE.md), the [AI results sheet](docs/ai-test-results.md), and the [supplied AI knowledge files](docs/test-inputs/ai/). Includes every prerequisite, exact prompts, expected gates, human handoff, feedback, analytics, and known coverage limits.
 
 **Hands-on testing:** start with [the follow-along guide with exact inputs](TESTING_GUIDE.md), its [results sheet](docs/owner-test-results.md), and the supplied [test files](docs/test-inputs/). The guide also lists source-level requirement gaps that must not be mistaken for completed features.
@@ -8,7 +10,7 @@ SupportSphere is a production-shaped, multi-tenant customer-support workspace fo
 
 **Production origin:** [support-sphere-psi.vercel.app](https://support-sphere-psi.vercel.app/)
 
-> Release status: P13 deployment proof is in progress. Supabase production is healthy and the public Vercel origin is reachable. The final release gate still depends on owner-controlled credential rotation, Vercel environment parity, and the Gemini provider quota gate recorded in `.agent/MANUAL_ACTIONS.md`.
+> Release status: P13 remains BLOCKED_MANUAL. Local U0–U3 proof does not establish current production health or deployed parity. Credential rotation, Vercel environment/runtime parity and fresh Gemini scenarios remain recorded in `.agent/MANUAL_ACTIONS.md`.
 
 ## What is implemented
 
@@ -155,3 +157,5 @@ The [500 AI Agents Projects](https://github.com/ashishpatel26/500-AI-Agents-Proj
 - [Manual owner actions](.agent/MANUAL_ACTIONS.md)
 - [Architecture decisions](.agent/DECISIONS.md)
 - [Session handoff](.agent/HANDOFF.md)
+
+U0 verification uses [the bounded runner and automation inventory](docs/automation-inventory.md). It requires explicit local fixture opt-in for integration/browser checks; current progress and release limitations remain in .agent/STATE.md.

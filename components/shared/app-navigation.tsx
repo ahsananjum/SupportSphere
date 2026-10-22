@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import styles from './app-navigation.module.css';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatedBackground } from '../motion-primitives/animated-background';
@@ -25,28 +26,56 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
-  const drawer = useRef<HTMLElement>(null);
+  const drawer = useRef<HTMLDialogElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
+  const focusMainOnClose = useRef(false);
   useEffect(() => {
     const query = window.matchMedia('(max-width: 800px)');
-    const sync = () => setMobile(query.matches);
+    const sync = () => {
+      setMobile(query.matches);
+      if (!query.matches) setOpen(false);
+    };
     sync();
     query.addEventListener('change', sync);
     return () => query.removeEventListener('change', sync);
   }, []);
   useEffect(() => {
-    if (!open || !mobile) return;
     const panel = drawer.current;
-    panel?.querySelector<HTMLElement>('a,button,select')?.focus();
+    if (!panel) return;
+    if (!mobile) {
+      if (!panel.open) panel.show();
+      return;
+    }
+    if (!open) {
+      if (panel.open) panel.close();
+      return;
+    }
+    const menuTrigger = menuButton.current;
+    const priorOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const skip = document.querySelector<HTMLElement>('.skip-link');
+    const skipWasInert = skip?.inert ?? false;
+    if (skip) skip.inert = true;
+    focusMainOnClose.current = false;
+    panel.showModal();
+    const focusFirst = () => {
+      if (panel.open && open)
+        panel.querySelector<HTMLElement>('button')?.focus();
+    };
+    focusFirst();
+    const focusFrame = requestAnimationFrame(focusFirst);
+    const focusTimer = window.setTimeout(focusFirst, 0);
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        event.preventDefault();
         setOpen(false);
-        menuButton.current?.focus();
       }
       if (event.key !== 'Tab' || !panel) return;
       const focusables = Array.from(
-        panel.querySelectorAll<HTMLElement>('a,button,select'),
-      );
+        panel.querySelectorAll<HTMLElement>(
+          'a,button:not([disabled]),select:not([disabled]),summary,[tabindex="0"]',
+        ),
+      ).filter((element) => element.getClientRects().length > 0);
       const first = focusables[0];
       const last = focusables.at(-1);
       if (event.shiftKey && document.activeElement === first) {
@@ -59,7 +88,19 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
       }
     };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      cancelAnimationFrame(focusFrame);
+      window.clearTimeout(focusTimer);
+      panel.close();
+      document.body.style.overflow = priorOverflow;
+      if (skip) skip.inert = skipWasInert;
+      requestAnimationFrame(() => {
+        if (focusMainOnClose.current)
+          document.getElementById('main-content')?.focus();
+        else menuTrigger?.focus();
+      });
+    };
   }, [open, mobile]);
 
   const ready = Boolean(active?.onboardingCompletedAt);
@@ -99,12 +140,50 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
       pathname === item.href ||
       (item.href !== '/app' && pathname.startsWith(item.href + '/')),
   )?.href;
+  const groups = [
+    {
+      label: 'Work',
+      paths: [
+        '/app',
+        '/app/inbox',
+        '/app/tickets',
+        '/app/customers',
+        '/app/onboarding',
+      ],
+    },
+    {
+      label: 'Operations',
+      paths: [
+        '/app/knowledge',
+        '/app/automations',
+        '/app/analytics',
+        '/app/ai/runs',
+      ],
+    },
+    { label: 'Workspace', paths: ['/app/team', '/app/notifications'] },
+    {
+      label: 'Settings',
+      paths: [
+        '/app/settings/general',
+        '/app/settings/widget',
+        '/app/settings/ai',
+        '/app/settings/integrations',
+        '/app/settings/security',
+      ],
+    },
+  ]
+    .map((group) => ({
+      ...group,
+      items: items.filter((item) => group.paths.includes(item.href)),
+    }))
+    .filter((group) => group.items.length);
 
   return (
-    <div className="workbench">
-      <header className="workbench-header">
+    <div className={`workbench ${styles.shell}`}>
+      <header className="workbench-header" inert={mobile && open}>
         <Link href="/app" className="app-logo">
-          SupportSphere<span aria-hidden="true"> ✳</span>
+          <span className="app-logo-name">SupportSphere</span>
+          <span aria-hidden="true"> ✳</span>
         </Link>
         <div className="workbench-header-right">
           {active && <span className="workbench-current">{active.name}</span>}
@@ -123,27 +202,30 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
         </div>
       </header>
       <div className="workbench-body">
-        {open && mobile && (
-          <button
-            type="button"
-            className="workbench-scrim"
-            aria-label="Close workspace menu"
-            onClick={() => {
-              setOpen(false);
-              menuButton.current?.focus();
-            }}
-          />
-        )}
-        <aside
+        <dialog
           ref={drawer}
           id="workspace-menu"
           className={'workbench-sidebar' + (open ? ' is-open' : '')}
           aria-label="Workspace menu"
           aria-modal={mobile && open ? 'true' : undefined}
-          role={mobile && open ? 'dialog' : undefined}
+          role={mobile ? 'dialog' : 'complementary'}
+          open={!mobile || undefined}
+          onCancel={(event) => {
+            event.preventDefault();
+            setOpen(false);
+          }}
           inert={mobile && !open}
         >
           <div className="sidebar-inner">
+            {mobile && (
+              <button
+                type="button"
+                className="workbench-menu-button drawer-close"
+                onClick={() => setOpen(false)}
+              >
+                Close workspace menu <span aria-hidden="true">×</span>
+              </button>
+            )}
             <p className="sidebar-kicker">
               WORKSPACE / {active?.role?.toUpperCase() ?? 'NEW'}
             </p>
@@ -169,30 +251,48 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
                 />
               </form>
             )}
-            <p className="sidebar-kicker nav-kicker">NAVIGATION</p>
             <nav aria-label="Application navigation" className="workbench-nav">
-              <AnimatedBackground
-                key={pathname}
-                defaultValue={selected}
-                className="workbench-nav-highlight"
-              >
-                {items.map((item) => (
-                  <span
-                    data-id={item.href}
-                    className="workbench-nav-item"
-                    key={item.href}
+              {groups.map((group) => (
+                <div
+                  key={group.label}
+                  role="group"
+                  aria-labelledby={`nav-${group.label}`}
+                >
+                  <p
+                    id={`nav-${group.label}`}
+                    className="sidebar-kicker nav-kicker"
                   >
-                    <Link
-                      href={item.href}
-                      aria-current={selected === item.href ? 'page' : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      {item.label}
-                      <span aria-hidden="true">↗</span>
-                    </Link>
-                  </span>
-                ))}
-              </AnimatedBackground>
+                    {group.label}
+                  </p>
+                  <AnimatedBackground
+                    key={pathname + group.label}
+                    defaultValue={selected}
+                    className="workbench-nav-highlight"
+                  >
+                    {group.items.map((item) => (
+                      <span
+                        data-id={item.href}
+                        className="workbench-nav-item"
+                        key={item.href}
+                      >
+                        <Link
+                          href={item.href}
+                          aria-current={
+                            selected === item.href ? 'page' : undefined
+                          }
+                          onClick={() => {
+                            focusMainOnClose.current = true;
+                            setOpen(false);
+                          }}
+                        >
+                          {item.label}
+                          <span aria-hidden="true">↗</span>
+                        </Link>
+                      </span>
+                    ))}
+                  </AnimatedBackground>
+                </div>
+              ))}
             </nav>
             <div className="sidebar-account">
               <span>Signed in as</span>
@@ -206,8 +306,13 @@ export function AppNavigation({ active, memberships, email, children }: Props) {
               </form>
             </div>
           </div>
-        </aside>
-        <main id="main-content" className="workbench-main">
+        </dialog>
+        <main
+          id="main-content"
+          className="workbench-main"
+          tabIndex={-1}
+          inert={mobile && open}
+        >
           {children}
         </main>
       </div>

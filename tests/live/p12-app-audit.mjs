@@ -192,7 +192,9 @@ try {
   await expect(page.getByText('Message sent.', { exact: true })).toBeVisible();
   await page.getByLabel('Reply').fill('Synthetic P12 internal note');
   await page.getByLabel('Internal note', { exact: true }).check();
-  await page.getByRole('button', { name: 'Send message', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Save internal note', exact: true })
+    .click();
   await expect(
     page.getByText('Internal note saved.', { exact: true }),
   ).toBeVisible({ timeout: 20000 });
@@ -294,6 +296,7 @@ try {
   // A pasted source goes through the real durable ingestion pipeline. We inspect
   // real state only and do not invent a ready status to make the test pass.
   await go('/app/knowledge');
+  await page.getByText('Add knowledge', { exact: true }).click();
   await page.locator('#knowledge-text-name').fill(`P12 knowledge ${run}`);
   await page
     .locator('#knowledge-text-content')

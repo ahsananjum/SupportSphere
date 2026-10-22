@@ -2,7 +2,11 @@
  * normalized below after Supabase applies RLS to every query. */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { rangeToUtc, type AnalyticsRange } from './definitions';
+import {
+  rangeToUtc,
+  validateAnalyticsDates,
+  type AnalyticsRange,
+} from './definitions';
 
 type Client = SupabaseClient;
 const within = (query: any, from: string, to: string) =>
@@ -13,90 +17,82 @@ export async function getAnalytics(
   workspaceId: string,
   range: AnalyticsRange,
 ) {
-  const today = new Date().toISOString().slice(0, 10);
-  const fallbackFrom = new Date(Date.now() - 29 * 86400000)
-    .toISOString()
-    .slice(0, 10);
-  const endParts = (range.to || today).split('-').map(Number);
-  const endNext = new Date(
+  if (Object.keys(validateAnalyticsDates(range.from, range.to)).length)
+    throw new Error('Invalid analytics date range.');
+  const endParts = range.to.split('-').map(Number);
+  const endDate = new Date(
     Date.UTC(endParts[0], endParts[1] - 1, endParts[2] + 1),
-  )
-    .toISOString()
-    .slice(0, 10);
-  const bounds = rangeToUtc(
-    range.from || fallbackFrom,
-    endNext,
-    range.timezone,
   );
+  const endNext = `${endDate.getUTCFullYear()}-${String(endDate.getUTCMonth() + 1).padStart(2, '0')}-${String(endDate.getUTCDate()).padStart(2, '0')}`;
+  const bounds = rangeToUtc(range.from, endNext, range.timezone);
   const from = bounds.from.toISOString();
   const to = bounds.to.toISOString();
-  const [conversations, messages, tickets, runs, citations, feedback] =
-    await Promise.all([
-      within(
-        client
-          .from('conversations')
-          .select('id,status,priority,created_at')
-          .eq('workspace_id', workspaceId),
-        from,
-        to,
-      ),
+  // Every cohort traverses the full result, beyond the API's default row cap.
+  const read = (table: string, columns: string, column = 'created_at') =>
+    readAnalyticsRows(() =>
+      client
+        .from(table)
+        .select(columns)
+        .eq('workspace_id', workspaceId)
+        .gte(column, from)
+        .lt(column, to),
+    );
+  const [
+    conversationRows,
+    intervalAgents,
+    ticketRows,
+    resolved,
+    runRows,
+    feedbackRows,
+  ] = await Promise.all([
+    read('conversations', 'id,status,priority,created_at'),
+    readAnalyticsRows(() =>
       within(
         client
           .from('messages')
-          .select('conversation_id,sender_type,created_at')
-          .eq('workspace_id', workspaceId),
+          .select('conversation_id')
+          .eq('workspace_id', workspaceId)
+          .eq('sender_type', 'agent'),
         from,
         to,
       ),
-      within(
+    ),
+    read('tickets', 'id,status,priority,category,created_at,resolved_at'),
+    read('tickets', 'id,created_at,resolved_at', 'resolved_at'),
+    read('ai_runs', 'id,status,decision,reason_code,created_at'),
+    read('ai_feedback', 'id,rating,created_at'),
+  ]);
+  const histories: any[] = [];
+  const citationRows: any[] = [];
+  const conversationIds = [
+    ...new Set(intervalAgents.map((row: any) => row.conversation_id)),
+  ];
+  for (let offset = 0; offset < conversationIds.length; offset += 200)
+    histories.push(
+      ...(await readAnalyticsRows(() =>
         client
-          .from('tickets')
-          .select('status,priority,category,created_at,resolved_at')
-          .eq('workspace_id', workspaceId),
-        from,
-        to,
-      ),
-      within(
-        client
-          .from('ai_runs')
-          .select('id,status,decision,reason_code,created_at')
-          .eq('workspace_id', workspaceId),
-        from,
-        to,
-      ),
-      within(
+          .from('messages')
+          .select('id,conversation_id,sender_type,created_at')
+          .eq('workspace_id', workspaceId)
+          .in('conversation_id', conversationIds.slice(offset, offset + 200))
+          .lt('created_at', to),
+      )),
+    );
+  const completedRuns = runRows.filter(
+    (row: any) => row.status === 'completed',
+  );
+  const completedIds = completedRuns.map((row: any) => row.id);
+  for (let offset = 0; offset < completedIds.length; offset += 200)
+    citationRows.push(
+      ...(await readAnalyticsRows(() =>
         client
           .from('ai_citations')
-          .select('run_id,created_at')
-          .eq('workspace_id', workspaceId),
-        from,
-        to,
-      ),
-      within(
-        client
-          .from('ai_feedback')
-          .select('rating,created_at')
-          .eq('workspace_id', workspaceId),
-        from,
-        to,
-      ),
-    ]);
-  const errors = [
-    conversations,
-    messages,
-    tickets,
-    runs,
-    citations,
-    feedback,
-  ].find((result) => result.error);
-  if (errors?.error)
-    throw new Error('Analytics data is temporarily unavailable.');
-  const conversationRows = conversations.data ?? [];
-  const messageRows = messages.data ?? [];
-  const ticketRows = tickets.data ?? [];
-  const runRows = runs.data ?? [];
-  const citationRows = citations.data ?? [];
-  const feedbackRows = feedback.data ?? [];
+          .select('id,run_id')
+          .eq('workspace_id', workspaceId)
+          .in('run_id', completedIds.slice(offset, offset + 200)),
+      )),
+    );
+  const messageRows = histories;
   const by = (rows: any[], key: string): Record<string, number> =>
     rows.reduce((acc: Record<string, number>, row: any) => {
       const value = row[key] || 'Uncategorized';
@@ -112,8 +108,10 @@ export async function getAnalytics(
   );
   const responseMinutes: number[] = [];
   for (const rows of Object.values(groupedMessages) as any[][]) {
-    const ordered = rows.sort((a: any, b: any) =>
-      a.created_at.localeCompare(b.created_at),
+    const ordered = rows.sort(
+      (a: any, b: any) =>
+        Date.parse(a.created_at) - Date.parse(b.created_at) ||
+        String(a.id).localeCompare(String(b.id)),
     );
     const firstCustomer = ordered.find(
       (row: any) => row.sender_type === 'customer',
@@ -123,25 +121,29 @@ export async function getAnalytics(
       ordered.find(
         (row: any) =>
           row.sender_type === 'agent' &&
-          row.created_at > firstCustomer.created_at,
+          (Date.parse(row.created_at) > Date.parse(firstCustomer.created_at) ||
+            (Date.parse(row.created_at) ===
+              Date.parse(firstCustomer.created_at) &&
+              String(row.id) > String(firstCustomer.id))),
       );
-    if (firstCustomer && firstAgent)
+    if (
+      firstCustomer &&
+      firstAgent &&
+      Date.parse(firstAgent.created_at) >= Date.parse(from) &&
+      Date.parse(firstAgent.created_at) < Date.parse(to)
+    )
       responseMinutes.push(
         (Date.parse(firstAgent.created_at) -
           Date.parse(firstCustomer.created_at)) /
           60000,
       );
   }
-  const resolved = ticketRows.filter((row: any) => row.resolved_at);
   const resolutionMinutes = resolved
     .map(
       (row: any) =>
         (Date.parse(row.resolved_at) - Date.parse(row.created_at)) / 60000,
     )
     .filter(Number.isFinite);
-  const completedRuns = runRows.filter(
-    (row: any) => row.status === 'completed',
-  );
   const runIds = new Set(citationRows.map((row: any) => row.run_id));
   return {
     range: { ...range, fromUtc: from, toUtc: to },
@@ -178,4 +180,20 @@ export async function getAnalytics(
       total: feedbackRows.length,
     },
   };
+}
+
+/** Stable ID paging, fail closed on partial/unavailable or unbounded results. */
+export async function readAnalyticsRows(makeQuery: () => any) {
+  const rows: any[] = [];
+  const size = 1000;
+  for (let page = 0; page < 500; page++) {
+    const { data, error } = await makeQuery()
+      .order('id', { ascending: true })
+      .range(page * size, (page + 1) * size - 1);
+    if (error || !data)
+      throw new Error('Analytics data is temporarily unavailable.');
+    rows.push(...data);
+    if (data.length < size) return rows;
+  }
+  throw new Error('Analytics range is too large. Choose a shorter interval.');
 }

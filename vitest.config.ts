@@ -10,7 +10,11 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/unit/**/*.test.ts', 'tests/security/**/*.test.ts'],
+    include: [
+      'tests/unit/**/*.test.ts',
+      'tests/security/**/*.test.ts',
+      'tests/upgrade/**/*.test.ts',
+    ],
     environment: 'node',
     pool: 'threads',
     // The server-only alias resolves through a generated Vitest SSR module.

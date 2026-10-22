@@ -124,3 +124,33 @@ Does refresh change the result?:
 - [ ] Final release evidence updated in the repository.
 
 If a required item is FAIL, BLOCKED, or NOT RUN, this sheet does not authorize marking P13 complete.
+
+## U2 upgrade case mappings
+
+Use the current guide recipes on the intended upgraded target. These are blank case mappings, not agent-entered human outcomes; preserve provider/deployment/device limitations.
+
+| ID       | Test                                                     | Result | Actual result / safe evidence |
+| -------- | -------------------------------------------------------- | ------ | ----------------------------- |
+| UP-U2-01 | Complete queue traversal and preserved Back context      |        |                               |
+| UP-U2-02 | Queue hierarchy and clear-filter recovery                |        |                               |
+| UP-U2-03 | Explicit reply/note audience and protected draft retry   |        |                               |
+| UP-U2-04 | Customer/conversation/ticket relationship navigation     |        |                               |
+| UP-U2-05 | Existing-field corrections and untouched teammate values |        |                               |
+| UP-U2-06 | Current eligible teammate assignment and denial cases    |        |                               |
+| UP-U2-07 | Readable before/after events and actor fallback          |        |                               |
+| UP-U2-08 | Exact operational queue counts and unavailable state     |        |                               |
+| UP-U2-09 | Later human override, leases and no duplicate effects    |        |                               |
+
+## U3 upgrade case mappings
+
+Use the current guide recipes on the intended upgraded target. These are blank human result rows; local agent evidence lives in QA.
+
+| ID       | Test                                                 | Result | Actual result / safe evidence |
+| -------- | ---------------------------------------------------- | ------ | ----------------------------- |
+| UP-U3-01 | Library search/paging and optional creation          |        |                               |
+| UP-U3-02 | Truthful readiness/ingestion/retry                   |        |                               |
+| UP-U3-03 | Named adjacent evidence and historical fallback      |        |                               |
+| UP-U3-04 | Deliberate protected draft adoption                  |        |                               |
+| UP-U3-05 | Outcome-first run review and retained feedback       |        |                               |
+| UP-U3-06 | Policy/handoff consequences and roles                |        |                               |
+| UP-U3-07 | Final policy/evidence/current-state/lease boundaries |        |                               |

@@ -1,5 +1,9 @@
 # Owner actions
 
+## Current upgrade/release relationship — 2026-10-18
+
+Approved upgrade work is U0–U6; current U3 execution/proof is in STATE/QA. P13 remains a separate blocked release gate. MANUAL-008 is PENDING_VERIFICATION (owner reports AI enabled; actual scenarios pending), MANUAL-010/011 are PENDING. Prior dated phase instructions below are historical; current STATE and the upgrade execution contract govern sequencing. Final resolution belongs to U6, but credential/security restrictions apply now. Safe local/isolated upgrades can proceed without pretending these gates passed. Local U0/U1/U2 work creates no new provider setup or request for secrets. The local Docker/WSL repair was completed through approved UAC; no new manual gate remains from it. Existing release restrictions continue to apply.
+
 2026-10-13 testing-guide update: P13 remains BLOCKED_MANUAL. Existing MANUAL-008, MANUAL-010, and MANUAL-011 have not been verified by creating documentation. Use [TESTING_GUIDE.md](../TESTING_GUIDE.md) for the exact behaviour checks after the applicable gates are resolved; record safe results in [docs/owner-test-results.md](../docs/owner-test-results.md). No new owner setup or secret value was introduced in this pass.
 
 ## MANUAL-001 — Connect SupportSphere Supabase
@@ -93,7 +97,7 @@ Steps:
 2. Add the exact URI shown in Supabase Dashboard → Authentication → Providers → Google as the authorized redirect URI. Add the actual SupportSphere origins required by Google.
 3. Put client ID and secret into that Supabase provider page and enable it.
 4. In Supabase Authentication → URL Configuration, allow the actual app /auth/callback URL for each used environment.
-Do NOT paste: Google client secret into chat or source.
+   Do NOT paste: Google client secret into chat or source.
 
 Store result in: Google Cloud and Supabase provider settings.
 
@@ -169,15 +173,16 @@ Blocking phase: P07
 Status: VERIFIED — owner confirmed rotation on 2026-10-11; replacement configuration passed the authenticated P10 smoke and server/admin query without credential values being read or printed.
 Why: During P10, a configuration-inspection command accidentally printed the ignored .env Supabase access token and legacy service-role credential into tool output. They were not committed, but must be treated as exposed and rotated.
 Steps:
+
 1. Open Supabase Dashboard → account avatar → Account Preferences → Access Tokens. Revoke the token used by this repository and create a replacement if CLI access is needed. Store it only as SUPABASE_ACCESS_TOKEN in ignored C:\SupportSphere\.env or the CLI secret store. Do not paste it into chat.
 2. Open SupportSphere project xviumgygixcklrbuynoh → Settings → API Keys. Revoke/rotate the exposed service credential. For a legacy service_role JWT key, follow the Dashboard's JWT/legacy-key rotation procedure; review its impact on legacy anon keys and sessions before completing it. A new server secret API key may be used by the application where supported. Keep the publishable client key separate.
 3. Store the replacement as SUPABASE_SERVICE_ROLE_KEY in ignored C:\SupportSphere\.env and Vercel project support-sphere → Settings → Environment Variables for environments using it. Follow Supabase's managed Edge-secret behavior; never put server credentials in NEXT_PUBLIC_*.
 4. Tell the agent only that rotation and local/server storage are complete. The agent will inspect key names and execute authorized test queries, never print credential values.
-Non-secret values: project ref xviumgygixcklrbuynoh; environment names SUPABASE_ACCESS_TOKEN and SUPABASE_SERVICE_ROLE_KEY.
-Do NOT paste: tokens, service/secret keys, legacy JWT secret, database passwords, or authorization headers into chat/source.
-Store result in: ignored local environment, Supabase secret/account settings, Vercel server-only environment variables.
-Agent verification: public client authentication succeeded in the authenticated integrations smoke, and the replacement server credential succeeded in a metadata-only Supabase query. The live smoke and fixture cleanup were rerun with no values logged. The owner confirmed the old credentials were revoked; provider revocation details are not echoed here.
-Blocking phase: P10
+   Non-secret values: project ref xviumgygixcklrbuynoh; environment names SUPABASE_ACCESS_TOKEN and SUPABASE_SERVICE_ROLE_KEY.
+   Do NOT paste: tokens, service/secret keys, legacy JWT secret, database passwords, or authorization headers into chat/source.
+   Store result in: ignored local environment, Supabase secret/account settings, Vercel server-only environment variables.
+   Agent verification: public client authentication succeeded in the authenticated integrations smoke, and the replacement server credential succeeded in a metadata-only Supabase query. The live smoke and fixture cleanup were rerun with no values logged. The owner confirmed the old credentials were revoked; provider revocation details are not echoed here.
+   Blocking phase: P10
 
 ## MANUAL-010 — Rotate credentials exposed during P13 inspection
 
@@ -212,7 +217,7 @@ Steps:
 2. In Vercel Project → Settings → Environment Variables, set the exact production values for `NEXT_PUBLIC_APP_URL=https://support-sphere-psi.vercel.app`, Supabase public URL/publishable key, server-only Supabase credential, Redis REST URL/token, Brevo API/sender values, job provider values, and selected AI values. Keep analytics unset because the product choice is off; keep Stripe unset because billing is unselected.
 3. Redeploy the current branch and record the deployment URL, deployment commit SHA, and environment names. Do not paste any secret values into chat.
 4. In Supabase Auth URL Configuration, verify the production site URL and `/auth/callback` allow-list match the exact origin. Keep Google OAuth client secrets in Google/Supabase only.
-5. Tell the agent only the non-secret deployment URL/commit and that the production environment variables were updated. The agent will run the read-only golden journey, inspect Vercel logs, and verify OAuth/email links.
+5. Tell the agent only the non-secret deployment URL/commit and that the production environment variables were updated. The agent first inspects metadata/logs, then performs the authorized synthetic golden journey and OAuth/email verification. The complete journey includes writes and must not be described as read-only.
 
 Do NOT paste: Vercel tokens, provider secrets, OAuth client secrets, Supabase service keys, Redis/Brevo/job/AI credentials, or customer data.
 

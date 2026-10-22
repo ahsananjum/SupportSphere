@@ -215,7 +215,7 @@ begin
 end;
 $$;
 revoke all on function app_private.automation_event_trigger() from public,anon,authenticated;
-create function app_private.webhook_event_trigger() returns trigger language plpgsql security definer set search_path='' as $$
+create or replace function app_private.webhook_event_trigger() returns trigger language plpgsql security definer set search_path='' as $$
 begin
  if tg_table_name='conversations' then
   if tg_op='INSERT' then

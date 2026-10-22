@@ -4,8 +4,12 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
+import type { FormState } from '../../../lib/action-state';
 
-export async function submitAiFeedback(formData: FormData) {
+export async function submitAiFeedback(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const parsed = z
     .object({
       runId: z.uuid(),
@@ -19,10 +23,14 @@ export async function submitAiFeedback(formData: FormData) {
       reason: formData.get('reason') ?? '',
       comment: formData.get('comment') ?? '',
     });
-  if (!parsed.success) redirect('/app/ai/runs?error=feedback');
+  if (!parsed.success)
+    return {
+      message:
+        'Check the rating, reason (80 characters) and comment (500 characters).',
+    };
   const { supabase, active } = await getWorkspaceContext();
   if (!active || !['owner', 'admin', 'agent'].includes(active.role))
-    redirect('/app/ai/runs?error=permission');
+    return { message: 'Your role cannot save AI feedback.' };
   const { error } = await supabase.rpc('submit_ai_feedback', {
     p_workspace_id: active.id,
     p_run_id: parsed.data.runId,
@@ -31,9 +39,12 @@ export async function submitAiFeedback(formData: FormData) {
     p_comment: parsed.data.comment,
   });
   revalidatePath(`/app/ai/runs/${parsed.data.runId}`);
-  redirect(
-    `/app/ai/runs/${parsed.data.runId}?${error ? 'error=feedback' : 'notice=feedback'}`,
-  );
+  return error
+    ? {
+        message:
+          'Feedback could not be saved. Your comment is preserved; retry shortly.',
+      }
+    : { success: 'Feedback saved.' };
 }
 export async function releaseAiHandoff(formData: FormData) {
   const id = z.uuid().safeParse(formData.get('conversationId'));

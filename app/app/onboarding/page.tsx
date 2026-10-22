@@ -120,8 +120,9 @@ export default async function OnboardingPage({
               <>
                 <h2 id="setup-step-heading">Website & sender</h2>
                 <p className="page-intro">
-                  Save the site where support will appear. Widget installation
-                  will be available in a later phase.
+                  Save the exact site origin where the SupportSphere widget will
+                  appear. After setup, owners and admins can copy the
+                  installation snippet from Website widget settings.
                 </p>
                 <OriginForm websiteOrigin={active.websiteOrigin ?? ''} />
                 <div className="sender-status">
@@ -208,8 +209,9 @@ export default async function OnboardingPage({
               <>
                 <h2 id="setup-step-heading">Set your AI preference</h2>
                 <p className="page-intro">
-                  Save your intended policy for when the AI workflow becomes
-                  available.
+                  Choose how the existing AI workflow may prepare or send work.
+                  Provider readiness and knowledge eligibility still gate real
+                  responses.
                 </p>
                 <AiModeForm currentMode={active.aiMode} />
               </>

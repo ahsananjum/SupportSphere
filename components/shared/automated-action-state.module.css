@@ -1,0 +1,24 @@
+.feedback {
+  min-width: 0;
+}
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+.title h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-family: var(--font-display);
+}
+.feedback p {
+  margin: 0.5rem 0;
+  max-width: 65ch;
+  color: var(--color-ink-soft);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+.feedback .reason {
+  color: var(--color-ink);
+}

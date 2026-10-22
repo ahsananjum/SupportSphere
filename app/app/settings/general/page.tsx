@@ -1,4 +1,8 @@
 import Link from 'next/link';
+import {
+  PageHeading,
+  SectionHeading,
+} from '../../../../components/shared/page-heading';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
@@ -22,15 +26,13 @@ export default async function GeneralSettingsPage() {
     );
   return (
     <div className="settings-page">
-      <div className="page-heading">
-        <p className="eyebrow">WORKSPACE / SETTINGS</p>
-        <h1>General settings</h1>
-        <p className="page-intro">
-          Keep your workspace identity and website origin accurate. Changes are
-          saved for this workspace only.
-        </p>
-      </div>
+      <PageHeading
+        title="General settings"
+        eyebrow="WORKSPACE / SETTINGS"
+        description="Keep your workspace identity and website origin accurate. Changes are saved for this workspace only."
+      />
       <section className="workspace-card">
+        <SectionHeading title="Workspace identity" />
         <GeneralForm
           defaults={{
             name: active.name,

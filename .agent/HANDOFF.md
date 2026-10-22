@@ -1,3 +1,50 @@
+# Current handoff — U6 COMPLETE BY OWNER SCOPE WAIVER (2026-10-23 Asia/Karachi)
+
+U6 local implementation and applicable automated proof are complete under the explicit owner waiver recorded in ADR-UPG-U6-WAIVER. Actual failed, timed-out, deferred and blocked evidence remains preserved; no waived check is represented as a PASS. P13 and MANUAL-008/010/011 remain separate release blockers.
+
+Fresh artifacts: `test-results/upgrades/U6-gate-1792701053232.json`, `U6-unit-1792699199010.json`, `U6-isolated-1792702458795.json`, `U6-browser-1792701640193.json`, and `U6-docs-1792704664958.json`. Final browser is 12 files / 14 tests PASS on guarded local target; isolated is 7 files / 12 tests PASS. Full details and hosted metadata are in [.agent/QA.md](QA.md#u6-execution--2026-10-23).
+
+Changed behavior: mobile workspace-menu focus is reasserted after native dialog activation; U1 timezone browser coverage now selects the implemented `<select>` control. The U6 runner maps all slices, clears inherited focus limits, rejects stale source/build parity, records bounded summaries and adds CI docs/unit proof. U6 browser coverage checks six widths, short height, zoom, reduced motion, semantic controls and bounded lab timings. Hosted Supabase migrations are now applied through the U4 wrapper, including the corrective routing ACL migration; Supabase reports 51 migration records and only documented advisor INFO/WARN findings. No Edge function deployment, Vercel deployment, customer/provider traffic or production data write was performed.
+
+Next exact action: return U6 completion evidence and stop. The next eligible prompt is separate and must not be started automatically. P13 remains BLOCKED_MANUAL; do not merge, deploy or claim production release.
+
+Baseline follow-up: the full 19-test Playwright run reached 17 passed and 2 public-route navigation timeouts after dev-server/compiled-zod instability. The focused stale-heading repair passed 1/1; the remaining baseline limitation is waived by the owner scope decision.
+
+---
+# Current handoff — U5 VERIFYING (2026-10-22 Asia/Karachi)
+
+Track / phase / status / current slice: Upgrade / U5 / VERIFYING / U5.1–U5.6 implementation and local exit gates complete; human device review pending.
+
+Branch / inspected HEAD / changed paths: master / b41498223dd109dd61ac4441ceace229c74f8a83 plus preserved approved U0–U4 dirty work. U5 changed auth form/layout, responsive conversation/detail and disclosure CSS, general timezone control, onboarding capability copy, widget transcript behavior, public capability copy, U5 tests/runner and behavioral guides.
+
+Verified slices and evidence: U5.1–U5.6 automated local browser proof passes in test-results/upgrades/U5-browser-1792622360631.json; widget transcript unit proof and docs checker pass in U5-unit-1792621593552.json; final repository/build gate passes in U5-gate-1792622781279.json; docs layer and verification checker pass in U5-docs-1792623561072.json. Screenshots are under test-results/u5 (auth, detail, public-home at six widths).
+
+Behavior: phone auth leads with the form, hides promotional context below 900px, links Terms/Privacy, advances focus, and exposes username/password autocomplete. Conversation detail puts customer/ticket/routing/create context before the long thread on phones; disclosures become full-width inline panels; general timezone is a select; setup copy describes implemented widget/AI readiness truthfully; widget keeps offline drafts and preserves history scroll anchor; public capability pages distinguish current surfaces from provider/deployment readiness.
+
+Tests / exact commands / results: `node scripts/verify-upgrade.mjs --phase U5 --layer unit` PASS (U5-unit-1792621593552.json); `RUN_UPGRADE_LOCAL=1 UPGRADE_BROWSER_PRODUCTION=1 node scripts/verify-upgrade.mjs --phase U5 --layer browser` PASS (U5-browser-1792622360631.json); `RUN_UPGRADE_LOCAL=1 node scripts/verify-upgrade.mjs --phase U5 --layer gate` PASS (U5-gate-1792622781279.json: typegen, tsc, ESLint, Prettier, unit/security, webpack build); `node scripts/verify-upgrade.mjs --phase U5 --layer docs` PASS; explicit changed-Markdown Prettier check and `git diff --check` PASS.
+
+Migration / fixture / pending operation: no U5 migration or provider operation. Browser fixtures used the guarded local Supabase target http://127.0.0.1:54321 and cleaned in finally; no pending fixture ledger, Next/test listener, hosted operation or deployment is claimed.
+
+Human gates: owner must perform actual-phone keyboard and screen-reader review for auth, onboarding, long conversation/composer, and customer widget at representative widths; record device/browser/AT and artifacts in QA. MANUAL-008/010/011 and U6/P13 provider/deployment/release gates remain separate.
+
+Next exact action: perform the documented real-phone and screen-reader review; then rerun any failed focused browser checks, record the outcome, and only mark U5 COMPLETE if every required criterion is proved. Do not start U6, merge, deploy or schedule.
+
+---
+
+# Current handoff — U4 COMPLETE (2026-10-21 Asia/Karachi)
+
+U4.1–U4.7 and assigned local/isolated exit gates are complete. U0–U3 acceptance is retained. U4 delivered readable trigger-aware rule editing with stale-version rejection; rule/record/terminal automation history; actionable webhook endpoint/event/attempt history and existing bounded retry; member-scoped notification hierarchy and traversal; role/destructive-action clarity; audit actor/action/time/target and deleted-actor fallback; and bounded execution/recovery presentation preserving existing leases, dedupe, stale/disable/revoke and human override contracts.
+
+Changed paths include automation schema/actions/forms/history, versioned RPC migrations `20261020130000_u4_automation_rule_version_guard.sql` and `20261021100000_u4_version_wrapper_permission.sql`, delivery retry/history, notifications, team, security audit, shared UI presentation, U4 tests, runner coverage, feature/owner guides and `.agent` evidence files. Local schema replay ended at 48 migrations; generated types match; cron jobs were disabled after verification; all fixture ledgers are CLEAN; no active Next/test listener or pending operation remains.
+
+Final proof: U4 unit artifact `U4-unit-1792524892098.json`; isolated artifact `U4-isolated-1792524953393.json`; final six-width browser artifact `U4-browser-1792525517791.json`; final repository/build artifact `U4-gate-1792525468630.json`; latest docs artifact `U4-docs-1792525681596.json`; `tests/upgrade/verification.test.mjs` PASS; final schema lint PASS with three pre-existing warnings recorded in QA. All U4 progress and matrix rows are COMPLETE with actual test mappings.
+
+Limitations remain separate: real provider/receiver delivery, hosted migration parity, production scheduler/provider/deployment proof, MANUAL-008/010/011, P13 release and actual phone/screen-reader review remain U6/release gates. No provider, hosted, merge, deploy or release action was performed.
+
+Next exact action: return U4 completion evidence and stop. The next eligible work is the owner-approved U5 prompt; do not start it from this handoff.
+
+---
+
 # P01 handoff
 
 Status: COMPLETE (2026-10-01). P01 acceptance and full phase gate passed against Supabase project `xviumgygixcklrbuynoh`.

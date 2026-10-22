@@ -65,6 +65,14 @@ export function AutomationForm() {
               <option value="resolved">Resolved</option>
             </select>
           </label>
+          <label>
+            Trigger tag ID (required for tag added)
+            <input
+              name="conditionTagId"
+              inputMode="text"
+              placeholder="Optional tag UUID"
+            />
+          </label>
         </div>
         <label>
           Action

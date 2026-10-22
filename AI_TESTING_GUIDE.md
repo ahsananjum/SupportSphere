@@ -1,5 +1,9 @@
 # SupportSphere: AI testing from scratch, with exact inputs
 
+**Current upgrade evidence:** U0–U4 are COMPLETE for assigned local/isolated scope; U5 and U6 remain VERIFYING. U6 local runner, policy-boundary, metrics and browser artifacts are recorded in STATE/QA. Controlled AI branches remain distinct from fresh Gemini/provider proof; MANUAL-008/010/011 and deployed parity remain open. Do not prefill human results.
+
+**18 October upgrade plan:** [approved phases](docs/upgrade-roadmap.md) and [human-controlled automation](docs/automation-and-human-control.md) add draft/override/state/citation and producer-consumer regression coverage. Use [the evolving test protocol](docs/upgrade-testing.md) and [planned matrix](.agent/UPGRADE_TEST_MATRIX.md). Update affected steps with implemented slices, preserve existing IDs and unexecuted result fields, and keep controlled branch tests distinct from fresh real-provider proof at U6/P13. This documentation does not claim the upgrades or provider gate passed.
+
 Prepared on **17 October 2026** from the repository and a read-only inspection of SupportSphere Supabase. This is the AI-only follow-along guide. It includes the account, workspace, knowledge, widget, inbox, teammate, and analytics steps needed to exercise AI. You do not need to complete the general guide first.
 
 **Owner update:** you report that AI is enabled. Start with the real draft test below; do not repeat credential setup unless a test reports a configuration problem. Enabled configuration is not yet proof of a successful model answer.
@@ -166,7 +170,7 @@ Open APP/app/settings/ai and save:
 
 ### AI04 — Add the exact knowledge article and prove indexing
 
-At Knowledge, under **Paste text or Markdown**, enter:
+At Knowledge, open **Add knowledge**, then under **Paste text or Markdown**, enter:
 
 | Field       | Input                    |
 | ----------- | ------------------------ |
@@ -251,7 +255,7 @@ Follow the standard loop.
 - A run exists and reaches a terminal result. Successful draft proof requires a real nonempty output from provider **gemini**, with actual configured model metadata.
 - The conversation shows **Draft for human review**.
 - The answer explains **Settings → Reports → Export PDF**, does not claim CSV export is available, and includes a numbered citation such as **[1]**.
-- **Evidence and citations** contains a snippet from the export article; record the displayed source/chunk prefixes and compare with EXPORT_SOURCE.
+- **Evidence for this answer** contains a snippet from the export article; compare its named source and recorded snippet with EXPORT_SOURCE; Technical details → Citation metadata retains the exact source/chunk IDs and scores.
 - With the current permissive QA thresholds, a passing ordinary run should normally be **draft / DRAFT_POLICY**. **LOW_CONFIDENCE** is also private drafting but identifies a separate gate; record it. A quality failure must be investigated rather than passed as a grounded-quality success.
 - **No answer appears in Customer** until a human sends it.
 
@@ -265,17 +269,17 @@ Save this run URL as DRAFT_RUN and this conversation URL as DRAFT_CONVERSATION.
 
 Open DRAFT_RUN.
 
-1. Under **Decision**, check Status, Disposition, Reason, Prompt version, Policy version, Provider / model, Attempts, Latency, Confidence, Evidence score, Tokens, Created, Completed.
+1. Read the saved outcome, safe reason, Next action, Answer and named evidence first. Expand **Technical details** for Status, Disposition, Technical reason code, Prompt version, recorded Policy version, Provider / model, Attempts, Latency, Confidence, Evidence score, Tokens, Created and Completed. Compare recorded policy to the current policy/version.
 2. Current source uses prompt version **support-v1**. Record the actual policy version; it changes when policy is saved.
 3. Provider/model must reflect the real path. A deterministic human handoff later can correctly say none / none; that would not prove Gemini drafting here.
 4. Latency and attempts must be meaningful, confidence/evidence within 0–1, and timestamps consistent with your request. Provider token fields may show a dash when unavailable; do not infer zero cost.
-5. In **Triage and quality**, expect a sensible how_to intent, priority, summary, and no sensitive escalation. Grounded answer proof requires **Quality: true**, **Grounded: true**, **Safe: true**.
-6. In **Step timeline**, inspect triage → policy → retrieve → draft → quality → decision. Some steps' failed status means a gate rejected auto-send, not a transport failure. A Draft-only decision step can say failed while the run correctly ends as a draft.
-7. A retrieval match must have a score meeting the configured minimum. Citation markers in Output must map to listed evidence.
+5. In **Triage and quality**, expect a sensible how_to intent, priority, summary, and no sensitive escalation. Grounded answer proof requires **Quality: Passed**, **Grounding: Passed**, **Safety: Passed**.
+6. In **Technical details → Step timeline**, inspect triage → policy → retrieve → draft → quality → decision. Some steps' failed status means a gate rejected auto-send, not a transport failure. A Draft-only decision step can say failed while the run correctly ends as a draft.
+7. A retrieval match must have a score meeting the configured minimum. Citation markers in Answer must map to listed evidence.
 8. Click **Open conversation ↗**. Confirm it is your same input/customer conversation.
 9. Refresh the inspector and return through **← AI runs**; all evidence must persist.
 
-**PASS:** the decision can be explained from real persisted steps and evidence. **Coverage limit:** sentiment, language, suggested tags, the separate triage/quality model IDs, and tone_ok are not all rendered in this UI. AI41 checks the persisted structured fields; do not invent visible controls.
+**PASS:** the decision can be explained from real persisted steps and evidence. **Coverage limit:** sentiment, language, suggested tags and the separate triage/quality model IDs are not all rendered in this UI. AI41 checks the persisted structured fields; do not invent visible controls.
 
 **Structured-triage variations:** after the main AI07–AI12 flow, keep Draft only and the clean export source, then use a Fresh customer for each exact input below. A developer checks fields not rendered by the inspector. These are additional runs, not prerequisites for sending the original draft.
 
@@ -292,7 +296,7 @@ For every variation, require valid schema: sentiment positive/neutral/negative; 
 
 Use DRAFT_CONVERSATION from AI07 after its draft finishes.
 
-1. The **Reply** composer should be prefilled with the draft. The separate draft card must remain private.
+1. The **Reply** composer starts empty. Review the private draft card, then click **Use this draft** to adopt it deliberately. With existing writing, choose Keep my writing or Replace with reviewed draft. A new suggestion, changed policy or edited human text invalidates an open replacement choice.
 2. Replace the composer's text with:
 
 ```text
@@ -632,7 +636,7 @@ A person is reviewing this conversation. For the export question, open Settings,
 ```
 
 4. Customer must receive this human reply. Sending a human reply must not silently release the handoff.
-5. Click **Release AI handoff**. Require the banner to disappear after refresh.
+5. Click **Release AI handoff**, review the named confirmation and choose **Confirm**. Cancel must preserve the latch. Confirm clears only the latch; require the banner to disappear after the confirmed save.
 6. In Routing set **Status → Open**, **Assignment → Unassigned**, then **Save routing**. A release does not clear an assignment or automatically replay an old question.
 7. Send a **new** Customer message:
 
@@ -850,9 +854,9 @@ Paste into a fresh unsent composer. It must not accept more than 4000; do not se
 
 ### AI34 — Queue AI triage/draft actions must reach a real consumer
 
-**Source finding:** these two automation actions currently enqueue generic durable_jobs entries (ai.triage / ai.draft). The inspected repo/deployed AI worker consumes ai_runs only; no consumer connecting those generic jobs to actual AI processing was found. A succeeded automation may therefore prove enqueueing only. Record this as a feature gap until a real end-to-end consumer is demonstrated.
+**U0 current source behavior:** these actions create scoped ai_runs (triage/draft) consumed by the existing leased AI worker. Triage produces structured classification; draft is private even in Assisted mode. Local real-RPC/processor proof uses controlled adapters; deployed/Gemini proof remains pending. A succeeded automation dispatch is never sufficient terminal AI proof.
 
-Use the existing AI06 conversation URL from your results; the Customer session is not needed. Policy Off prevents the normal customer-message AI trigger from making this test appear successful.
+Use the existing AI06 conversation URL with a customer input; no new customer message is needed. First test Off and expect terminal AI_OFF, then enable Draft only before a fresh priority-change event. The origin action/run_type distinguishes this from an automatic support_reply.
 
 **Triage action**
 
@@ -871,8 +875,8 @@ Use the existing AI06 conversation URL from your results; the Customer session i
 3. Click **Save automation**.
 4. Return to that conversation, change Priority to High, Save routing.
 5. Wait for the automation's Recent runs. A succeeded row is not sufficient AI proof.
-6. Check AI runs and the resulting structured triage. Ask the developer to correlate the generic job with its downstream AI result if the UI has no link.
-7. Without a downstream processed job/result, record **FAIL/GAP: action enqueued but AI consumer not demonstrated**, not PASS.
+6. With policy Off, require a scoped terminal AI_OFF skip and no reply. Then set Draft only, return Priority to Normal, save, change to High and save to create a fresh event. Inspect the triage run and persisted automation_run_id/action linkage; a safe eligible input produces structured triage and TRIAGE_COMPLETE, without drafting/sending.
+7. Without a downstream terminal outcome, record FAIL/BLOCKED rather than treating dispatch as completion. Sensitive or inactive inputs must retain their safe disposition/reason.
 8. Disable AI QA Queue Triage.
 
 **Draft action**
@@ -880,7 +884,7 @@ Use the existing AI06 conversation URL from your results; the Customer session i
 9. Reset the conversation's priority to Normal while the rule is disabled.
 10. Repeat the recipe with Rule name **AI QA Queue Draft**, Action **Queue AI draft**, then change priority to High.
 11. Require a real private draft from that action, with worker/run linkage. A regular support_reply triggered by a new customer message does not prove the draft-action consumer.
-12. Disable the rule. Generic queued test jobs may require developer cleanup scoped to this QA workspace; deleting a rule is not proof its already-enqueued jobs were consumed/cancelled.
+12. Disable the rule. Queued runs from a disabled/changed origin must skip as AUTOMATION_CHANGED when claimed/finalized. Record run IDs and terminal results; do not replay old generic intents.
 
 **Why:** the user-facing promise is triage/drafting, not a durable row that nothing executes. Do not patch policy, insert AI output, or invoke service RPCs to fake a successful action.
 
@@ -921,7 +925,7 @@ First disable the AI34 rules. This test creates a real support notification and 
 8. Open the ticket and verify its description and High priority. Ask the developer to verify its persisted conversation_id matches your recorded conversation: the current ticket screen does not render a conversation-link control. A handoff itself does not automatically create a ticket unless this rule is enabled.
 9. Refresh; no duplicate custom notification/ticket for that one handoff.
 
-**Also test the normal-priority path:** repeat steps 3–7 in a Fresh customer, leaving Priority Normal before handoff. The current trigger uses an else-if priority_changed branch before escalation; a handoff that raises Normal to High may emit only priority_changed and miss escalation automations. Record whether this occurs. It is a source-based known concern, not an acceptable PASS for a missing required escalation workflow. Do not mask it by always pre-setting High in production.
+**Also test the normal-priority path:** repeat steps 3–7 in a Fresh customer, leaving Priority Normal before handoff. U0 emits priority_changed and escalation independently. A handoff that raises Normal to High must dispatch both applicable rules exactly once. Verify persisted event keys and effects after worker/retry; do not mask regressions by always pre-setting High.
 
 Disable both rules after the test.
 
@@ -1135,22 +1139,22 @@ The connected AI journey you must be able to demonstrate is:
 4. Record genuine FAIL/BLOCKED/NOT RUN results, including every subcase in the results sheet. Do not call 42 rows complete while omitting the sensitive-request or race subcases.
 5. Resolve or explicitly track these known source limitations:
 
-| Finding                                                                                                                                                      | How it affects sign-off                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Generic Queue AI triage/draft jobs lack a demonstrated consumer                                                                                              | Saving a rule/enqueueing a generic job is not complete AI action proof                                                             |
-| Escalation trigger can lose the escalation event when priority also changes                                                                                  | Test Normal-priority handoff as well as High-priority control                                                                      |
-| Built-in evaluation's refund auto-send expectation and reason-code mismatches                                                                                | Align to mandatory sensitive policy; never weaken runtime safety for 5/5                                                           |
-| Inspector omits some persisted triage/quality/model fields                                                                                                   | Verify them in scoped backend evidence; do not claim the UI renders them                                                           |
-| Run list first 50, no pagination; conversation shows only latest run                                                                                         | Keep run URLs in your results; older test evidence may disappear from the list                                                     |
-| Conversation AI-card heading has a generic processing fallback for skipped/other non-answer outcomes                                                         | Use inspector Status/Disposition/Reason to determine terminal state; report misleading processing copy rather than waiting forever |
-| No dedicated manual Generate/Regenerate, Accept draft, Reject draft, or AI-provider/model picker                                                             | New customer messages trigger support_reply runs; humans use the ordinary composer and feedback                                    |
-| No arbitrary tools, real refund/account changes, web browsing, URL/DOCX/OCR ingestion, streaming chatbot, unlimited memory, or automatic model comparison UI | These are not features to claim or test as implemented                                                                             |
-| No guaranteed model score or induced quality/outage failure                                                                                                  | Use honest branch status plus controlled/backend evidence                                                                          |
-| Handoff has team notification/banner but no automatic customer acknowledgement                                                                               | Do not wait for a nonexistent courtesy message                                                                                     |
-| Suggested triage tags/priority are not automatically applied as general routing                                                                              | Verify structured output separately from actual conversation changes                                                               |
+| Finding                                                                                                                                                      | How it affects sign-off                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| U0 Queue AI triage/draft consumer is proved locally with controlled adapters; deployed proof pending                                                         | Require scoped origin/run_type and real terminal processing; dispatch alone is insufficient              |
+| U0 independent priority/escalation fan-out must remain verified                                                                                              | Test Normal-priority handoff as well as High-priority control                                            |
+| Built-in evaluation's refund auto-send expectation and reason-code mismatches                                                                                | Align to mandatory sensitive policy; never weaken runtime safety for 5/5                                 |
+| Inspector omits some persisted triage/quality/model fields                                                                                                   | Verify them in scoped backend evidence; do not claim the UI renders them                                 |
+| Run list first 50, no pagination; conversation shows only latest run                                                                                         | Keep run URLs in your results; older test evidence may disappear from the list                           |
+| U0 AI-card terminal labels distinguish failed/skipped/triage complete                                                                                        | Failed/skipped runs must never show Processing; inspect the persisted reason and actual terminal outcome |
+| No dedicated manual Generate/Regenerate, Accept draft, Reject draft, or AI-provider/model picker                                                             | New customer messages trigger support_reply runs; humans use the ordinary composer and feedback          |
+| No arbitrary tools, real refund/account changes, web browsing, URL/DOCX/OCR ingestion, streaming chatbot, unlimited memory, or automatic model comparison UI | These are not features to claim or test as implemented                                                   |
+| No guaranteed model score or induced quality/outage failure                                                                                                  | Use honest branch status plus controlled/backend evidence                                                |
+| Handoff has team notification/banner but no automatic customer acknowledgement                                                                               | Do not wait for a nonexistent courtesy message                                                           |
+| Suggested triage tags/priority are not automatically applied as general routing                                                                              | Verify structured output separately from actual conversation changes                                     |
 
 6. Restore policy **Off** in the QA workspace after testing unless deliberately keeping a supervised demo. Do not disable another workspace's working AI.
-7. Disable all AI QA automation rules; delete only your test rules if desired. Record generic test jobs for scoped developer cleanup.
+7. Disable all AI QA automation rules; delete only your test rules if desired. Record scoped downstream AI run IDs and any legacy failed generic intents for reviewed cleanup.
 8. Delete injection/redaction/broken-file/disposable sources; disable optional PDF/product/onboarding sources. Keep the clean export source only if retaining a demo.
 9. Restore teammate to Viewer or remove only that QA membership with the confirmation control.
 10. Stop your widget host terminal with Ctrl+C.
@@ -1161,18 +1165,18 @@ The connected AI journey you must be able to demonstrate is:
 
 ### Match results to the requested requirements
 
-| PRD requirement                                     | Tests to assess                                                    |
-| --------------------------------------------------- | ------------------------------------------------------------------ |
-| FR-012 Knowledge / FR-013 RAG                       | AI04, AI13, AI16–AI20, AI29–AI30, AI39, AI41                       |
-| FR-014 Structured triage                            | AI08 and its four variations, AI13, AI15, AI21–AI23, AI41          |
-| FR-015 Response and modes                           | AI03, AI06–AI10, AI12, AI14–AI16, AI25–AI28                        |
-| FR-016 Quality/safety                               | AI08, AI14, AI17, AI29–AI33, AI41                                  |
-| FR-017 Human handoff                                | AI21–AI26, AI32, AI35, AI38                                        |
-| FR-018 Run inspector                                | AI08, AI11, AI32, AI40–AI41                                        |
-| FR-019 Automation / FR-020 Notifications            | AI21, AI34–AI35; enqueue-only and trigger concerns remain explicit |
-| FR-021 Analytics and P09 evaluation                 | AI11, AI36–AI37; use actual definitions and case-policy alignment  |
-| FR-025 AI settings / role isolation                 | AI03, AI14–AI16, AI38–AI39, AI41                                   |
-| Required error/mobile/accessibility/security layers | AI32–AI33, AI38–AI41                                               |
+| PRD requirement                                     | Tests to assess                                                                                               |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| FR-012 Knowledge / FR-013 RAG                       | AI04, AI13, AI16–AI20, AI29–AI30, AI39, AI41                                                                  |
+| FR-014 Structured triage                            | AI08 and its four variations, AI13, AI15, AI21–AI23, AI41                                                     |
+| FR-015 Response and modes                           | AI03, AI06–AI10, AI12, AI14–AI16, AI25–AI28                                                                   |
+| FR-016 Quality/safety                               | AI08, AI14, AI17, AI29–AI33, AI41                                                                             |
+| FR-017 Human handoff                                | AI21–AI26, AI32, AI35, AI38                                                                                   |
+| FR-018 Run inspector                                | AI08, AI11, AI32, AI40–AI41                                                                                   |
+| FR-019 Automation / FR-020 Notifications            | AI21, AI34–AI35; U0 local consumer/fan-out proof, U4 history/hierarchy checks, deployed verification separate |
+| FR-021 Analytics and P09 evaluation                 | AI11, AI36–AI37; use actual definitions and case-policy alignment                                             |
+| FR-025 AI settings / role isolation                 | AI03, AI14–AI16, AI38–AI39, AI41                                                                              |
+| Required error/mobile/accessibility/security layers | AI32–AI33, AI38–AI41                                                                                          |
 
 Use the root documents to resolve scope, not this guide as permission to waive a requirement. Every table entry still requires actual evidence.
 
@@ -1233,3 +1237,54 @@ flowchart TD
 | Measurement                      | lib/analytics; app/app/analytics; P09 migrations                       | Truthful counts/denominators and existing-run evaluation                               |
 
 For broader application checks see [TESTING_GUIDE.md](TESTING_GUIDE.md). For developer commands and live suites see [docs/verification-runbook.md](docs/verification-runbook.md). Root [RULES.md](RULES.md), [ARCHITECTURE.md](ARCHITECTURE.md), [PRD.md](PRD.md), [DESIGN.md](DESIGN.md), and [PHASES.md](PHASES.md) remain the requirements authority.
+
+## U0 behavior changes (local acceptance recorded in QA)
+
+- Routing defaults to **Keep current assignment**. Selecting **Assign to me** or **Unassigned** is explicit; saving priority/status keeps the latest persisted owner under a row lock. New routing RPC migration must be applied before this checkout is served. Legacy RPC signatures remain compatible.
+- Composer starts empty. Review the AI suggestion and click **Use this draft** deliberately; existing writing requires Keep my writing or Replace with reviewed draft. Incoming messages/new AI runs preserve typing and Internal note mode. Recoverable/uncertain send errors retain the draft and retry identity; a successful send clears only the submitted body.
+- **You** means the signed-in author; another agent is **Teammate**, missing/system identity is **Support agent**. Failed/skipped AI runs have terminal labels, never Processing.
+- First response cohorts use first agent reply time in the selected interval and full earlier message history. Resolution cohorts use resolved_at (including tickets created earlier). AI citation rates follow the selected completed-run cohort regardless of citation creation time. Metrics traverse server pages; failures are unavailable, never partial zeros. Impossible/reversed dates show field errors.
+
+Owner results remain unfilled. Regressions: UP-U0-01–04; see .agent/QA.md for actual evidence and remaining isolated/browser gates.
+
+### U0 mappings to AI25–AI35 / AI37
+
+AI25/AI28: routing now defaults Keep current assignment; assignment takeover is explicit. Human draft and Internal note mode survive a new run/realtime refresh and recoverable send rejection. AI34: Queue AI triage and Queue AI draft now create consumed scoped AI runs; automation dispatch success alone is not terminal AI proof. AI35: Normal-priority handoff must emit both priority_changed and escalation once, alongside the High-priority control. AI37: evaluation lookup errors show unavailable, not No run/cases/zero. Cross-boundary first-response, resolved-ticket and citation cohorts follow the U0 metric definition above. These are new required observations; owner result sheets remain blank until actually exercised.
+
+### U1 shell and review regression steps
+
+Map UP-U1-02..05 to [shared UI task steps2–5](docs/ui-foundation.md#verify-the-reference-task): invalid timezone plus retained input/help, real save/reload, empty versus unavailable, all four role menus, Sign out at short heights, drawer isolation/Tab/Escape, inline disclosure Escape and named confirmation cancel/confirm. These steps supplement existing settings/support/knowledge/integration cases; retain original case IDs. Record actual outcomes only; device/screen-reader and provider/release results remain separate.
+
+### UP-U1-07 automated-action review checks
+
+Use [shared review checks](docs/ui-foundation.md#automated-action-feedback--u17) on the existing AI runs/conversation/rule history/Recent attempts surfaces. Queued and processing must not promise completion; retry requires a previous persisted attempt. Verify failure/skip precedence, safe reasons, explicit draft adoption with protected typed text, and rule completion versus downstream AI result. Use isolated data; do not trigger a real delivery, rotate a receiver secret, or fill a provider result based on these presentation checks.
+
+U2 support-list regression mapping: UP-U2-01 / C06 / T03 traverses more than60synthetic records per list, validates full-dataset filters and Back context, malformed/out-of-range recovery and six-width layout. Current automated local evidence is in QA; leave human result entries unexecuted until actually performed. See docs/support-workflow.md.
+
+U2.2–4 guide update: Clear filters restores a no-match queue; row ownership uses current persisted teammate identity. Before submitting C03 verify Public reply/customer audience versus Internal note/team-only audience; the private action is **Save internal note**. C02/T01 now include visible customer ticket history, conversation Linked tickets, ticket View customer and Original conversation links; traverse those links without search. Existing actual result entries remain unchanged.
+
+## U2 support/control regression mapping
+
+On the upgraded isolated target, follow general-guide C06/T03 for complete queues/Back context (UP-U2-01/02); C03 for explicit public/private audience, retained text and Save internal note (UP-U2-03); and the customer→conversation→ticket→original links (UP-U2-04). C07/T04 covers actual field patches, duplicate/validation errors, canonical saved values, unconfirmed-network-save recovery and untouched teammate values (UP-U2-05). C08/T05 covers actual eligible assignment and readable stored events (UP-U2-06/07); OV01 covers exact linked counts/unavailable (UP-U2-08).
+
+For UP-U2-09 / U2-HUMAN-01, queue controlled AI work, then change human assignment, note, reply, handoff or input before finalization. Inspect both the conversation and existing run history; stale work must stop and retries must not duplicate effects. A valid controlled database send proves only that gate, not Gemini/deployed behavior. Completed earlier effects cannot be recalled and stopped-run history must disclose them. Existing explicit draft adoption and all sensitive/Off/assisted gates remain. New blank result-template mappings are identifiers only; fill outcomes only after execution in your actual target.
+
+## U3 knowledge and AI review regression steps
+
+AI04/AI20 / UP-U3-01: Knowledge now starts with Sources and Search sources. Open Add knowledge to reach Paste text or Markdown / Upload a file. Search covers source names across the entire library, with 25 sources per page; it does not search article contents. Test a final-page source, Clear search, no matches and invalid/out-of-range pages. Existing real-indexing expectations still apply; a source-list fixture or successful enqueue does not establish indexing/provider execution.
+AI04/AI18–AI20 / UP-U3-02: Source detail now distinguishes Ready for AI, Disabled, Waiting for indexing, Indexing and Indexing failed. Check Latest ingestion job and Attempts started against persisted jobs. Earliest eligible time is not completion time. Old counts/preview do not mean reindex succeeded. Retry is offered only for recoverable failures; permanent errors direct corrected content and deletion/re-addition. Inspect an uncertain upload before repeating it. Record actual deployed ingestion separately from controlled local DB tests.
+AI07–AI09/AI19 / UP-U3-03: Type an unsaved human reply before reviewing Evidence for this answer. Inspect the numbered source name/snippet; open its named link in a new tab and return. Human text and reply/note mode must survive. Disable/delete a disposable source and require current Disabled or historical/unavailable fallback after refresh, without changing the recorded run outcome. Failed evidence loading must differ from an empty citation list; Refresh review must retain human text. The inspector uses the same names/snippets. Historical snippets do not prove current eligibility.
+AI09 / UP-U3-04: Use this draft copies into an empty composer and focuses Reply without sending. When you have text, first click Use this draft, then Keep my writing or Replace with reviewed draft. Keeping must preserve the exact text/audience. Edit your text or receive a newer suggestion while the choice is open; replacement must become disabled until you review again. Only the separate Send message / Save internal note action may persist anything. Check that failed sends preserve edits and the chosen audience.
+
+AI08/AI11 / UP-U3-05: Start with the saved outcome, safe reason, Next action and Answer/evidence. Expand Technical details for reason/error codes, provider/model, prompt/recorded-policy versions, attempt/latency/confidence/evidence/tokens/timestamps and Step timeline JSON. Triage quality now says Passed / Did not pass / Not recorded. If trace fails, require the answer and next action to remain available. Compare recorded/current policy versions. Feedback permission/transient failure must keep the typed comment; retry and repeat save must leave one feedback row for that user/run. Pending and saved status are announced. Original provider-proof expectations still apply.
+AI03/AI24/AI28/AI40 / UP-U3-06: Read the mode consequences and pending-work warning. Trigger each invalid tone/threshold field and require its visible associated error with selections/instructions retained. Saving disables the fields and announces progress; reload proves stored values. A failed/uncertain network save preserves edits and requires checking saved policy before retry. Only owner/admin may save policy. Release AI handoff now opens a named confirmation: Cancel preserves the latch; Confirm clears only the latch and writes the existing audit. It does not replay an old question, clear assignment/status, or send. Keep an unsaved human note during release and require it to survive. Agent may release; viewer/direct foreign mutations must fail.
+
+AI20/AI40 long-content/recovery: source/library/evidence names at the160-character limit and expanded Technical details must wrap at320/360/390/768/1024/1440. A server-rejected paste retains content; one repaired submit should persist one source/job. Check current source readiness separately from the recorded snippet. A long title must not create document scrolling.
+
+## U5 mobile and surface review mapping
+
+UP-U5-01: At 320/360/390px, the auth form is the first task surface; confirm the first field is visible without promotional content, Terms and Privacy are real links, focus advances to the password field, username/password autocomplete values are present, and a wrong password preserves the email for retry. Check the invalid/expired reset state and recovery link. Emulation is only automated evidence; use a real phone keyboard and screen reader for the final review.
+
+UP-U5-02/03/04: On a short phone viewport, open a long conversation and verify customer, linked-ticket, routing, and ticket-creation context before the message thread; scroll the composer action into view without clipping. General settings uses a timezone select and reports saved/error state. Widget settings shows exact-origin guidance and a copyable embed snippet. In the customer iframe, load older history without losing the reading position, keep a draft while offline, and use one bounded retry after recovery.
+
+UP-U5-05/06: Visit public capability pages, auth, onboarding, settings, and docs. Copy must distinguish implemented workspace/inbox/knowledge/review surfaces from provider readiness and deployment proof. Repeat at six widths with reduced motion, long names, keyboard focus, and no horizontal overflow. Do not turn local controlled-provider or browser evidence into a real provider/deployment claim.

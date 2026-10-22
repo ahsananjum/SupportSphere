@@ -1,5 +1,6 @@
 node_modules
 .next
+.next-u0
 coverage
 playwright-report
 test-results

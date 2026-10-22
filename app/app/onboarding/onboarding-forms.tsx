@@ -163,7 +163,7 @@ export function AiModeForm({ currentMode }: { currentMode: string }) {
   return (
     <form action={action} className="form-stack setup-form">
       <fieldset className="setup-choice">
-        <legend>Choose your future AI policy</legend>
+        <legend>Choose your AI policy</legend>
         <label>
           <input
             type="radio"
@@ -182,7 +182,8 @@ export function AiModeForm({ currentMode }: { currentMode: string }) {
           />{' '}
           Draft only{' '}
           <small>
-            Prepare suggestions for human review when AI is configured.
+            Prepare suggestions for human review when knowledge and a provider
+            are ready.
           </small>
         </label>
         <label>
@@ -194,8 +195,8 @@ export function AiModeForm({ currentMode }: { currentMode: string }) {
           />{' '}
           Assisted reply{' '}
           <small>
-            Record this preference for the future AI setup; auto replies are not
-            active yet.
+            Allow eligible, policy-checked replies when the configured provider
+            and evidence gates pass.
           </small>
         </label>
       </fieldset>
@@ -203,8 +204,8 @@ export function AiModeForm({ currentMode }: { currentMode: string }) {
         <p className="field-error">{state.fields.aiMode}</p>
       )}
       <p className="field-help">
-        This choice saves a policy preference. AI responses remain unavailable
-        until the knowledge and AI workflows are implemented and configured.
+        This saves a workspace policy. It does not bypass evidence, safety,
+        ownership, handoff, or human review gates.
       </p>
       <Feedback state={state} />
       <button type="submit" className="primary-button" disabled={pending}>

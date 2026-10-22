@@ -25,7 +25,7 @@ const questions = [
   {
     question: 'What can I use today?',
     answer:
-      'You can create an account and workspace, invite teammates by email, manage roles, and switch between workspaces. The conversation, knowledge, and AI workflows shown here describe the product direction and are still being built.',
+      'You can create an account and workspace, invite teammates by email, manage roles, switch between workspaces, work conversations, maintain knowledge sources, and review policy-bounded automation. AI answers still depend on configured providers, eligible evidence, and the current workspace policy.',
   },
   {
     question: 'How does team access work?',
@@ -108,9 +108,9 @@ export default function HomePage() {
               knowledge, and the person accountable for the answer.
             </p>
             <p className="muted-copy">
-              We are building this in stages. The identity and team foundation
-              is live; inbox, knowledge, and AI assistance follow in later
-              phases.
+              The workspace, inbox, knowledge library, and review controls are
+              available together. Provider readiness, evidence eligibility, and
+              human gates still determine when AI can act.
             </p>
           </div>
         </section>
@@ -126,8 +126,8 @@ export default function HomePage() {
               From question to resolution, with fewer blind spots.
             </h2>
             <p>
-              Three connected moments shape the product. The diagram is
-              illustrative of the planned experience.
+              Three connected moments shape the current product workflow. Some
+              AI outcomes remain dependent on provider and policy readiness.
             </p>
           </div>
           <div className="workflow-stages">

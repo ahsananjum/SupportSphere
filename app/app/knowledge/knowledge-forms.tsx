@@ -1,4 +1,11 @@
 'use client';
+import { ConfirmationForm } from '../../../components/shared/confirmation-form';
+import { canRetryIngestion } from '../../../lib/knowledge/readiness';
+import {
+  FormFeedback,
+  FieldError,
+  fieldDescription,
+} from '../../../components/shared/form-feedback';
 
 import { useActionState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,17 +18,35 @@ import {
 
 export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
   const [textState, textAction, textPending] = useActionState(
-    createTextSource,
+    async (previous: typeof initialFormState, data: FormData) => {
+      try {
+        return await createTextSource(previous, data);
+      } catch {
+        return {
+          message:
+            'The save was not confirmed. Your content is preserved. Check the library for this source before retrying.',
+        };
+      }
+    },
     initialFormState,
   );
   const [fileState, fileAction, filePending] = useActionState(
-    uploadKnowledgeSource,
+    async (previous: typeof initialFormState, data: FormData) => {
+      try {
+        return await uploadKnowledgeSource(previous, data);
+      } catch {
+        return {
+          message:
+            'The upload was not confirmed. Check the library for an existing upload reservation before trying again.',
+        };
+      }
+    },
     initialFormState,
   );
   const router = useRouter();
   useEffect(() => {
     if (textState.success || fileState.success) router.refresh();
-  }, [textState.success, fileState.success, router]);
+  }, [textState, fileState, router]);
   if (!canEdit)
     return (
       <p className="field-help">
@@ -32,7 +57,12 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
     <div className="knowledge-form-grid">
       <section className="workspace-card">
         <h2>Paste text or Markdown</h2>
-        <form action={textAction} className="form-stack">
+        <form
+          action={textAction}
+          className="form-stack"
+          aria-busy={textPending}
+          onReset={(e) => e.preventDefault()}
+        >
           <div className="field">
             <label htmlFor="knowledge-text-name">Source name</label>
             <input
@@ -41,6 +71,16 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
               required
               maxLength={160}
               defaultValue={textState.values?.name ?? ''}
+              readOnly={textPending}
+              aria-invalid={!!textState.fields?.name}
+              aria-describedby={fieldDescription(
+                'knowledge-text-name',
+                textState.fields?.name,
+              )}
+            />
+            <FieldError
+              id="knowledge-text-name"
+              error={textState.fields?.name}
             />
           </div>
           <div className="field">
@@ -52,11 +92,21 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
               maxLength={80000}
               rows={8}
               defaultValue={textState.values?.content ?? ''}
-              aria-describedby="knowledge-text-help"
+              readOnly={textPending}
+              aria-invalid={!!textState.fields?.content}
+              aria-describedby={fieldDescription(
+                'knowledge-text-content',
+                textState.fields?.content,
+                'help',
+              )}
             />
-            <p id="knowledge-text-help" className="field-help">
+            <p id="knowledge-text-content-help" className="field-help">
               Up to 80,000 characters. Indexing starts after you save.
             </p>
+            <FieldError
+              id="knowledge-text-content"
+              error={textState.fields?.content}
+            />
           </div>
           {textState.message && (
             <p role="alert" className="form-error">
@@ -75,7 +125,12 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
       </section>
       <section className="workspace-card">
         <h2>Upload a file</h2>
-        <form action={fileAction} className="form-stack">
+        <form
+          action={fileAction}
+          className="form-stack"
+          aria-busy={filePending}
+          onReset={(e) => e.preventDefault()}
+        >
           <div className="field">
             <label htmlFor="knowledge-file-name">Source name</label>
             <input
@@ -84,6 +139,7 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
               required
               maxLength={160}
               defaultValue={fileState.values?.name ?? ''}
+              readOnly={filePending}
             />
           </div>
           <div className="field">
@@ -92,6 +148,7 @@ export function KnowledgeForms({ canEdit }: { canEdit: boolean }) {
               id="knowledge-file"
               name="file"
               type="file"
+              disabled={filePending}
               accept=".txt,.md,.pdf,text/plain,text/markdown,application/pdf"
               required
               aria-describedby="knowledge-file-help"
@@ -128,18 +185,21 @@ export function KnowledgeRefresh({ active }: { active: boolean }) {
   }, [active, router]);
   return active ? (
     <p className="field-help" role="status">
-      Indexing is running in the background. Status refreshes automatically.
+      Status refreshes every five seconds. Queued work still needs an indexing
+      worker to finish; no completion time is confirmed.
     </p>
   ) : null;
 }
 
 export function SourceControls({
   sourceId,
+  sourceName,
   enabled,
   status,
   errorCode,
 }: {
   sourceId: string;
+  sourceName: string;
   enabled: boolean;
   status: string;
   errorCode: string | null;
@@ -154,29 +214,19 @@ export function SourceControls({
   }, [state, router]);
   return (
     <div className="knowledge-controls">
-      {status === 'failed' &&
-        (!errorCode ||
-          [
-            'EMBEDDING_UNAVAILABLE',
-            'EMBEDDING_INVALID',
-            'STORAGE_UNAVAILABLE',
-            'PERSIST_FAILED',
-            'WORKER_ERROR',
-            'WORKER_TIMEOUT',
-            'JOB_LIMIT',
-          ].includes(errorCode)) && (
-          <form action={action}>
-            <input type="hidden" name="sourceId" value={sourceId} />
-            <button
-              name="operation"
-              value="retry"
-              className="secondary-button"
-              disabled={pending}
-            >
-              Retry
-            </button>
-          </form>
-        )}
+      {status === 'failed' && canRetryIngestion(errorCode) && (
+        <form action={action}>
+          <input type="hidden" name="sourceId" value={sourceId} />
+          <button
+            name="operation"
+            value="retry"
+            className="secondary-button"
+            disabled={pending}
+          >
+            {pending ? 'Updating…' : 'Retry'}
+          </button>
+        </form>
+      )}
       {status === 'ready' && (
         <form action={action}>
           <input type="hidden" name="sourceId" value={sourceId} />
@@ -201,16 +251,9 @@ export function SourceControls({
           {enabled ? 'Disable' : 'Enable'}
         </button>
       </form>
-      <form
+      <ConfirmationForm
         action={action}
-        onSubmit={(event) => {
-          if (
-            !window.confirm(
-              'Delete this source, its indexed content, and stored file?',
-            )
-          )
-            event.preventDefault();
-        }}
+        message={`Delete “${sourceName}”, its indexed content, and stored file?`}
       >
         <input type="hidden" name="sourceId" value={sourceId} />
         <button
@@ -221,17 +264,8 @@ export function SourceControls({
         >
           Delete
         </button>
-      </form>
-      {state.message && (
-        <p role="alert" className="form-error">
-          {state.message}
-        </p>
-      )}
-      {state.success && (
-        <p role="status" className="form-success">
-          {state.success}
-        </p>
-      )}
+      </ConfirmationForm>
+      <FormFeedback state={state} pending={pending} busy="Updating source…" />
     </div>
   );
 }

@@ -184,6 +184,31 @@ export async function sendWebhookTest(
   };
 }
 
+export async function retryWebhookDelivery(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const id = z.string().uuid().safeParse(formData.get('deliveryId'));
+  if (!id.success)
+    return { message: 'This delivery is unavailable. Refresh to retry.' };
+  const { supabase, active } = await getWorkspaceContext();
+  if (!active || !canManage(active.role))
+    return { message: 'Only owners and admins can retry deliveries.' };
+  const { error } = await supabase.rpc('retry_webhook_delivery', {
+    p_workspace_id: active.id,
+    p_delivery_id: id.data,
+  });
+  if (error)
+    return {
+      message:
+        error.code === 'P0001'
+          ? 'This delivery is no longer eligible. Check the endpoint and retry limit.'
+          : 'The delivery could not be queued. Refresh and try again.',
+    };
+  revalidatePath('/app/settings/integrations');
+  return { success: 'Delivery queued for one bounded retry.' };
+}
+
 export async function rotateWebhookSecret(
   _state: FormState,
   formData: FormData,

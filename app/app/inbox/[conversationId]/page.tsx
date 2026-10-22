@@ -1,4 +1,17 @@
+import { RoutingFields } from '../../../../components/support/routing-fields';
+import { listReturnHref } from '../../../../lib/support/list-navigation';
+import { listTickets } from '../../../../lib/support/queries';
+import { AutomatedActionState } from '../../../../components/shared/automated-action-state';
+import { safeActionReason } from '../../../../lib/ui/automated-action';
 import Link from 'next/link';
+import { assigneeLabel } from '../../../../lib/support/presentation';
+import { listSupportMembers } from '../../../../lib/support/queries';
+import {
+  StatusChip,
+  Timestamp,
+} from '../../../../components/shared/record-state';
+import { PageHeading } from '../../../../components/shared/page-heading';
+import { messageAuthorLabel } from '../../../../lib/support/presentation';
 import { notFound } from 'next/navigation';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
 import { getConversation } from '../../../../lib/support/queries';
@@ -10,6 +23,10 @@ import { updateConversation } from '../../support-actions';
 import { InboxRealtime } from '../../../../components/support/inbox-realtime';
 import { releaseAiHandoff } from '../../ai/actions';
 import { SubmitButton } from '../../../../components/shared/submit-button';
+import { readRunEvidence } from '../../../../lib/ai/evidence';
+import { AiEvidence } from '../../../../components/ai/run-evidence';
+import { ConfirmationForm } from '../../../../components/shared/confirmation-form';
+import { aiModeLabel } from '../../../../lib/ai/policy';
 
 export const metadata = {
   title: 'Conversation',
@@ -21,9 +38,13 @@ export default async function ConversationPage({
   searchParams,
 }: {
   params: Promise<{ conversationId: string }>;
-  searchParams: Promise<{ notice?: string; error?: string }>;
+  searchParams: Promise<{
+    notice?: string;
+    error?: string;
+    returnTo?: string | string[];
+  }>;
 }) {
-  const { supabase, active } = await getWorkspaceContext();
+  const { supabase, active, user } = await getWorkspaceContext();
   const { conversationId } = await params;
   const query = await searchParams;
   if (!active) notFound();
@@ -33,20 +54,37 @@ export default async function ConversationPage({
     conversationId,
   );
   if (!conversation) notFound();
+  const linkedTickets = await listTickets(supabase, active.id, {
+    conversationId,
+  });
   const { data: aiRuns, error: aiError } = await supabase
     .from('ai_runs')
-    .select('id,status,decision,reason_code,output_text,created_at')
+    .select(
+      'id,status,decision,reason_code,output_text,created_at,run_type,attempt',
+    )
     .eq('workspace_id', active.id)
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false })
     .limit(1);
+  const members = await listSupportMembers(supabase, active.id);
   const latestAiRun = aiRuns?.[0];
+  const policy = await supabase
+    .from('ai_agent_configs')
+    .select('mode,version')
+    .eq('workspace_id', active.id)
+    .maybeSingle();
+  const evidence = latestAiRun
+    ? await readRunEvidence(supabase, active.id, latestAiRun.id)
+    : null;
   const customer = Array.isArray(conversation.customers)
     ? conversation.customers[0]
     : conversation.customers;
   return (
     <div className="support-page">
-      <Link href="/app/inbox" className="back-link">
+      <Link
+        href={listReturnHref('inbox', query.returnTo)}
+        className="back-link"
+      >
         ← Inbox
       </Link>
       <div className="conversation-layout">
@@ -54,15 +92,18 @@ export default async function ConversationPage({
           className="conversation-main"
           aria-label="Conversation timeline"
         >
-          <div className="page-heading">
-            <p className="eyebrow">
-              CONVERSATION / {conversation.channel.toUpperCase()}
-            </p>
-            <h1>{conversation.subject}</h1>
-            <p className="page-intro">
-              {customer?.name || customer?.email || 'Unknown customer'}
-            </p>
-          </div>
+          <PageHeading
+            title={conversation.subject}
+            eyebrow={`CONVERSATION / ${conversation.channel.toUpperCase()}`}
+            description={
+              customer?.name || customer?.email || 'Unknown customer'
+            }
+          />
+          <p className="support-row-meta">
+            <StatusChip value={conversation.status} /> · Priority:{' '}
+            <StatusChip value={conversation.priority} /> · Owner:{' '}
+            {assigneeLabel(conversation.assignee_user_id, members)}
+          </p>
           <InboxRealtime
             workspaceId={active.id}
             conversationId={conversation.id}
@@ -80,9 +121,29 @@ export default async function ConversationPage({
           {conversation.ai_handoff_at && (
             <section className="workspace-card ai-handoff" role="status">
               <h2>Human support requested</h2>
-              <p>{conversation.ai_handoff_reason}</p>
+              <p>
+                {safeActionReason(conversation.ai_handoff_reason) ??
+                  'Review this conversation before releasing the handoff.'}
+              </p>
+              <p>
+                Human review is required. Releasing the handoff permits future
+                AI work under the current policy; it does not send a reply.
+              </p>
+              <p>
+                Release does not replay old questions or clear assignment. Only
+                a new eligible customer message can resume AI; assigned or
+                closed conversations still block automatic replies.
+              </p>
+              <p className="field-help">
+                {policy.data
+                  ? `Current policy: ${aiModeLabel(policy.data.mode)} (version ${policy.data.version}).`
+                  : 'Current policy could not be loaded. Review AI policy before expecting new work.'}
+              </p>
               {['owner', 'admin', 'agent'].includes(active.role) && (
-                <form action={releaseAiHandoff}>
+                <ConfirmationForm
+                  action={releaseAiHandoff}
+                  message={`Release AI handoff for “${conversation.subject}”? This permits future eligible messages under the latest policy. It does not send, replay a question or clear assignment.`}
+                >
                   <input
                     type="hidden"
                     name="conversationId"
@@ -93,7 +154,7 @@ export default async function ConversationPage({
                     busy="Releasing…"
                     className="secondary-button"
                   />
-                </form>
+                </ConfirmationForm>
               )}
             </section>
           )}
@@ -105,16 +166,26 @@ export default async function ConversationPage({
                   className={`message-bubble message-${message.sender_type}`}
                 >
                   <div className="message-label">
-                    {message.sender_type === 'note'
-                      ? 'Internal note'
-                      : message.sender_type === 'agent'
-                        ? 'You'
-                        : 'Customer'}
+                    {messageAuthorLabel(message, user.id)}
                   </div>
                   <p>{message.body}</p>
-                  <time dateTime={message.created_at}>
-                    {new Date(message.created_at).toLocaleString()}
-                  </time>
+                  <span className="field-help">
+                    {message.sender_type === 'note'
+                      ? 'Team only'
+                      : message.sender_type === 'customer'
+                        ? 'Customer message'
+                        : 'Public reply'}{' '}
+                    ·{' '}
+                    {message.delivery_status === 'sent'
+                      ? 'Saved'
+                      : message.delivery_status === 'failed'
+                        ? 'Delivery failed'
+                        : 'Delivery pending'}
+                  </span>
+                  <Timestamp
+                    value={message.created_at}
+                    timezone={active.timezone}
+                  />
                 </li>
               ))
             ) : (
@@ -130,36 +201,35 @@ export default async function ConversationPage({
           )}
           {latestAiRun && (
             <section className="workspace-card ai-suggestion">
-              <p className="eyebrow">AI / {latestAiRun.status.toUpperCase()}</p>
-              <h2>
-                {latestAiRun.decision === 'draft'
-                  ? 'Draft for human review'
-                  : latestAiRun.decision === 'escalated'
-                    ? 'AI handed this to a human'
-                    : latestAiRun.decision === 'auto_sent'
-                      ? 'AI replied'
-                      : 'AI is processing'}
-              </h2>
-              {latestAiRun.decision === 'draft' && latestAiRun.output_text && (
-                <p className="ai-output">{latestAiRun.output_text}</p>
-              )}
-              {latestAiRun.reason_code && (
-                <p className="field-help">Reason: {latestAiRun.reason_code}</p>
-              )}
+              <AutomatedActionState
+                kind="ai"
+                run={latestAiRun}
+                heading
+                announce
+              />
+              {latestAiRun.status === 'completed' &&
+                latestAiRun.decision === 'draft' &&
+                latestAiRun.output_text && (
+                  <p className="ai-output">{latestAiRun.output_text}</p>
+                )}
               <Link
                 className="quiet-link"
                 href={'/app/ai/runs/' + latestAiRun.id}
               >
                 Inspect run and citations ↗
               </Link>
+              {evidence && <AiEvidence evidence={evidence} />}
             </section>
           )}
           {active.role !== 'viewer' ? (
             <Composer
-              key={latestAiRun?.id ?? 'none'}
+              key={conversation.id}
+              recipient={customer?.name || customer?.email || 'this customer'}
               conversationId={conversation.id}
+              draftRunId={`${latestAiRun?.id ?? ''}:${policy.data?.version ?? 'unavailable'}:${policy.data?.mode ?? ''}`}
               initialBody={
-                latestAiRun?.decision === 'draft'
+                latestAiRun?.status === 'completed' &&
+                latestAiRun.decision === 'draft'
                   ? (latestAiRun.output_text ?? '')
                   : ''
               }
@@ -172,6 +242,29 @@ export default async function ConversationPage({
           )}
         </section>
         <aside className="conversation-inspector">
+          <section className="inspector-card">
+            <h2>Linked tickets</h2>
+            {linkedTickets.rows.length ? (
+              <ul className="support-list compact-list">
+                {linkedTickets.rows.map((ticket) => (
+                  <li key={ticket.id} className="support-row">
+                    <Link href={`/app/tickets/${ticket.id}`}>
+                      #{ticket.ticket_number} · {ticket.title}{' '}
+                      <StatusChip value={ticket.status} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No linked tickets yet.</p>
+            )}
+            <Link
+              className="quiet-link"
+              href={`/app/tickets?conversation=${conversation.id}`}
+            >
+              View all {linkedTickets.count} linked tickets ↗
+            </Link>
+          </section>
           <section className="inspector-card">
             <p className="eyebrow">CUSTOMER</p>
             <h2>{customer?.name || 'Unnamed customer'}</h2>
@@ -194,42 +287,20 @@ export default async function ConversationPage({
                     name="conversationId"
                     value={conversation.id}
                   />
-                  <div className="field">
-                    <label htmlFor="conversation-status">Status</label>
-                    <select
-                      id="conversation-status"
-                      name="status"
-                      defaultValue={conversation.status}
-                    >
-                      <option value="open">Open</option>
-                      <option value="pending">Pending</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="conversation-priority">Priority</label>
-                    <select
-                      id="conversation-priority"
-                      name="priority"
-                      defaultValue={conversation.priority}
-                    >
-                      <option value="low">Low</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="conversation-assignee">Assignment</label>
-                    <select
-                      id="conversation-assignee"
-                      name="assignee"
-                      defaultValue={conversation.assignee_user_id ? 'me' : ''}
-                    >
-                      <option value="">Unassigned</option>
-                      <option value="me">Assign to me</option>
-                    </select>
-                  </div>
+                  <input
+                    type="hidden"
+                    name="returnTo"
+                    value={listReturnHref('inbox', query.returnTo)}
+                  />
+                  <RoutingFields
+                    currentUserId={user.id}
+                    revision={conversation.support_revision}
+                    kind="conversation"
+                    status={conversation.status}
+                    priority={conversation.priority}
+                    assigneeId={conversation.assignee_user_id}
+                    members={members}
+                  />
                   <SubmitButton
                     idle="Save routing"
                     busy="Saving…"

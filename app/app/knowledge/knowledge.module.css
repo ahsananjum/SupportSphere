@@ -1,0 +1,17 @@
+.search {
+  align-items: end;
+}
+.search > div {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.search input {
+  flex: none;
+  width: 100%;
+}
+.search button {
+  flex: 0 0 auto;
+}
+.sourceDetail {
+  overflow-wrap: anywhere;
+}

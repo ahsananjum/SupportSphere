@@ -1,3 +1,6 @@
+import { AutomatedActionState } from '../../../../components/shared/automated-action-state';
+import { Timestamp } from '../../../../components/shared/record-state';
+import { Disclosure } from '../../../../components/shared/disclosure';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -8,6 +11,7 @@ import { SubmitButton } from '../../../../components/shared/submit-button';
 import { ConfirmForm } from './confirm-form';
 import { EndpointEditForm } from './endpoint-edit-form';
 import { SecretRotateForm } from './secret-rotate-form';
+import { RetryDeliveryForm } from './retry-delivery-form';
 
 export const metadata: Metadata = {
   title: 'Integrations',
@@ -41,7 +45,7 @@ export default async function IntegrationsSettingsPage() {
     supabase
       .from('webhook_deliveries')
       .select(
-        'id,endpoint_id,event_id,event_type,status,response_code,attempts,max_attempts,last_error,delivered_at,created_at',
+        'id,endpoint_id,event_id,event_type,status,response_code,attempts,max_attempts,last_error,delivered_at,created_at,webhook_endpoints!webhook_deliveries_endpoint_id_fkey(name,destination_url,enabled)',
       )
       .eq('workspace_id', active.id)
       .order('created_at', { ascending: false })
@@ -133,7 +137,7 @@ export default async function IntegrationsSettingsPage() {
                       <div className="record-actions">
                         <ConfirmForm
                           action={sendWebhookTest}
-                          message="Queue a signed test delivery to this endpoint?"
+                          message={`Queue a signed test delivery to ${endpoint.destination_url}? This only queues a test; review delivery history for its outcome.`}
                         >
                           <input
                             type="hidden"
@@ -148,7 +152,7 @@ export default async function IntegrationsSettingsPage() {
                         </ConfirmForm>
                         <ConfirmForm
                           action={deleteWebhookEndpoint}
-                          message="Revoke this endpoint and cancel queued deliveries?"
+                          message={`Revoke ${endpoint.destination_url} and cancel its queued deliveries?`}
                         >
                           <input
                             type="hidden"
@@ -164,11 +168,13 @@ export default async function IntegrationsSettingsPage() {
                       </div>
                     )}
                     {canManage && (
-                      <details className="integration-edit-details">
-                        <summary>Edit endpoint</summary>
+                      <Disclosure label="Edit endpoint">
                         <EndpointEditForm endpoint={endpoint} />
-                        <SecretRotateForm endpointId={endpoint.id} />
-                      </details>
+                        <SecretRotateForm
+                          endpointId={endpoint.id}
+                          endpointName={endpoint.name}
+                        />
+                      </Disclosure>
                     )}
                   </li>
                 ))}
@@ -199,24 +205,45 @@ export default async function IntegrationsSettingsPage() {
                     key={delivery.id}
                   >
                     <div>
-                      <strong>{delivery.event_type}</strong>
+                      <strong>
+                        {delivery.event_type} ·{' '}
+                        {Array.isArray(delivery.webhook_endpoints)
+                          ? delivery.webhook_endpoints[0]?.name
+                          : delivery.webhook_endpoints?.name}
+                      </strong>
+                      <AutomatedActionState
+                        kind="delivery"
+                        run={{
+                          status: delivery.status,
+                          attempt: delivery.attempts,
+                          reason_code: delivery.last_error,
+                        }}
+                      />
                       <p>
-                        {delivery.status} · attempt {delivery.attempts}/
-                        {delivery.max_attempts}
+                        Attempt {delivery.attempts}/{delivery.max_attempts}
                         {delivery.response_code
                           ? ` · HTTP ${delivery.response_code}`
                           : ''}
                       </p>
-                      {delivery.last_error && (
-                        <small>{delivery.last_error}</small>
-                      )}
+                      <small>
+                        {delivery.status === 'failed'
+                          ? delivery.attempts < delivery.max_attempts
+                            ? 'Eligible for one bounded retry.'
+                            : 'Retry limit reached; inspect the endpoint before changing it.'
+                          : delivery.status === 'succeeded'
+                            ? 'Terminal success recorded.'
+                            : 'Waiting for the worker to record a terminal result.'}
+                      </small>
+                      {delivery.status === 'failed' &&
+                        delivery.attempts < delivery.max_attempts &&
+                        canManage && (
+                          <RetryDeliveryForm deliveryId={delivery.id} />
+                        )}
                     </div>
-                    <time dateTime={delivery.created_at}>
-                      {new Date(delivery.created_at).toLocaleString('en-US', {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
-                    </time>
+                    <Timestamp
+                      value={delivery.created_at}
+                      timezone={active.timezone}
+                    />
                   </li>
                 ))}
               </ul>

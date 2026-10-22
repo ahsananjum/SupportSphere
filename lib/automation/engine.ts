@@ -53,6 +53,7 @@ export async function executeAutomationRun(run: {
   trigger_type: string;
   trigger_entity_id: string | null;
   payload: Record<string, unknown>;
+  lease_token: string;
 }) {
   const admin = createAdminClient();
   const { data: rule, error } = await admin
@@ -74,14 +75,31 @@ export async function executeAutomationRun(run: {
   if (!parsed.success || !matchesConditions(run.payload, rule.conditions))
     return { status: 'skipped' as const, reason: 'conditions_not_met' };
   const entityType = entityTypeForTrigger(run.trigger_type);
-  for (const action of parsed.data.actions)
-    await applyAction(
-      admin,
-      run.workspace_id,
-      entityType,
-      run.trigger_entity_id,
-      action,
-    );
+  for (const [index, action] of parsed.data.actions.entries()) {
+    try {
+      await applyAction(
+        admin,
+        run.workspace_id,
+        entityType,
+        run.trigger_entity_id,
+        action,
+        run.id,
+        index,
+        run.lease_token,
+      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        ['HUMAN_OVERRIDE', 'AUTOMATION_CHANGED'].includes(error.message)
+      )
+        return {
+          status: 'skipped' as const,
+          reason: error.message,
+          actionsApplied: index,
+        };
+      throw error;
+    }
+  }
   return { status: 'succeeded' as const, actions: parsed.data.actions.length };
 }
 
@@ -91,6 +109,9 @@ async function applyAction(
   entityType: string,
   entityId: string | null,
   action: AutomationAction,
+  runId: string,
+  actionIndex: number,
+  leaseToken: string,
 ) {
   if (!entityId) throw new Error('AUTOMATION_ENTITY_MISSING');
   const { error } = await admin.rpc('apply_automation_action', {
@@ -98,12 +119,20 @@ async function applyAction(
     p_entity_type: entityType,
     p_entity_id: entityId,
     p_action_type: action.type,
-    p_params: actionToJson(action) as Json,
+    p_params: {
+      ...actionToJson(action),
+      _automation_run_id: runId,
+      _action_index: actionIndex,
+      _lease_token: leaseToken,
+    } as Json,
   });
-  if (error)
+  if (error) {
+    if (['HUMAN_OVERRIDE', 'AUTOMATION_CHANGED'].includes(error.message))
+      throw new Error(error.message);
     throw new Error(
       error.code === 'P0001'
         ? 'AUTOMATION_ACTION_REJECTED'
         : 'AUTOMATION_ACTION_FAILED',
     );
+  }
 }

@@ -1,8 +1,23 @@
 # SupportSphere — Architecture
 
-> Version: 1.0<br>
+> Version: 1.1 — approved upgrade contracts, 2026-10-18<br>
 > Purpose: technical source of truth for coding agents<br>
 > Target: Vercel + Supabase + free-tier-compatible managed services
+
+## Approved upgrade architecture
+
+U0–U6 improve the existing system using [the execution](docs/upgrade-execution.md) and [human-control](docs/automation-and-human-control.md) contracts. Keep the installed stack. Radix/shadcn/React Hook Form and alternative providers mentioned below are not additional installed requirements.
+
+- Postgres remains canonical for support, policy, runs and durable jobs; Supabase cron/Edge leased workers are the selected architecture. Redis is ephemeral coordination.
+- Correct writes preserve untouched fields. Recheck latest policy/rule versions, newest message, ownership/handoff and current target state at the transactional execution boundary; model/client output never authorizes.
+- Composer state is independent of AI-run identity. Realtime updates/coalescing preserve human drafts and bounded recovery.
+- Lists use validated server paging/stable ordering. Analytics covers its complete stated cohort; unavailable is distinct from zero.
+- Each automated action has a producer, authorized policy, identity, consumer, bounded lease/retry, terminal outcome and existing human stop/recovery location. No new approval platform or unrestricted executor.
+- Schema changes require migrations/RLS/constraints/indexes, isolated replay and generated `lib/supabase/database.types.ts`. Do not use compromised credentials for tests.
+- CI/test automation uses explicit isolated targets, safe fixtures and bounded commands/artifacts; controlled adapters do not prove current real-provider behavior.
+- U1 presentation primitives in `components/shared` use existing tokens/CSS modules and existing actions. Page/section headings, associated field/action feedback, record states/time, native confirmation and disclosure add no mutation authority. The mobile shell isolates background focus/scroll; existing server role/tenant checks remain authoritative. See [UI foundation](docs/ui-foundation.md) and dated QA for implemented consumers and proof.
+
+Update architecture, a unique ADR-UPG decision, feature docs/tests and state when contracts change. P13 gates remain separately blocked until verified.
 
 ## 0. Architectural commandments
 
@@ -63,7 +78,7 @@ Do NOT use Redis as canonical storage for conversations, tickets, users, billing
 
 ## Durable/background jobs
 
-Because Vercel serverless functions are not always-on workers, use a Vercel-compatible durable HTTP/job mechanism such as Upstash QStash/Workflow or another free-tier-compatible provider approved in `.agent/DECISIONS.md` after current-plan verification.
+The selected implementation uses Postgres-owned job/run state and Supabase cron/Edge leased workers, per accepted ADRs. Vercel requests are not permanent workers. QStash/Workflow is an alternative, not a new provider required by this upgrade.
 
 Jobs include:
 
@@ -100,12 +115,12 @@ A free-tier provider may be selected after verifying current limits. Do not enco
 
 ## Payments
 
-- Stripe sandbox/test mode only for portfolio billing demonstration
-- signed webhooks required
+- Stripe remains unselected; do not introduce billing as polish.
+- Existing outgoing support webhooks remain signed and bounded by the integration contract.
 
 ## Analytics
 
-Use a consent-aware free-compatible analytics provider or Vercel-provided analytics if available under the current plan. Record the actual provider in `.agent/DECISIONS.md`.
+Operational analytics uses real tenant records. Optional marketing tracking stays disabled; do not enable a tracking provider as upgrade verification. Use permitted laboratory and approved field performance evidence.
 
 ---
 
@@ -1273,3 +1288,29 @@ Before final release:
 - https://designmd.ai/frknaykc/command-center
 
 Provider limits and free-tier details must be re-verified against current official docs during implementation.
+
+### U0 routing and measurement implementation
+
+New update_conversation_routing / update_ticket_routing RPCs resolve keep/me/unassigned under the target row lock and reuse existing role-checked writes/audits. Legacy signatures remain available. Analytics separately pages created-record, resolved-ticket, first-agent-response and completed-AI-run cohorts. Database replay/types/UI proof must match current QA before completion.
+
+U0 local verification uses supportsphere-u0-local and separate .next-u0 output. The AI automation origin foreign key is composite (workspace_id, automation_run_id), and its supporting index follows that tenant scope. run_type is support_reply/triage/draft; automatic inputs remain unique within support_reply and rule-action requests are deduped separately. Migration20261017214603 qualifies existing claim-function id/attempt columns after real schema lint found ambiguity; no claim permission or lease policy was broadened.
+
+## U2 support contracts
+
+Support lists use validated server parameters, 25-row ranges and activity/ID ordering. Relationship previews are bounded with exact counts and full filtered queues. Return destinations are reconstructed from the appropriate list allowlist. Native document paging avoids a concurrent Realtime refresh replacing pending client navigation; composer state remains keyed only by conversation.
+
+Field editors submit strict patches for supported existing fields. Private role-checked RPCs lock the target and validate changed fields only, preserving untouched current and legacy values. Public wrappers remain security invoker. Assignment is additionally validated on the table mutation path against a current eligible membership held FOR SHARE; an unrelated routing save resolves Keep under the target lock.
+
+U2 adds support_revision on conversations/tickets and a captured revision on AI runs, plus trusted revision/rule-version metadata on automation runs. Human routing and customer/human messages advance the revision; automated effects do not invalidate their own multi-action transaction. Final AI finish/failure/claim and automation effects lock/revalidate the current target. Leases and action receipts in automation_runs.result serialize duplicate adapter calls. Existing batch processing remains atomic. service_role receives schema USAGE for already explicitly granted private consumers; no anon/authenticated automation execution is added.
+
+Migrations 20261018185223 and 20261018191454 and generated public types are verified only on the isolated local target. Hosted activation must review pending work and existing U6/P13 gates before applying schema or pointing upgraded actions at that target. No hosted migration, worker deployment or provider proof follows from local acceptance. See [support workflow](docs/support-workflow.md) and ADR-UPG-004.
+
+## U3 knowledge/evidence architecture
+
+Library name search is tenant-scoped before stable created_at/id 25-row paging. The server projects citation rows and current authorized source metadata separately, retaining recorded snippets when FKs become null. Query failures remain unavailable, not empty. Source links open a separate tab; router.refresh retains the conversation-keyed composer. Draft adoption is a local editing operation, bound to run/content/current policy identity and current human text; it is neither a send nor persisted approval.
+
+Migration20261019205208_u3_final_evidence_readiness changes only the existing service-only finish_ai_run body. It keeps run → conversation → config lock order, then takes source/chunk shared locks in stable ID order before the current ready/enabled/tenant/citation-score check. Disable/reindex/delete serialize with finalization. Changed eligibility yields EVIDENCE_CHANGED human draft; removed/invalid citations roll back without a send. A post-wait clock_timestamp lease check prevents row-lock waits from extending expired authority. Existing final revision/policy/intent/quality/identity/uniqueness checks remain. Public RPC signature/types are unchanged. Local46-migration replay/types comparison and controlled concurrency tests do not establish hosted schema or Gemini proof; review pending work before hosted activation under U6/P13.
+
+## U5 presentation/runtime notes
+
+U5 changes remain presentation and existing-route behavior only. No schema, RLS, provider, or authorization contract changed. Auth still submits through the existing server actions and trusted Supabase session; settings/widget mutations retain existing role-checked RPCs. Responsive detail ordering is CSS grid-area presentation, and widget transcript scroll anchoring is client reconciliation over the existing persisted message cursor. Local/browser proof does not establish phone assistive-technology, hosted provider, or deployment behavior.

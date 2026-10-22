@@ -110,7 +110,7 @@ try {
   await page.getByText('Message sent.', { exact: true }).waitFor();
   await page.getByLabel('Reply').fill('Internal routing note');
   await page.getByLabel('Internal note').check();
-  await page.getByRole('button', { name: 'Send message' }).click();
+  await page.getByRole('button', { name: 'Save internal note' }).click();
   await page.getByText('Internal note saved.', { exact: true }).waitFor();
   await page.getByText('Internal routing note').waitFor();
   await page.getByRole('button', { name: 'Create ticket' }).click();

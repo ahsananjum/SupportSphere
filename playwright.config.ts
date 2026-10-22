@@ -4,6 +4,8 @@ const baseURL = 'http://127.0.0.1:3100';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  // Playwright clears its output directory. Keep U0 evidence/fixture ledgers intact.
+  outputDir: 'test-results/playwright',
   fullyParallel: true,
   // Next's webpack dev compiler serializes CSS endpoint writes on Windows;
   // concurrent workers can abort an otherwise valid navigation mid-rebuild.

@@ -10,7 +10,27 @@
 - `VERIFYING`
 - `COMPLETE`
 
-The active phase is persisted in `.agent/STATE.md`.
+The active upgrade phase is persisted in `.agent/STATE.md`; P13 remains a separate blocked release track. Owner-approved U0–U6 (2026-10-18) are the current improvement plan. P00–P13 below remain baseline/history and release requirements.
+
+## Approved upgrade phases U0–U6
+
+Per-slice acceptance: [roadmap](docs/upgrade-roadmap.md). Mandatory loop/checkpoint: [execution contract](docs/upgrade-execution.md). Human control: [automation contract](docs/automation-and-human-control.md). Every slice has a [test ID](.agent/UPGRADE_TEST_MATRIX.md) and [progress row](.agent/UPGRADE_PROGRESS.md). Tests/docs evolve with every slice, not only at U6.
+
+| Phase | Scope                                                                                                                                              | Prerequisite                                         | Required exit evidence                                                                                                            | Prompt                           |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| U0    | Correct assignment/authorship/drafts/metrics/AI consumers/event fan-out/query errors; automation inventory and verification harness foundation.    | Approved docs; inspect actual baseline/targets.      | Meaningful regressions, applicable isolated data/job proof, safe baseline and updated contracts/checkpoint.                       | [U0](docs/upgrade-prompts/U0.md) |
+| U1    | Shared headings/forms/status/time/feedback, grouped navigation, accessible drawers/confirmations, scoped styles and automation-state presentation. | U0 scoped acceptance complete.                       | Inbox/settings reference views, six widths, roles/states, keyboard/reduced motion and production CSS order.                       | [U1](docs/upgrade-prompts/U1.md) |
+| U2    | Queue traversal, support timeline/composer, linked records, edits/assignee/history/overview, preserved human overrides.                            | U0–U1 complete.                                      | >60-record traversal, two-agent concurrency, protected draft/recipient/owner, persistence/RLS and responsive journeys.            | [U2](docs/upgrade-prompts/U2.md) |
+| U3    | Knowledge readiness/recovery/search, evidence beside explicit draft review, understandable AI/policy/handoff and human gates.                      | U0–U2 complete.                                      | Controlled/isolated citation/policy/failure tests, no broadened send authority and meaningful evidence UI.                        | [U3](docs/upgrade-prompts/U3.md) |
+| U4    | Valid editable rules, terminal run history, webhook retry/history, notifications/team/audit and bounded execution/recovery.                        | U0–U3 complete.                                      | Producer→consumer→terminal outcome; dedupe/stale/disable/revoke, role/tenant and actionable exception proof.                      | [U4](docs/upgrade-prompts/U4.md) |
+| U5    | Form-first mobile auth, adaptive detail/forms, setup/settings/widget, truthful copy and whole-app polish.                                          | U0–U4 complete.                                      | Six widths/states/roles, real-phone keyboard and screen-reader review, legal links and consistent availability claims.            | [U5](docs/upgrade-prompts/U5.md) |
+| U6    | Full quality/usability/performance/CI proof and existing provider/security/deployment release gates.                                               | U0–U5 complete; owner gates before affected actions. | Fresh full applicable repository/isolated/live/deployed proof; MANUAL-008/010/011 resolved; golden journey and recovery reviewed. | [U6](docs/upgrade-prompts/U6.md) |
+
+U0–U5 COMPLETE means their assigned local/isolated acceptance passed; it is not production release proof. Real Gemini/deployment proof is explicitly assigned to U6/P13. Missing required local/isolated/device evidence keeps its phase blocked. Never skip or lower a gate to advance.
+
+Use NOT_STARTED → IN_PROGRESS → VERIFYING → COMPLETE, or BLOCKED_MANUAL with an exact missing input/gate when no independent phase work remains. Execute only the selected phase prompt, then hand off the next eligible prompt. A newly reproduced regression invalidates its specific evidence; do not restart all phases.
+
+## Baseline delivery definitions P00–P13
 
 ---
 
@@ -713,6 +733,6 @@ For each phase:
 7. If manual work is needed, set `BLOCKED_MANUAL` and stay in phase.
 8. When every criterion is proven, set `VERIFYING` and run the complete phase gate one final time.
 9. Only then set `COMPLETE`.
-10. Update `.agent/HANDOFF.md` and move to next phase.
+10. Update `.agent/HANDOFF.md` and record the next eligible phase. For U0–U6, stop at the selected prompt's phase boundary; the next phase is invoked separately through its prompt or RESUME. Do not automatically run another phase from a completed phase-specific prompt.
 
 There is no “mostly complete” phase.

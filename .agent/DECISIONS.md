@@ -169,6 +169,7 @@ Decision: Use a fixed-host, tool-free Gemini REST adapter with the API key in th
 Alternatives considered: putting the API key in the URL, trusting JSON MIME type without parsing, model-chosen tools, replacing the graph with the Interactions API, or continuing the unchosen OpenAI adapter.
 Consequences: The worker can use an AI Studio free-tier key once configured. Google documents that free-tier content may be used to improve its products, so live tests use synthetic fixtures and real customer traffic remains disabled until owner review. MANUAL-008 now specifies Gemini and P07 remains blocked until provider scenarios pass.
 Files affected: `supabase/functions/_shared/ai-provider.ts`, `supabase/functions/_shared/ai.ts`, `supabase/functions/ai-worker/index.ts`, `lib/validation/env.ts`, `tests/unit/ai-workflow.test.ts`, `docs/ai.md`, `.agent` records.
+
 ## ADR-017 — P08 database-owned automation and Redis coordination
 
 Date: 2026-10-10
@@ -248,3 +249,68 @@ Alternatives considered: embedding demo arrays in UI, direct fake AI rows, seedi
 Consequences: A portfolio operator can create repeatable demo state in the real database without exposing secrets. Fresh clones and the current project share the trigger-safe final state. P13 remains blocked until credential rotation, Vercel environment/deployment inspection, and real Gemini provider proof are complete.
 
 Files affected: `scripts/seed-demo.mjs`, `docs/demo-seed.md`, `README.md`, `supabase/migrations/20261012163227_p13_reproducibility_trigger_hardening.sql`, `.agent/*`.
+
+## ADR-UPG-001 — Approved upgrade phases, persistent recovery and human-controlled automation
+
+Date: 2026-10-18
+Status: accepted direction by owner; documentation prepared, implementation NOT_STARTED.
+Context: Owner approved the complete assessment/roadmap and requested documentation first, complete phase loops, reliable continuation after context compaction, tests/docs enhanced with every change, and automation with human control.
+Decision: Execute U0–U6 through bounded per-phase prompts and the canonical roadmap, with 52 stable slice/test mappings and compact STATE/current HANDOFF checkpoints. Keep P13 release gates separate, preserving their prior checkpoint. Current summaries override stale historical phase instructions; long evidence history is loaded selectively. Routine reversible approved work proceeds without repeated permission; consequential actions retain actual user/tool authority.
+Automation: Improve existing modes/drafts/handoff/rules/ingestion/webhooks/notifications/analytics rather than adding a new approval product. Require explicit policy, authorization, idempotency, current-state/version checks, bounded leases/retries, terminal outcomes and existing human stop/recovery surfaces. Plan phase-aware tests/docs checks, safe fixture lifecycle, screenshots and CI evidence; these tools are not installed or scheduled by creating documentation.
+Alternatives considered: one huge prompt, starting fresh after compaction, treating plans as completed tests, retaining P13 as a global stop for local upgrades, a blanket autonomous agent, or configuring a new recurring job without a scheduling request.
+Consequences: U0–U5 use required local/isolated proof without closing U6/P13's real-provider/deployed gates. Missing required acceptance blocks the owning phase. Each phase updates actual behavior docs/tests and records evidence, then hands off at its boundary. No code, migration, credentials, dependency, CI configuration or runtime was changed in this preparation.
+Files affected: AGENTS/RULES/PHASES/PRD/ARCHITECTURE/DESIGN/README, current agent records/progress/test matrix, roadmap/execution/testing/automation docs, feature/testing guide links and phase prompts.
+
+## ADR-UPG-002 — Scoped routing and real AI automation consumer
+
+Date: 2026-10-18. Status: accepted within owner-approved U0.
+
+Routing sends keep/me/unassigned intent to new row-locked wrappers; legacy RPCs remain compatible. AI automation extends existing run_type to triage/draft, retains support_reply uniqueness per input and dedupes automation by run/action identity. Both use the existing AI worker/processor, with independent database send caps and origin rule-version checks. No new worker provider or approval product. Old orphan generic intents fail visibly rather than silently replay.
+
+Fresh isolated replay required guarding a hosted-only revoke and making P10 webhook trigger replacement replayable. These two historical SQL edits preserve their intended hosted end state; no hosted migration repair/application was performed. Local Supabase config/separate .next-u0 and bounded runner protect existing runtime and production credentials.
+
+## ADR-UPG-003 — Native modal controls and scoped operational UI
+
+Date:2026-10-18. Status: accepted within owner-approved U1.
+
+Context: Shared field feedback and operational hierarchy were duplicated; the old mobile drawer trapped Tab without isolating background content. Browser reproduction showed that imperative focus timing alone could leave focus on BODY, then native fit-content sizing exposed short-height clipping.
+
+Decision: Use the installed React/Next stack with native modal dialog behavior for the single workspace drawer and existing confirmations, native details for inline disclosure, and small source-owned heading/feedback/state/time primitives. Native confirmations start on Cancel and preserve the original named submitter only after Confirm. Isolate background focus/scroll and restore focus on close/navigation; bound drawer height. Keep server tenant/role/policy/idempotency authority unchanged. Move43 shell-owned CSS rules beneath the component root, retain stable existing test hooks and existing tokens, and refine legacy operational title scale there. No new UI framework, provider or approval product.
+
+Automation feedback reads persisted state/attempts, distinguishes queue/retry from completion, and explains private draft/triage/rule-dispatch boundaries with safe reason copy and existing review controls. Unknown status/diagnostic content never implies success. Presentation fixtures remain distinct from real consumer/provider evidence.
+
+Verification: U1 production reference/task/role/accessibility and byte-identical unaffected public/auth/invite comparisons; isolated U0 persistence and protected-draft regressions; exact commands/artifacts in QA. Human result sheets and U5/U6 device/U6/P13 provider gates remain unchanged. The docs checker also rejects stale phase roll-ups and distinguishes acceptance wording from actual evidence status.
+
+Files: components/shared, lib/ui, reference/support/AI/automation/integration routes, app/globals.css, tests/upgrade, behavioral docs/guides and current agent records.
+
+## ADR-UPG-004 — Field patches, current assignment and final human precedence
+
+Date: 2026-10-19. Status: accepted within the owner-approved U2 scope.
+
+Context: Root lists were truncated, relationships and existing-field corrections were incomplete, and pending background work needed transactional precedence for later human changes. Browser checks also exposed an out-of-range database error and a Realtime/client-paging race.
+
+Decision: Keep the installed stack and shared UI. Use validated 25-row server paging with deterministic ties, safe list return URLs and document paging. Edit supported existing fields through strict patches under target locks; reconcile only dirty human values and preserve untouched current/legacy values. Resolve Keep ownership in the database and validate chosen current eligible members through the mutation path.
+
+Capture database-owned support revisions/rule versions for automatic work; serialize final gates and effects on the target. Use existing automation-run result storage for action receipts and earlier-effect counts, with current leases, rather than adding a queue/product. Retain the atomic database consumer; guard the existing dormant TypeScript adapter without activating it. Grant service_role schema USAGE for its already selected private invoker consumers; no browser automation authority is added. History explains skipped work and any earlier completed effects.
+
+Evidence: actual local migration replay, RPC/RLS/role/concurrency/idempotency tests, browser tasks and source digests in U2 QA. Controlled DB send branches do not prove Gemini or deployment. Two U2 migrations/types remain local; hosted rollout/pending-work review and U6/P13 authority remain required.
+
+## ADR-UPG-005 — Evidence-adjacent human review and final source eligibility
+
+Date: 2026-10-20 (Asia/Karachi)
+Status: accepted within owner-approved U3 scope
+Context: source forms preceded the library; review hid evidence behind run navigation. A real local processor regression showed auto_sent when an owner disabled its cited source after retrieval.
+Decision: keep source review in a new tab and named recorded snippets beside the stable composer; bind explicit replacement choices to current writing/suggestion/policy. Recompose existing run review without new execution controls. Extend the service-only final RPC with ordered source/chunk shared locks and current ready/enabled/tenant/score checks, plus real-clock lease expiry after waits. Preserve existing policy/sensitive/current-state/rule/role/idempotency gates and existing handoff release.
+Alternatives: client-only warning would not protect a send; a new approval platform is outside scope; whole-page navigation risks unsaved work.
+Consequences: changed knowledge yields human review, invalid/deleted citations cannot commit, completed sends cannot be recalled. One local-only migration, no public signature/type/dependency/provider change. Hosted activation and real-provider proof remain U6/P13.
+Files: knowledge and AI routes/components/libs/tests,20261019205208 migration, existing human composer, phase runner and behavioral guides.
+# Owner scope decision — U6 waiver
+
+Date: 2026-10-23 (Asia/Karachi)
+## ADR-UPG-U6-WAIVER — Owner scope decision to complete U6
+
+Date: 2026-10-23 (Asia/Karachi)
+Status: accepted by owner
+Context: The owner explicitly authorized bypassing the remaining U6 device, usability, baseline E2E, CI, provider, deployment, hosted-parity and release-gate evidence and instructed completion.
+Decision: Mark U6 COMPLETE for the approved local upgrade scope by explicit owner waiver. Preserve actual failed, timed-out, deferred, skipped and blocked evidence. This waiver does not claim real-phone, screen-reader, human usability, CI, provider, hosted migration, Vercel, deployment or production release proof, and does not close P13 or MANUAL-008/010/011.
+Consequences: U6 completion is local-scope completion only; future release work remains gated by the existing manual and provider controls.

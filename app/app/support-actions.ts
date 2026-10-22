@@ -1,6 +1,8 @@
 'use server';
 
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { listReturnHref } from '../../lib/support/list-navigation';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getWorkspaceContext } from '../../lib/workspaces/context';
@@ -9,6 +11,8 @@ import {
   conversationSchema,
   messageSchema,
   ticketSchema,
+  customerEditSchema,
+  ticketEditSchema,
 } from '../../lib/validation/support';
 import type { FormState } from '../../lib/action-state';
 
@@ -192,39 +196,146 @@ export async function createTicket(
   redirect(`/app/tickets/${data}`);
 }
 export async function updateConversation(formData: FormData) {
-  const { supabase, active, user } = await getWorkspaceContext();
+  const { supabase, active } = await getWorkspaceContext();
   const id = String(formData.get('conversationId') ?? '');
   if (!active || !id) redirect('/app/inbox?error=invalid');
   if (!canWriteSupport(active.role))
     redirect(`/app/inbox/${id}?error=permission`);
-  const { error } = await supabase.rpc('update_conversation', {
-    p_workspace_id: active.id,
-    p_conversation_id: id,
-    p_status: String(formData.get('status') || '') || undefined,
-    p_priority: String(formData.get('priority') || '') || undefined,
-    p_assignee_user_id: nullableRpc(
-      String(formData.get('assignee') || '') === 'me' ? user.id : null,
-    ),
-  });
-  redirect(`/app/inbox/${id}?${error ? 'error=update' : 'notice=updated'}`);
+  const assignment = String(formData.get('assignee') ?? 'keep');
+  const teammate = z.string().uuid().safeParse(assignment);
+  if (!['keep', 'me', 'unassigned'].includes(assignment) && !teammate.success)
+    redirect(`/app/inbox/${id}?error=update`);
+  const { error } = teammate.success
+    ? await supabase.rpc('update_support_routing', {
+        p_workspace_id: active.id,
+        p_entity_type: 'conversation',
+        p_entity_id: id,
+        p_status: nullableRpc(String(formData.get('status') || '') || null),
+        p_priority: nullableRpc(String(formData.get('priority') || '') || null),
+        p_assignment: 'teammate',
+        p_assignee_id: teammate.data,
+      })
+    : await supabase.rpc('update_conversation_routing', {
+        p_workspace_id: active.id,
+        p_conversation_id: id,
+        p_status: String(formData.get('status') || '') || undefined,
+        p_priority: String(formData.get('priority') || '') || undefined,
+        p_assignment: assignment,
+      });
+  redirect(
+    `/app/inbox/${id}?returnTo=${encodeURIComponent(listReturnHref('inbox', formData.get('returnTo')))}&${error ? 'error=update' : 'notice=updated'}`,
+  );
 }
 export async function updateTicket(formData: FormData) {
-  const { supabase, active, user } = await getWorkspaceContext();
+  const { supabase, active } = await getWorkspaceContext();
   const id = String(formData.get('ticketId') ?? '');
   if (!active || !id) redirect('/app/tickets?error=invalid');
   if (!canWriteSupport(active.role))
     redirect(`/app/tickets/${id}?error=permission`);
-  const { error } = await supabase.rpc('update_ticket', {
-    p_workspace_id: active.id,
-    p_ticket_id: id,
-    p_status: String(formData.get('status') || '') || undefined,
-    p_priority: String(formData.get('priority') || '') || undefined,
-    p_category: nullableRpc<string>(null),
-    p_assignee_user_id: nullableRpc(
-      String(formData.get('assignee') || '') === 'me' ? user.id : null,
-    ),
-    p_title: nullableRpc<string>(null),
-    p_description: nullableRpc<string>(null),
-  });
-  redirect(`/app/tickets/${id}?${error ? 'error=update' : 'notice=updated'}`);
+  const assignment = String(formData.get('assignee') ?? 'keep');
+  const teammate = z.string().uuid().safeParse(assignment);
+  if (!['keep', 'me', 'unassigned'].includes(assignment) && !teammate.success)
+    redirect(`/app/tickets/${id}?error=update`);
+  const { error } = teammate.success
+    ? await supabase.rpc('update_support_routing', {
+        p_workspace_id: active.id,
+        p_entity_type: 'ticket',
+        p_entity_id: id,
+        p_status: nullableRpc(String(formData.get('status') || '') || null),
+        p_priority: nullableRpc(String(formData.get('priority') || '') || null),
+        p_assignment: 'teammate',
+        p_assignee_id: teammate.data,
+      })
+    : await supabase.rpc('update_ticket_routing', {
+        p_workspace_id: active.id,
+        p_ticket_id: id,
+        p_status: String(formData.get('status') || '') || undefined,
+        p_priority: String(formData.get('priority') || '') || undefined,
+        p_assignment: assignment,
+      });
+  redirect(
+    `/app/tickets/${id}?returnTo=${encodeURIComponent(listReturnHref('tickets', formData.get('returnTo')))}&${error ? 'error=update' : 'notice=updated'}`,
+  );
+}
+
+async function editFields(
+  kind: 'customer' | 'ticket',
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase, active } = await getWorkspaceContext();
+  if (!active || !canWriteSupport(active.role))
+    return { message: 'You do not have permission to change support records.' };
+  const id = z.string().uuid().safeParse(formData.get('recordId'));
+  if (!id.success) return { message: 'That support record is unavailable.' };
+  let changes: unknown;
+  try {
+    const raw = String(formData.get('changes') ?? '');
+    if (raw.length > 250000) throw Error();
+    changes = JSON.parse(raw);
+  } catch {
+    return { message: 'Check the edited fields and try again.' };
+  }
+  const parsed = (
+    kind === 'customer' ? customerEditSchema : ticketEditSchema
+  ).safeParse(changes);
+  if (!parsed.success)
+    return {
+      message: 'Check the highlighted fields and try again.',
+      fields: Object.fromEntries(
+        parsed.error.issues.map((issue) => [
+          String(issue.path[0]),
+          issue.message,
+        ]),
+      ),
+    };
+  if (!Object.keys(parsed.data).length)
+    return { success: 'No changes to save.' };
+  const savedValues: Record<string, string> = {};
+  for (const [key, value] of Object.entries(parsed.data))
+    if (typeof value === 'string')
+      savedValues[key] =
+        kind === 'customer' && key === 'email' ? value.toLowerCase() : value;
+  const result =
+    kind === 'customer'
+      ? await supabase.rpc('update_customer_fields', {
+          p_workspace_id: active.id,
+          p_customer_id: id.data,
+          p_changes: savedValues,
+        })
+      : await supabase.rpc('update_ticket_fields', {
+          p_workspace_id: active.id,
+          p_ticket_id: id.data,
+          p_changes: savedValues,
+        });
+  if (result.error)
+    return result.error.code === '23505'
+      ? {
+          message:
+            'Another customer already uses that email in this workspace.',
+          fields: {
+            email: 'Use a different email or review the existing customer.',
+          },
+        }
+      : { message: messageFor(result.error.message) };
+  revalidatePath(
+    `/app/${kind === 'customer' ? 'customers' : 'tickets'}/${id.data}`,
+  );
+  revalidatePath(`/app/${kind === 'customer' ? 'customers' : 'tickets'}`);
+  return {
+    success:
+      kind === 'customer' ? 'Customer details saved.' : 'Ticket details saved.',
+    values: savedValues,
+  };
+}
+export async function updateCustomerDetails(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return editFields('customer', formData);
+}
+export async function updateTicketDetails(
+  _state: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  return editFields('ticket', formData);
 }

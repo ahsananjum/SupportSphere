@@ -1,3 +1,6 @@
+import { AutomatedActionState } from '../../../../components/shared/automated-action-state';
+import { statusLabel } from '../../../../lib/ui/presentation';
+import { Timestamp } from '../../../../components/shared/record-state';
 import Link from 'next/link';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
 
@@ -21,7 +24,7 @@ export default async function AiRunsPage({
   let query = supabase
     .from('ai_runs')
     .select(
-      'id,status,decision,reason_code,provider,model,created_at,conversation_id,attempt',
+      'id,status,decision,reason_code,provider,model,created_at,conversation_id,attempt,run_type',
     )
     .eq('workspace_id', active.id)
     .order('created_at', { ascending: false })
@@ -57,7 +60,7 @@ export default async function AiRunsPage({
           {['queued', 'processing', 'completed', 'failed', 'skipped'].map(
             (x) => (
               <option key={x} value={x}>
-                {x}
+                {statusLabel(x)}
               </option>
             ),
           )}
@@ -92,17 +95,12 @@ export default async function AiRunsPage({
           {data.map((run) => (
             <li key={run.id} className="support-row">
               <Link href={`/app/ai/runs/${run.id}`}>
-                <span className="support-row-top">
-                  <strong>{run.decision ?? run.status}</strong>
-                  <span className="status-chip">{run.status}</span>
-                </span>
+                <AutomatedActionState kind="ai" run={run} />
                 <span className="support-row-meta">
-                  Run {run.id.slice(0, 8)} · {run.reason_code ?? 'In progress'}
+                  Run {run.id.slice(0, 8)}
                   {run.attempt > 1 ? ` · attempt ${run.attempt}` : ''}
                 </span>
-                <time dateTime={run.created_at}>
-                  {new Date(run.created_at).toLocaleString()}
-                </time>
+                <Timestamp value={run.created_at} timezone={active.timezone} />
               </Link>
             </li>
           ))}

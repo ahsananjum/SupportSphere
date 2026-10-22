@@ -1,0 +1,30 @@
+.dialog {
+  margin: auto;
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.5rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-card);
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+.dialog::backdrop {
+  background: color-mix(in oklch, var(--color-ink) 45%, transparent);
+}
+.dialog h2 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+.dialog p {
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  justify-content: end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}

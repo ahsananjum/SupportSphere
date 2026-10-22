@@ -261,6 +261,10 @@ try {
 
   await page.goto(`${app}/app/inbox/${conversationId}`);
   await page.getByRole('heading', { name: 'Draft for human review' }).waitFor();
+  assert.equal(await page.getByLabel('Reply').inputValue(), '');
+  await page
+    .getByRole('button', { name: 'Use this draft', exact: true })
+    .click();
   assert.equal(
     await page.getByLabel('Reply').inputValue(),
     'Open Settings and choose Export [1].',
@@ -288,7 +292,9 @@ try {
     fullPage: true,
   });
   await page.getByRole('link', { name: 'Inspect run and citations' }).click();
-  await page.getByRole('heading', { name: 'Evidence and citations' }).waitFor();
+  await page
+    .getByRole('heading', { name: 'Evidence for this answer' })
+    .waitFor();
   await page
     .getByText('Open Settings and choose Export.', { exact: true })
     .first()

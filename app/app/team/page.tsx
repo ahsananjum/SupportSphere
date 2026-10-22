@@ -35,6 +35,14 @@ const errors: Record<string, string> = {
   member: 'The member could not be removed.',
   'last-owner': 'Assign another owner before removing the last owner.',
 };
+const roleHelp: Record<string, string> = {
+  owner: 'Full workspace control, including security and ownership.',
+  admin:
+    'Manage support operations, automations, integrations and members within policy.',
+  agent:
+    'Work conversations and tickets without changing workspace configuration.',
+  viewer: 'Read-only access to permitted workspace data.',
+};
 
 function invitationStatus(invite: {
   revoked_at: string | null;
@@ -149,6 +157,7 @@ export default async function TeamPage({
                       {member.role}
                       {member.user_id === user.id ? ' · you' : ''}
                     </span>
+                    <p className="field-help">{roleHelp[member.role]}</p>
                     {member.role === 'owner' && ownerCount === 1 && (
                       <p className="field-help">
                         The last owner cannot change role or be removed.
@@ -192,7 +201,10 @@ export default async function TeamPage({
                         />
                         <label>
                           <input type="checkbox" name="confirm" required />{' '}
-                          Confirm removal
+                          Confirm removal of{' '}
+                          {profile?.display_name ||
+                            profile?.email_normalized ||
+                            'this member'}
                         </label>
                         <SubmitButton
                           idle="Remove"

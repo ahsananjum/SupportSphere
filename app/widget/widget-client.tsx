@@ -16,7 +16,7 @@ type Props = {
   name: string;
 };
 
-function mergeMessages(current: Message[], incoming: Message[]) {
+export function mergeMessages(current: Message[], incoming: Message[]) {
   const byId = new Map(current.map((message) => [message.id, message]));
   for (const message of incoming) byId.set(message.id, message);
   return [...byId.values()].sort(
@@ -46,6 +46,7 @@ export function WidgetClient({
   const launcher = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
   const transcriptEnd = useRef<HTMLDivElement>(null);
+  const transcript = useRef<HTMLDivElement>(null);
   const skipScroll = useRef(false);
   const loadedOlder = useRef(false);
   const composer = useRef<HTMLTextAreaElement>(null);
@@ -162,6 +163,8 @@ export function WidgetClient({
     if (!token || !messages.length || historyLoading) return;
     setHistoryLoading(true);
     try {
+      const beforeHeight = transcript.current?.scrollHeight ?? 0;
+      const beforeTop = transcript.current?.scrollTop ?? 0;
       const before = encodeURIComponent(
         `${messages[0].created_at}|${messages[0].id}`,
       );
@@ -178,6 +181,11 @@ export function WidgetClient({
       skipScroll.current = true;
       loadedOlder.current = true;
       setMessages((current) => mergeMessages(current, result.messages));
+      requestAnimationFrame(() => {
+        if (transcript.current)
+          transcript.current.scrollTop =
+            beforeTop + (transcript.current.scrollHeight - beforeHeight);
+      });
       setHasMore(result.hasMore === true);
       setError('');
     } catch (cause) {
@@ -257,6 +265,7 @@ export function WidgetClient({
         </button>
       </header>
       <div
+        ref={transcript}
         className="widget-transcript"
         role="log"
         aria-live="polite"
@@ -331,7 +340,7 @@ export function WidgetClient({
           rows={2}
           maxLength={4000}
           placeholder="Write your message…"
-          disabled={!token || status === 'offline'}
+          disabled={!token}
           required
         />
         <div className="widget-compose-bottom">

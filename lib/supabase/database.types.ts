@@ -7,10 +7,30 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: '14.18';
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -165,7 +185,7 @@ export type Database = {
           created_at: string;
           duration_ms: number;
           id: string;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           ordinal: number;
           run_id: string;
           status: string;
@@ -176,7 +196,7 @@ export type Database = {
           created_at?: string;
           duration_ms?: number;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           ordinal: number;
           run_id: string;
           status: string;
@@ -187,7 +207,7 @@ export type Database = {
           created_at?: string;
           duration_ms?: number;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           ordinal?: number;
           run_id?: string;
           status?: string;
@@ -207,6 +227,9 @@ export type Database = {
       ai_runs: {
         Row: {
           attempt: number;
+          automation_action_key: string | null;
+          automation_rule_version: number | null;
+          automation_run_id: string | null;
           completed_at: string | null;
           confidence: number | null;
           conversation_id: string | null;
@@ -232,11 +255,15 @@ export type Database = {
           run_type: string;
           started_at: string | null;
           status: string;
+          support_revision: number;
           triage: Json | null;
           workspace_id: string;
         };
         Insert: {
           attempt?: number;
+          automation_action_key?: string | null;
+          automation_rule_version?: number | null;
+          automation_run_id?: string | null;
           completed_at?: string | null;
           confidence?: number | null;
           conversation_id?: string | null;
@@ -262,11 +289,15 @@ export type Database = {
           run_type?: string;
           started_at?: string | null;
           status?: string;
+          support_revision?: number;
           triage?: Json | null;
           workspace_id: string;
         };
         Update: {
           attempt?: number;
+          automation_action_key?: string | null;
+          automation_rule_version?: number | null;
+          automation_run_id?: string | null;
           completed_at?: string | null;
           confidence?: number | null;
           conversation_id?: string | null;
@@ -292,10 +323,18 @@ export type Database = {
           run_type?: string;
           started_at?: string | null;
           status?: string;
+          support_revision?: number;
           triage?: Json | null;
           workspace_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: 'ai_runs_automation_origin_fk';
+            columns: ['workspace_id', 'automation_run_id'];
+            isOneToOne: false;
+            referencedRelation: 'automation_runs';
+            referencedColumns: ['workspace_id', 'id'];
+          },
           {
             foreignKeyName: 'ai_runs_workspace_id_conversation_id_fkey';
             columns: ['workspace_id', 'conversation_id'];
@@ -325,7 +364,7 @@ export type Database = {
           actor_user_id: string | null;
           created_at: string;
           id: string;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           target_id: string | null;
           target_type: string;
           workspace_id: string;
@@ -335,7 +374,7 @@ export type Database = {
           actor_user_id?: string | null;
           created_at?: string;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           target_id?: string | null;
           target_type: string;
           workspace_id: string;
@@ -345,7 +384,7 @@ export type Database = {
           actor_user_id?: string | null;
           created_at?: string;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           target_id?: string | null;
           target_type?: string;
           workspace_id?: string;
@@ -362,8 +401,8 @@ export type Database = {
       };
       automation_rules: {
         Row: {
-          actions: Json;
-          conditions: Json;
+          actions: NonNullable<Json>;
+          conditions: NonNullable<Json>;
           created_at: string;
           enabled: boolean;
           id: string;
@@ -374,8 +413,8 @@ export type Database = {
           workspace_id: string;
         };
         Insert: {
-          actions: Json;
-          conditions?: Json;
+          actions: NonNullable<Json>;
+          conditions?: NonNullable<Json>;
           created_at?: string;
           enabled?: boolean;
           id?: string;
@@ -386,8 +425,8 @@ export type Database = {
           workspace_id: string;
         };
         Update: {
-          actions?: Json;
-          conditions?: Json;
+          actions?: NonNullable<Json>;
+          conditions?: NonNullable<Json>;
           created_at?: string;
           enabled?: boolean;
           id?: string;
@@ -420,7 +459,7 @@ export type Database = {
           lease_token: string | null;
           max_attempts: number;
           next_run_at: string;
-          payload: Json;
+          payload: NonNullable<Json>;
           result: Json | null;
           rule_id: string;
           started_at: string | null;
@@ -441,7 +480,7 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_run_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           result?: Json | null;
           rule_id: string;
           started_at?: string | null;
@@ -462,7 +501,7 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_run_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           result?: Json | null;
           rule_id?: string;
           started_at?: string | null;
@@ -491,21 +530,18 @@ export type Database = {
       contact_rate_limits: {
         Row: {
           attempts: number;
-          canceled_at: string | null;
           expires_at: string;
           key_hash: string;
           window_start: string;
         };
         Insert: {
           attempts?: number;
-          canceled_at?: string | null;
           expires_at: string;
           key_hash: string;
           window_start: string;
         };
         Update: {
           attempts?: number;
-          canceled_at?: string | null;
           expires_at?: string;
           key_hash?: string;
           window_start?: string;
@@ -604,6 +640,7 @@ export type Database = {
           priority: string;
           status: string;
           subject: string;
+          support_revision: number;
           unread_count: number;
           updated_at: string;
           workspace_id: string;
@@ -620,6 +657,7 @@ export type Database = {
           priority?: string;
           status?: string;
           subject?: string;
+          support_revision?: number;
           unread_count?: number;
           updated_at?: string;
           workspace_id: string;
@@ -636,6 +674,7 @@ export type Database = {
           priority?: string;
           status?: string;
           subject?: string;
+          support_revision?: number;
           unread_count?: number;
           updated_at?: string;
           workspace_id?: string;
@@ -755,7 +794,7 @@ export type Database = {
           id: string;
           last_seen_at: string;
           locale: string | null;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           name: string;
           phone: string | null;
           timezone: string | null;
@@ -770,7 +809,7 @@ export type Database = {
           id?: string;
           last_seen_at?: string;
           locale?: string | null;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           name?: string;
           phone?: string | null;
           timezone?: string | null;
@@ -785,7 +824,7 @@ export type Database = {
           id?: string;
           last_seen_at?: string;
           locale?: string | null;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           name?: string;
           phone?: string | null;
           timezone?: string | null;
@@ -817,7 +856,7 @@ export type Database = {
           lease_token: string | null;
           max_attempts: number;
           next_run_at: string;
-          payload: Json;
+          payload: NonNullable<Json>;
           started_at: string | null;
           status: string;
           workspace_id: string;
@@ -836,7 +875,7 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_run_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           started_at?: string | null;
           status?: string;
           workspace_id: string;
@@ -855,7 +894,7 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_run_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           started_at?: string | null;
           status?: string;
           workspace_id?: string;
@@ -920,10 +959,10 @@ export type Database = {
           case_id: string;
           created_at: string;
           evaluation_run_id: string;
-          expected: Json;
+          expected: NonNullable<Json>;
           failure_code: string | null;
           id: string;
-          observed: Json;
+          observed: NonNullable<Json>;
           passed: boolean;
           workspace_id: string;
         };
@@ -932,10 +971,10 @@ export type Database = {
           case_id: string;
           created_at?: string;
           evaluation_run_id: string;
-          expected?: Json;
+          expected?: NonNullable<Json>;
           failure_code?: string | null;
           id?: string;
-          observed?: Json;
+          observed?: NonNullable<Json>;
           passed: boolean;
           workspace_id: string;
         };
@@ -944,10 +983,10 @@ export type Database = {
           case_id?: string;
           created_at?: string;
           evaluation_run_id?: string;
-          expected?: Json;
+          expected?: NonNullable<Json>;
           failure_code?: string | null;
           id?: string;
-          observed?: Json;
+          observed?: NonNullable<Json>;
           passed?: boolean;
           workspace_id?: string;
         };
@@ -1111,7 +1150,7 @@ export type Database = {
           connected_at: string | null;
           display_name: string;
           last_error: string | null;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           provider: string;
           status: string;
           updated_at: string;
@@ -1121,7 +1160,7 @@ export type Database = {
           connected_at?: string | null;
           display_name: string;
           last_error?: string | null;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           provider: string;
           status?: string;
           updated_at?: string;
@@ -1131,7 +1170,7 @@ export type Database = {
           connected_at?: string | null;
           display_name?: string;
           last_error?: string | null;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           provider?: string;
           status?: string;
           updated_at?: string;
@@ -1156,7 +1195,7 @@ export type Database = {
           embedding: string;
           fts: unknown;
           id: string;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           source_id: string;
           token_count: number;
           workspace_id: string;
@@ -1167,9 +1206,9 @@ export type Database = {
           created_at?: string;
           document_id: string;
           embedding: string;
-          fts?: unknown;
+          fts?: never;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           source_id: string;
           token_count: number;
           workspace_id: string;
@@ -1180,9 +1219,9 @@ export type Database = {
           created_at?: string;
           document_id?: string;
           embedding?: string;
-          fts?: unknown;
+          fts?: never;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           source_id?: string;
           token_count?: number;
           workspace_id?: string;
@@ -1210,7 +1249,7 @@ export type Database = {
           created_at: string;
           document_index: number;
           id: string;
-          metadata: Json;
+          metadata: NonNullable<Json>;
           source_id: string;
           title: string;
           workspace_id: string;
@@ -1220,7 +1259,7 @@ export type Database = {
           created_at?: string;
           document_index: number;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           source_id: string;
           title: string;
           workspace_id: string;
@@ -1230,7 +1269,7 @@ export type Database = {
           created_at?: string;
           document_index?: number;
           id?: string;
-          metadata?: Json;
+          metadata?: NonNullable<Json>;
           source_id?: string;
           title?: string;
           workspace_id?: string;
@@ -1483,7 +1522,7 @@ export type Database = {
           created_at: string;
           event_type: string;
           id: string;
-          payload: Json;
+          payload: NonNullable<Json>;
           ticket_id: string;
           workspace_id: string;
         };
@@ -1492,7 +1531,7 @@ export type Database = {
           created_at?: string;
           event_type: string;
           id?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           ticket_id: string;
           workspace_id: string;
         };
@@ -1501,7 +1540,7 @@ export type Database = {
           created_at?: string;
           event_type?: string;
           id?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           ticket_id?: string;
           workspace_id?: string;
         };
@@ -1581,6 +1620,7 @@ export type Database = {
           priority: string;
           resolved_at: string | null;
           status: string;
+          support_revision: number;
           ticket_number: number;
           title: string;
           updated_at: string;
@@ -1597,6 +1637,7 @@ export type Database = {
           priority?: string;
           resolved_at?: string | null;
           status?: string;
+          support_revision?: number;
           ticket_number: number;
           title: string;
           updated_at?: string;
@@ -1613,6 +1654,7 @@ export type Database = {
           priority?: string;
           resolved_at?: string | null;
           status?: string;
+          support_revision?: number;
           ticket_number?: number;
           title?: string;
           updated_at?: string;
@@ -1659,6 +1701,7 @@ export type Database = {
       webhook_deliveries: {
         Row: {
           attempts: number;
+          canceled_at: string | null;
           completed_at: string | null;
           created_at: string;
           delivered_at: string | null;
@@ -1671,13 +1714,14 @@ export type Database = {
           lease_token: string | null;
           max_attempts: number;
           next_attempt_at: string;
-          payload: Json;
+          payload: NonNullable<Json>;
           response_code: number | null;
           status: string;
           workspace_id: string;
         };
         Insert: {
           attempts?: number;
+          canceled_at?: string | null;
           completed_at?: string | null;
           created_at?: string;
           delivered_at?: string | null;
@@ -1690,13 +1734,14 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_attempt_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           response_code?: number | null;
           status?: string;
           workspace_id: string;
         };
         Update: {
           attempts?: number;
+          canceled_at?: string | null;
           completed_at?: string | null;
           created_at?: string;
           delivered_at?: string | null;
@@ -1709,7 +1754,7 @@ export type Database = {
           lease_token?: string | null;
           max_attempts?: number;
           next_attempt_at?: string;
-          payload?: Json;
+          payload?: NonNullable<Json>;
           response_code?: number | null;
           status?: string;
           workspace_id?: string;
@@ -1728,6 +1773,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'workspaces';
             referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'webhook_delivery_endpoint_workspace_fk';
+            columns: ['workspace_id', 'endpoint_id'];
+            isOneToOne: false;
+            referencedRelation: 'webhook_endpoints';
+            referencedColumns: ['workspace_id', 'id'];
           },
         ];
       };
@@ -2062,62 +2114,29 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      apply_automation_action: {
-        Args: {
-          p_entity_id: string;
-          p_entity_type: string;
-          p_params: Json;
-          p_action_type: string;
-          p_workspace_id: string;
-        };
-        Returns: undefined;
-      };
-      enqueue_automation_event: {
-        Args: {
-          p_entity_id: string;
-          p_event_key: string;
-          p_payload: Json;
-          p_trigger_type: string;
-          p_workspace_id: string;
-        };
-        Returns: number;
-      };
-      update_webhook_endpoint: {
-        Args: {
-          p_destination_url: string;
-          p_enabled: boolean;
-          p_endpoint_id: string;
-          p_event_types: string[];
-          p_name: string;
-          p_workspace_id: string;
-        };
-        Returns: undefined;
-      };
-      delete_webhook_endpoint: {
-        Args: { p_endpoint_id: string; p_workspace_id: string };
-        Returns: undefined;
-      };
-      rotate_webhook_secret: {
-        Args: {
-          p_endpoint_id: string;
-          p_secret: string;
-          p_workspace_id: string;
-        };
-        Returns: string;
-      };
       accept_invitation: { Args: { p_token_hash: string }; Returns: string };
       advance_onboarding: {
         Args: { p_expected: string; p_next: string; p_workspace_id: string };
         Returns: undefined;
       };
       ai_worker_authorized: { Args: { p_token: string }; Returns: boolean };
+      apply_automation_action: {
+        Args: {
+          p_action_type: string;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_params: Json;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
       change_member_role: {
         Args: { p_role: string; p_user_id: string; p_workspace_id: string };
         Returns: undefined;
       };
-      claim_ai_run: { Args: never; Returns: Json };
+      claim_ai_run: { Args: Record<PropertyKey, never>; Returns: Json };
       claim_automation_run: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           attempt: number;
           id: string;
@@ -2130,7 +2149,7 @@ export type Database = {
         }[];
       };
       claim_durable_job: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: {
           attempt: number;
           entity_id: string;
@@ -2141,14 +2160,10 @@ export type Database = {
           workspace_id: string;
         }[];
       };
-      claim_ingestion_job: { Args: never; Returns: Json };
+      claim_ingestion_job: { Args: Record<PropertyKey, never>; Returns: Json };
       claim_webhook_delivery: {
-        Args: never;
+        Args: Record<PropertyKey, never>;
         Returns: Json;
-      };
-      retry_webhook_delivery: {
-        Args: { p_delivery_id: string; p_workspace_id: string };
-        Returns: undefined;
       };
       configure_widget: {
         Args: {
@@ -2242,6 +2257,20 @@ export type Database = {
       delete_knowledge_source: {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
+      };
+      delete_webhook_endpoint: {
+        Args: { p_endpoint_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      enqueue_automation_event: {
+        Args: {
+          p_entity_id: string;
+          p_event_key: string;
+          p_payload: Json;
+          p_trigger_type: string;
+          p_workspace_id: string;
+        };
+        Returns: number;
       };
       enqueue_durable_job: {
         Args: {
@@ -2371,7 +2400,10 @@ export type Database = {
         };
         Returns: Json;
       };
-      recover_abandoned_knowledge_uploads: { Args: never; Returns: number };
+      recover_abandoned_knowledge_uploads: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       reindex_knowledge_source: {
         Args: { p_source_id: string; p_workspace_id: string };
         Returns: undefined;
@@ -2404,7 +2436,19 @@ export type Database = {
         };
         Returns: boolean;
       };
+      retry_webhook_delivery: {
+        Args: { p_delivery_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
       revoke_invitation: { Args: { p_id: string }; Returns: undefined };
+      rotate_webhook_secret: {
+        Args: {
+          p_endpoint_id: string;
+          p_secret: string;
+          p_workspace_id: string;
+        };
+        Returns: string;
+      };
       run_ai_evaluation: { Args: { p_workspace_id: string }; Returns: string };
       search_ai_knowledge: {
         Args: { p_embedding: string; p_limit?: number; p_workspace_id: string };
@@ -2489,12 +2533,55 @@ export type Database = {
         };
         Returns: undefined;
       };
+      update_automation_rule_versioned: {
+        Args: {
+          p_actions: Json;
+          p_conditions: Json;
+          p_enabled: boolean;
+          p_expected_version: number;
+          p_name: string;
+          p_rule_id: string;
+          p_trigger_type: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
       update_conversation: {
         Args: {
           p_assignee_user_id?: string;
           p_conversation_id: string;
           p_priority?: string;
           p_status?: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_conversation_routing: {
+        Args: {
+          p_assignment?: string;
+          p_conversation_id: string;
+          p_priority?: string;
+          p_status?: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_customer_fields: {
+        Args: {
+          p_changes: Json;
+          p_customer_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_support_routing: {
+        Args: {
+          p_assignee_id?: string;
+          p_assignment: string;
+          p_entity_id: string;
+          p_entity_type: string;
+          p_priority: string;
+          p_status: string;
           p_workspace_id: string;
         };
         Returns: undefined;
@@ -2512,6 +2599,31 @@ export type Database = {
         };
         Returns: undefined;
       };
+      update_ticket_fields: {
+        Args: { p_changes: Json; p_ticket_id: string; p_workspace_id: string };
+        Returns: undefined;
+      };
+      update_ticket_routing: {
+        Args: {
+          p_assignment?: string;
+          p_priority?: string;
+          p_status?: string;
+          p_ticket_id: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
+      update_webhook_endpoint: {
+        Args: {
+          p_destination_url: string;
+          p_enabled: boolean;
+          p_endpoint_id: string;
+          p_event_types: string[];
+          p_name: string;
+          p_workspace_id: string;
+        };
+        Returns: undefined;
+      };
       update_workspace_general: {
         Args: {
           p_company_name: string;
@@ -2524,6 +2636,10 @@ export type Database = {
           p_workspace_id: string;
         };
         Returns: undefined;
+      };
+      webhook_delivery_active: {
+        Args: { p_delivery_id: string; p_lease_token: string };
+        Returns: boolean;
       };
       webhook_worker_authorized: {
         Args: { p_token: string };
@@ -2657,6 +2773,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

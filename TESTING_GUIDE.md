@@ -1,5 +1,9 @@
 # SupportSphere: follow-along testing guide with exact inputs
 
+**Current upgrade evidence:** U0–U4 are COMPLETE for assigned local/isolated scope; U5 and U6 remain VERIFYING. U6 local repository, isolated and browser artifacts are recorded in STATE/QA. Real-phone keyboard/screen-reader review, representative usability review, hosted/provider/deployment proof and MANUAL-008/010/011 remain open; do not prefill human results.
+
+**18 October upgrade plan:** the assessment/roadmap is approved; [U0–U6 execution](docs/upgrade-execution.md), [evolving test protocol](docs/upgrade-testing.md) and [planned regression matrix](.agent/UPGRADE_TEST_MATRIX.md) now govern upgrades. Steps below describe the pre-upgrade baseline until each slice actually changes them. Preserve existing case IDs/results history, add/map upgrade cases, and update exact controls/expected outcomes with implementation. Do not mark baseline gaps fixed from planning. Active implementation is U1 / COMPLETE (local/isolated scope); P13 release remains BLOCKED_MANUAL.
+
 **17 October AI update:** the owner reports AI enabled. For a self-contained AI-only run with all prerequisites and exact inputs, use [AI_TESTING_GUIDE.md](AI_TESTING_GUIDE.md) and its [results sheet](docs/ai-test-results.md). The provider-blocked wording below records the 13 October baseline; current success must be established through actual new runs.
 
 Prepared from the repository on **13 October 2026**. This guide tells you what to open, what to type, what to click, and what should happen. You do not need to invent customer names, messages, knowledge content, or automation rules.
@@ -270,7 +274,7 @@ Use the QA Owner session with no existing workspace. If you used an existing acc
 
 **Expected:** each completed step is persisted. **Why:** refresh-safe onboarding must write to the workspace, not depend on a temporary browser wizard.
 
-The onboarding copy currently includes future-looking widget/AI wording even though those later routes exist in the repository. Record contradictory product availability text as a content discrepancy; do not use it as proof that the actual widget or AI is configured.
+The onboarding flow now links its setup copy to the implemented widget settings and policy-bounded AI workflow. A saved preference or generated snippet is configuration evidence only; provider readiness, evidence eligibility, and delivery still require their own checks below.
 
 ## 5. Fresh-workspace empty states — E01
 
@@ -377,7 +381,7 @@ QA public reply: I can help you export the lunar report as PDF.
 QA internal note: check the approved article before replying.
 ```
 
-6. Check **Internal note**, click Send message, and expect **Internal note saved.**
+6. Check **Internal note**, click **Save internal note**, and expect **Internal note saved.**
 7. Refresh; the note must be labelled **Internal note**.
 8. Uncheck Internal note for future customer-visible replies.
 
@@ -394,11 +398,11 @@ Use the Routing section:
 | Assignment | Assign to me      |
 
 1. Click **Save routing** and expect **Conversation updated.**
-2. Refresh; values must still read Pending/High/Assign to me.
+2. Refresh; Status/Priority remain Pending/High. Assignment defaults to Keep current assignment with the actual teammate label; this preserves the actual owner rather than claiming every assigned record is yours.
 3. Change Status to **Closed**, save, and confirm it persists.
 4. Change Status back to **Open**, Assignment to **Unassigned**, keep High, and save.
 
-**Why:** close/reopen and routing changes must be stored and checked against your role. This UI supports unassigned/assign-to-me; it does not expose a teammate assignment picker.
+**Why:** close/reopen and routing changes must be stored and checked against your role. Routing also lists current eligible owner/admin/agent teammates. Save and reload a different teammate assignment; a removed/viewer/foreign target must be rejected. After saving, Keep current assignment preserves later ownership during unrelated edits.
 
 ### C05 — Inbox filters and safe text
 
@@ -434,7 +438,7 @@ On MANUAL_CONVERSATION_URL, find the Ticket form.
 
 1. Try a blank/space-only Title first; Create ticket must reject it.
 2. Fill the valid fields and click **Create ticket**.
-3. Expect the detail page titled **QA verify lunar export**, a workspace ticket number, Alex QA as requester, the description, and a **created** timeline event.
+3. Expect the detail page titled **QA verify lunar export**, a workspace ticket number, Alex QA as requester, the description, and a **Ticket created** timeline event.
 4. Record LINKED_TICKET_URL.
 5. In Routing, choose Status **In progress**, Priority **Urgent**, Assignment **Assign to me**.
 6. Click **Save ticket**. Expect **Ticket updated.**
@@ -463,13 +467,13 @@ Open **Tickets → Create ticket**.
 
 **Expected:** two real tickets with distinct numbers. **Why:** manual and conversation-linked creation use the same database-owned numbering and permissions.
 
-Current ticket details edit status/priority/assignment. There are no title/description/category/tag editors on that detail screen; record these as requirement gaps if you require them.
+Ticket details now expose Edit ticket details for title/description/category corrections, alongside routing. Tag editing remains a separate gap. See T04/T05 below.
 
 ## 9. Knowledge upload, indexing, preview, and controls
 
 ### K01 — Paste the exact article
 
-Open Knowledge. In **Paste text or Markdown**, enter:
+Open Knowledge, expand **Add knowledge**, then in **Paste text or Markdown**, enter:
 
 | Field       | Input                        |
 | ----------- | ---------------------------- |
@@ -658,6 +662,10 @@ Do this only after normal widget tests; it temporarily blocks rapid sending on t
 If you cannot complete 13 sends within one minute, record NOT RUN rather than a false rate-limit PASS. Do not flood signup/email/AI endpoints to prove a limit.
 
 ## 11. Team, invitation lifecycle, roles, and audit
+
+### U4 automation/integration/notification presentation additions
+
+In Automations, confirm each stored row states the trigger, conditions, action, enabled state and version. Edit it twice in separate tabs: the stale tab must retain its values and report that the rule changed. In run history verify the rule name, trigger record, attempt count and terminal outcome; queued/processing is not completion. In Integrations, verify endpoint and event context, HTTP/attempt metadata, retry-limit copy and the existing bounded Retry delivery control only for an eligible failed delivery. In Notifications, verify unread count, producer kind, related-work link and Older/Newer traversal. In Team, role help explains consequences and removal names the affected member. In Security, audit rows identify actor or Former member, action, target and workspace time. These checks remain pending until the corresponding U4 browser/isolated evidence is recorded.
 
 ### M01 — Invite and accept
 
@@ -913,7 +921,7 @@ Open **AI policy** (/app/settings/ai).
 
 1. Ensure the intended knowledge source is **ready and Enabled**.
 2. In Owner Routing set the widget conversation **Open** and **Unassigned**; save.
-3. If there is a Human support requested panel from an earlier case, first record it, click **Release AI handoff**, and confirm the handoff clears.
+3. If there is a Human support requested panel from an earlier case, first record it, click **Release AI handoff**, review the named dialog and click **Confirm**, then require the handoff to clear after the saved response.
 4. Set the AI mode required by the case and save it.
 5. Send **one** Customer message, then wait for its run to finish. Do not send another message, reply, or internal note while processing; a newer message can deliberately supersede the old run.
 6. Refresh AI runs/conversation as needed. Allow five minutes for a small enabled-provider case. A queued/failed/provider-limited run is not a completed answer.
@@ -935,7 +943,7 @@ How do I export the lunar report as PDF?
 6. Before a team member clicks Send message, the Customer widget must not show that draft as an agent response.
 7. Click **Inspect run and citations ↗**. Record AI_RUN_URL.
 8. Expect provider/model metadata, prompt/policy version, status, decision, triage/quality, step timeline, evidence/snippet/source/chunk, and output.
-9. Return to the conversation. Review the prefilled Reply, make any necessary human correction, and click **Send message** with Internal note unchecked.
+9. Return to the conversation. With an empty Reply, click Use this draft, review the adopted text and make any necessary human correction, and click **Send message** with Internal note unchecked.
 10. Now the Customer widget should receive the human-approved answer.
 
 **Why:** retrieval, a real provider answer, trace persistence, draft-only policy, and deliberate human sending are separate parts of the feature.
@@ -991,7 +999,7 @@ QA human handoff reply: I have received your request and will review it with the
 ```
 
 5. Verify Customer receives only this deliberate human response.
-6. Use Release AI handoff, restore Open/Unassigned, then run the next row.
+6. Use Release AI handoff and Confirm, restore Open/Unassigned, then run the next row.
 
 **Why:** sensitive handling must stop unsafe automated actions and preserve human takeover.
 
@@ -1158,18 +1166,18 @@ Open Analytics.
 
 **Why:** exact increments compare UI numbers to your own writes without assuming a fake fixed dataset.
 
-| Metric                  | What it actually means                                                                                            |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Conversations           | Real conversations created during the selected interval                                                           |
-| First response          | Average elapsed time from the first customer message to the first later agent message in qualifying conversations |
-| Resolution              | Ticket creation to persisted resolved_at for the qualifying queried ticket rows                                   |
-| Escalation              | Escalated completed AI runs divided by completed AI runs; No data if denominator is zero                          |
-| Retrieval with citation | Completed AI runs with citations divided by completed AI runs                                                     |
-| Helpful feedback        | Helpful feedback rows / all feedback rows                                                                         |
+| Metric                  | What it actually means                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Conversations           | Real conversations created during the selected interval                                                             |
+| First response          | Average elapsed time from the first customer message to the first later agent message in qualifying conversations   |
+| Resolution              | Ticket creation to persisted resolved_at for tickets resolved during the selected interval, including older tickets |
+| Escalation              | Escalated completed AI runs divided by completed AI runs; No data if denominator is zero                            |
+| Retrieval with citation | Completed AI runs with citations divided by completed AI runs                                                       |
+| Helpful feedback        | Helpful feedback rows / all feedback rows                                                                           |
 
 Exact averages depend on when you performed the steps. Do not require a made-up number of minutes or a percentage printed in this document.
 
-**Reversed dates:** if To is before From, the current page clamps the effective query end to From. It does not show a dedicated reversed-range field error. Record this behaviour and any difference from your desired validation; do not expect an error that the screen has no code to render.
+**Invalid/reversed dates:** an impossible date has an associated field error. If To precedes From, expect End date must be on or after the start date. Metrics do not load until corrected; the range is never silently clamped.
 
 ### X02 — Honest evaluation before matching inputs
 
@@ -1365,28 +1373,28 @@ For live tests, use a private ignored env file after credential rotation. Supply
 
 The following items appeared in PRD/phase expectations but have **no complete matching manual UI path in the source inspected for this guide**, or need additional proof. Their absence should be recorded as a gap, not silently skipped as a PASS.
 
-| Requirement / desired behaviour                       | What the current source exposes                                                                                                                                                                                                                   | How to record it                                                                            |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Inbox assignment/channel filters and unread indicator | UI has subject/channel-text search plus status/priority filters; no separate assignment/channel filter or visible unread-count control                                                                                                            | GAP if these remain required; do not invent a button                                        |
-| Inbox/customer/ticket pagination                      | Query limits exist (Inbox first 25, customer/ticket lists first 50), but no complete list-page pagination UI in these screens                                                                                                                     | GAP for navigation beyond those limits                                                      |
-| Knowledge-source search                               | Sources list has 25-per-page Next/Previous navigation; no source-search field                                                                                                                                                                     | GAP for required knowledge search                                                           |
-| Customer/conversation/ticket tags                     | Tables and some automation action types exist; no complete tag-editing UI is rendered                                                                                                                                                             | GAP for a manually usable tag feature                                                       |
-| Assign directly to another teammate                   | Conversation/ticket routing selects only Unassigned or Assign to me                                                                                                                                                                               | GAP if teammate assignment picker is required                                               |
-| Edit ticket title/description/category after creation | Detail Routing currently edits status/priority/assignment only                                                                                                                                                                                    | GAP for those edit controls                                                                 |
-| Conversation-to-linked-ticket navigation              | Creation persists linkage, but the conversation screen does not list existing linked tickets                                                                                                                                                      | GAP for an expected visible linked-ticket shortcut                                          |
-| Customer editing or deletion                          | Creation/detail views exist; no profile-edit/delete controls in the inspected screens                                                                                                                                                             | Do not test a nonexistent action; compare desired scope                                     |
-| Add another workspace from the active workspace UI    | Switching works for existing memberships; creation form only appears without an active workspace                                                                                                                                                  | GAP if an existing owner needs self-service additional workspace creation                   |
-| Every notification producer                           | Setup and automation notifications are testable; assignments/escalation/ingestion/integration alerts need producer-by-producer evidence                                                                                                           | NOT PROVEN by one successful notification                                                   |
-| Automation assign/tag actions and tag-added trigger   | Schema/parser support some actions, but the form does not expose every action and there is no tag-editing producer path                                                                                                                           | NOT PROVEN / GAP; selecting a trigger is insufficient                                       |
-| Webhook manual retry                                  | A retry RPC exists; no visible per-delivery Retry button appears on the integrations page                                                                                                                                                         | Backend capability is not a complete UI flow                                                |
-| PDF/DOCX/URL source breadth                           | Text/PDF uploads and paste are supported; URL and DOCX are intentionally unavailable                                                                                                                                                              | Record as unavailable; source requirement/acceptance must be reconciled                     |
-| Message attachments                                   | No composer attachment control is rendered                                                                                                                                                                                                        | Not implemented in this UI; conditional requirements cannot be claimed                      |
-| Real inbound email or developer API                   | Manual conversation channel labels can say Email/API                                                                                                                                                                                              | Those labels do not prove real transport integrations                                       |
-| Evaluation semantic expectations                      | Curated known-grounded case expects a refund-policy auto-send while billing is human-gated; curated no-evidence reason expects NO_EVIDENCE while the worker uses NO_RELIABLE_EVIDENCE                                                             | Review/repair case-to-policy alignment before using a 5/5 target as release proof           |
-| Analytics range validation                            | Reversed range is clamped instead of a dedicated field error; inspect date-boundary semantics and definitions separately                                                                                                                          | Record observed UX/metric discrepancy                                                       |
-| Fresh-clone migration replay                          | Local migration timestamps differ from parts of remote history; P11's function definitions sort before later P10 definitions. A later P13 migration does not itself prove that every earlier file can replay without a duplicate-definition error | Require isolated full-chain replay/parity proof; do not reset the shared project to test it |
-| Analytics marketing provider, Stripe, Slack           | Intentionally off/unselected                                                                                                                                                                                                                      | NOT INCLUDED; do not invent connected state                                                 |
-| Complete Gemini / deployed golden journey             | Prior owner/provider gates remain pending                                                                                                                                                                                                         | BLOCKED until actual proof is recorded                                                      |
+| Requirement / desired behaviour                       | What the current source exposes                                                                                                                                                              | How to record it                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Inbox assignment/channel filters and unread indicator | UI has subject/channel-text search plus status/priority filters; no separate assignment/channel filter or visible unread-count control                                                       | GAP if these remain required; do not invent a button                                        |
+| Inbox/customer/ticket pagination                      | U2 provides validated server paging, complete filtering and Back context                                                                                                                     | Implemented locally; run C06/T03 on the intended target                                     |
+| Knowledge-source search                               | Sources list has 25-per-page Next/Previous navigation; no source-search field                                                                                                                | GAP for required knowledge search                                                           |
+| Customer/conversation/ticket tags                     | Tables and some automation action types exist; no complete tag-editing UI is rendered                                                                                                        | GAP for a manually usable tag feature                                                       |
+| Assign directly to another teammate                   | U2 lists actual eligible teammates and rechecks membership/role when saving                                                                                                                  | Implemented locally; run C08 and role/tenant checks                                         |
+| Edit ticket title/description/category after creation | U2 Edit ticket details saves validated field patches                                                                                                                                         | Implemented locally; run T04; tag editing remains separate                                  |
+| Conversation-to-linked-ticket navigation              | U2 lists linked tickets and provides requester/original-conversation links                                                                                                                   | Implemented locally; run C06/T01 relationship steps                                         |
+| Customer editing or deletion                          | U2 Edit customer details corrects supported contact fields; no new deletion control                                                                                                          | Editing implemented locally (C07); deletion retains existing privacy/human gates            |
+| Add another workspace from the active workspace UI    | Switching works for existing memberships; creation form only appears without an active workspace                                                                                             | GAP if an existing owner needs self-service additional workspace creation                   |
+| Every notification producer                           | Setup and automation notifications are testable; assignments/escalation/ingestion/integration alerts need producer-by-producer evidence                                                      | NOT PROVEN by one successful notification                                                   |
+| Automation assign/tag actions and tag-added trigger   | Schema/parser support some actions, but the form does not expose every action and there is no tag-editing producer path                                                                      | NOT PROVEN / GAP; selecting a trigger is insufficient                                       |
+| Webhook manual retry                                  | A retry RPC exists; no visible per-delivery Retry button appears on the integrations page                                                                                                    | Backend capability is not a complete UI flow                                                |
+| PDF/DOCX/URL source breadth                           | Text/PDF uploads and paste are supported; URL and DOCX are intentionally unavailable                                                                                                         | Record as unavailable; source requirement/acceptance must be reconciled                     |
+| Message attachments                                   | No composer attachment control is rendered                                                                                                                                                   | Not implemented in this UI; conditional requirements cannot be claimed                      |
+| Real inbound email or developer API                   | Manual conversation channel labels can say Email/API                                                                                                                                         | Those labels do not prove real transport integrations                                       |
+| Evaluation semantic expectations                      | Curated known-grounded case expects a refund-policy auto-send while billing is human-gated; curated no-evidence reason expects NO_EVIDENCE while the worker uses NO_RELIABLE_EVIDENCE        | Review/repair case-to-policy alignment before using a 5/5 target as release proof           |
+| Analytics range validation                            | U0 adds field errors for impossible/reversed ranges and tests explicit cross-boundary cohorts                                                                                                | Require current U0 cohort/date proof; deployed parity remains separate                      |
+| Fresh-clone migration replay                          | U0 local full-chain replay fixes the hosted-only helper revoke and P10 duplicate function declaration; current QA records actual replay. Remote history/parity remains separately unverified | Require isolated full-chain replay/parity proof; do not reset the shared project to test it |
+| Analytics marketing provider, Stripe, Slack           | Intentionally off/unselected                                                                                                                                                                 | NOT INCLUDED; do not invent connected state                                                 |
+| Complete Gemini / deployed golden journey             | Prior owner/provider gates remain pending                                                                                                                                                    | BLOCKED until actual proof is recorded                                                      |
 
 This list is a source-based gap inventory, not a claim that a new production outage was reproduced. It also does not replace a full requirements audit. Use [PRD.md](PRD.md), [ARCHITECTURE.md](ARCHITECTURE.md), [DESIGN.md](DESIGN.md), and [PHASES.md](PHASES.md) to decide which desired criteria remain mandatory; record any explicitly approved scope change.
 
@@ -1446,3 +1454,72 @@ If I03/I05 are blocked, you have a proven human-support path, not a completed AI
 | V/B — Release and safety          | Metadata/routes/security headers + browser checks + provider/schema/test evidence                                                               | A polished page alone does not prove an end-to-end production product           |
 
 For exact developer commands and existing automated scenarios, see [docs/verification-runbook.md](docs/verification-runbook.md).
+
+## U0 behavior changes (local acceptance recorded in QA)
+
+- Routing defaults to **Keep current assignment**. Selecting **Assign to me** or **Unassigned** is explicit; saving priority/status keeps the latest persisted owner under a row lock. New routing RPC migration must be applied before this checkout is served. Legacy RPC signatures remain compatible.
+- Composer starts empty. Review the AI suggestion and click **Use this draft** deliberately; existing writing requires Keep my writing or Replace with reviewed draft. Incoming messages/new AI runs preserve typing and Internal note mode. Recoverable/uncertain send errors retain the draft and retry identity; a successful send clears only the submitted body.
+- **You** means the signed-in author; another agent is **Teammate**, missing/system identity is **Support agent**. Failed/skipped AI runs have terminal labels, never Processing.
+- First response cohorts use first agent reply time in the selected interval and full earlier message history. Resolution cohorts use resolved_at (including tickets created earlier). AI citation rates follow the selected completed-run cohort regardless of citation creation time. Metrics traverse server pages; failures are unavailable, never partial zeros. Impossible/reversed dates show field errors.
+
+Owner results remain unfilled. Regressions: UP-U0-01–04; see .agent/QA.md for actual evidence and remaining isolated/browser gates.
+
+### U0 workflow/error regression recipe additions
+
+Use a synthetic isolated workspace. Agent A explicitly takes a conversation/ticket. Agent B changes only Priority/Status with Keep current assignment; A must remain assigned after reload. Explicit Assign to me/Unassigned still work.
+
+Compose human text and select Internal note; introduce an incoming customer message and a new AI run. Both text and mode survive. Trigger a recoverable rejected send in isolated verification; neither resets. Use this draft adopts an empty reply or asks Keep my writing / Replace with reviewed draft when text exists. Changed writing/suggestion/policy invalidates an open replacement choice. Success clears only submitted text.
+
+For Queue AI triage / Queue AI draft inspect the downstream AI run, not only automation dispatch. Off yields terminal AI_OFF; triage yields TRIAGE_COMPLETE or safe disposition; draft remains private. There should be no new generic ai.triage/ai.draft durable job. A simultaneous Normal→High handoff must dispatch both applicable priority and escalation rules once.
+
+Isolated injected customer/history/evaluation query failures must show unavailable, never Unknown/no history/No run/zero as a successful load. Exact developer fault injection restores local grants in finally; do not revoke shared-production grants to follow this recipe.
+
+### U1 shell and review regression steps
+
+Map UP-U1-02..05 to [shared UI task steps2–5](docs/ui-foundation.md#verify-the-reference-task): invalid timezone plus retained input/help, real save/reload, empty versus unavailable, all four role menus, Sign out at short heights, drawer isolation/Tab/Escape, inline disclosure Escape and named confirmation cancel/confirm. These steps supplement existing settings/support/knowledge/integration cases; retain original case IDs. Record actual outcomes only; device/screen-reader and provider/release results remain separate.
+
+### UP-U1-07 automated-action review checks
+
+Use [shared review checks](docs/ui-foundation.md#automated-action-feedback--u17) on the existing AI runs/conversation/rule history/Recent attempts surfaces. Queued and processing must not promise completion; retry requires a previous persisted attempt. Verify failure/skip precedence, safe reasons, explicit draft adoption with protected typed text, and rule completion versus downstream AI result. Use isolated data; do not trigger a real delivery, rotate a receiver secret, or fill a provider result based on these presentation checks.
+
+### C06 / T03 — U2 list traversal and return context
+
+For an authorized isolated dataset with more than60customers/conversations/tickets: traverse Previous page/Next page until every record is reached, including equal activity timestamps. Search for a record from the last page; it must match the full dataset. Open a record on page3 and use its Back link; preserve search/status/priority/page. Changing filters starts at page1. A malformed page normalizes safely; a page beyond the final record offers First page. Repeat at320/360/390/768/1024/1440px. See docs/support-workflow.md and UP-U2-01 actual automated coverage; this recipe is not an owner PASS.
+
+U2.2–4 guide update: Clear filters restores a no-match queue; row ownership uses current persisted teammate identity. Before submitting C03 verify Public reply/customer audience versus Internal note/team-only audience; the private action is **Save internal note**. C02/T01 now include visible customer ticket history, conversation Linked tickets, ticket View customer and Original conversation links; traverse those links without search. Existing actual result entries remain unchanged.
+
+### C07 / T04 — Correct existing fields without overwriting teammates
+
+Use the isolated upgraded U2 target; these controls are not a deployment claim. Open Edit customer details and change a supported contact field. A duplicate workspace email must show an associated error while retaining your other text. Correct it, save and reload. Untouched phone/company/name values must remain, including blank optional/legacy values. While one agent edits a name, a second corrects company; both corrections must persist. Repeat a later save without reloading and confirm it does not restore stale values. Save a phone value with surrounding spaces and confirm the visible saved field matches the trimmed persisted value. On an isolated target, interrupt the save response: the form must preserve edits, explain that the save is unconfirmed, and allow review and retry.
+
+On a ticket, open Edit ticket details. Space-only title must fail and retain the edit; valid title/description/category corrections persist, including an explicitly cleared category. Status, priority, owner and unrelated teammate changes must remain intact. Viewers have no editor and direct denied requests must not mutate data. Check that ticket creation time and history both use the workspace timezone. At390px, enlarge text to200% and let fonts/layout settle. The brand, Menu, long contact text, history links and editor actions must remain readable and reachable; clipped content is a failure even if the root reports no horizontal scrolling. Result mapping: UP-U2-05; actual automated tests are u2-workflow-browser, u2-persistence and support-actions.
+
+### C08 / T05 — Actual teammate routing and understandable history
+
+Choose another current eligible teammate in Assignment, save and reload both conversation and ticket. The header/Keep label must show the actual owner. While changing status only, let a second teammate change priority/ownership; your untouched fields must preserve those later values. Viewer, removed and other-workspace assignment targets must be denied server-side. Read the ticket timeline: stored before/after values and actor fallback must be understandable, with no invented identity. Older sparse events may explicitly lack details. Result mapping: UP-U2-06/07.
+
+### OV01 — Operational overview
+
+Compare each Overview queue count with its linked exact status-filtered list. Check both zero and nonzero cases and a real failed-load stimulus in an isolated target; unavailable must never become zero. Knowledge/run links are review locations, not provider-health proof. Result mapping: UP-U2-08.
+
+### U2-HUMAN-01 — Later human work wins over queued automation
+
+Use bounded isolated jobs with cron disabled and controlled adapters, not real customer/provider traffic. Queue a valid action, then manually assign, add a note/reply, change handoff or add newer customer input before completion. Run the consumer and inspect persisted terminal history: stale work must stop without undoing the human action. Repeat/lease-recover without duplicate messages/tickets. A separately committed earlier effect remains and must be disclosed if later work stops. Off and existing sensitive-action gates still apply. Result mapping: UP-U2-09; u2-override is local execution evidence, while real-provider release remains U6/P13. Record your own actual result; none is prefilled here.
+
+## U3 knowledge navigation checks
+
+K-U3-01: In an isolated workspace with more than 50 sources, open Knowledge. Sources and Search sources precede the closed Add knowledge disclosure. Traverse every page without duplicates; search for a name only on the final page and require it on page one. Clear search, test an absent name and an out-of-range page. Open Add knowledge before the existing paste/upload cases. Repeat at phone width and as a viewer; mutation controls must remain unavailable to the viewer. Record actual results separately.
+K-U3-02: Open a source. Check Ready for AI only after actual indexing, then disable/enable and reindex it. While queued/processing/failed, require exclusion from new retrieval and the old-count warning when applicable. Check Latest ingestion job attempts and workspace times. A controlled transient failure should show Retry scheduled; a terminal recoverable failure offers Retry, while a permanent extraction failure explains corrected re-upload. Test invalid/oversize files using the existing upload cases. Agent/viewer can read but must fail direct mutation attempts. An enqueue is never an indexing PASS.
+AI-U3-03: From a conversation with a cited draft, type an unsaved reply, open named evidence in a new tab and return. Check exact text/mode preservation, disabled/deleted source fallbacks and Refresh review recovery. Use only disposable sources for deletion. Compare names/snippets with the run inspector; no source link may reveal another workspace.
+AI-U3-04: Review a draft with existing composer text. Use this draft must require Keep my writing or Replace with reviewed draft. Changing either text or suggestion invalidates the old replacement choice. Empty-composer adoption focuses Reply and sends nothing; a later deliberate Send message/Save internal note persists exactly once under the selected audience.
+
+AI-U3-05: Inspect an AI run at desktop and phone widths. Outcome/reason/next action/answer/evidence precede closed Technical details. Expand it with the keyboard and inspect real trace/version/usage fields. A trace failure must not hide the answer. Save feedback, induce a disposable permission failure and recover with comment preserved; repeat-save must update the existing feedback, not duplicate it.
+AI-U3-06: Check mode-specific explanations, unsaved/pending/error/saved states and field-error associations at phone width. Reload confirms actual policy. For a disposable assigned/closed handoff conversation, type a human note and cancel then confirm Release AI handoff. Only the confirmed release clears the latch; note/assignment/status persist and no run/reply is created. Review the existing release audit.
+
+K-U3-01/02 long-content/recovery: try a160-character unbroken source name. Library links, source headings and preview titles must remain readable at320px. Reject an unnamed pasted source through server validation and require content retained with an associated name error; repair the name, save once and verify one queued job. Queued remains distinct from successful indexing.
+
+## U5 mobile and visual consistency checks
+
+The focused local U5 browser commands are recorded in `docs/upgrade-testing.md`. UP-U5-01 checks form-first auth at six widths, real Terms/Privacy links, focus movement, password-manager autocomplete, wrong-password recovery, and invalid reset navigation. UP-U5-02 through UP-U5-04 check phone-first detail context, short-height composer reachability, timezone selection, saved settings feedback, exact widget origins and embed output. UP-U5-05/06 check public capability copy, legal links, reduced-motion browser layout, long-content wrapping, and document overflow.
+
+Human review remains required: on a real phone, open login, onboarding, a long conversation and the widget with the keyboard visible; then repeat with a screen reader and confirm landmarks, labels, error announcements, focus return, and the customer/private audience distinction. Record the device, browser, assistive technology, result, and artifact in `.agent/QA.md`; an emulated viewport is not a substitute.

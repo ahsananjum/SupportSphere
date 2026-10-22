@@ -103,6 +103,7 @@ try {
     path: 'test-results/p06-knowledge-mobile.png',
     fullPage: true,
   });
+  await page.getByText('Add knowledge', { exact: true }).click();
   await page.getByLabel('Source name').first().fill('P06 UI paste');
   await page
     .getByLabel('Content')
@@ -120,10 +121,12 @@ try {
     .single();
   assert.ifError(paste.error);
   await page.getByRole('link', { name: 'P06 UI paste' }).click();
-  await page.getByText(/Last indexed/).waitFor({ timeout: 180000 });
+  await page.getByText(/Last successful index/).waitFor({ timeout: 180000 });
   await page.getByText('SupportSphere gives customers').waitFor();
   await page.getByRole('button', { name: 'Disable' }).click();
-  await page.getByText('Source updated.').waitFor();
+  await page
+    .getByText('Source disabled. New AI retrieval excludes it.')
+    .waitFor();
   const disabled = await service
     .from('knowledge_sources')
     .select('enabled')
@@ -131,8 +134,11 @@ try {
     .single();
   assert.equal(disabled.data.enabled, false);
   await page.getByRole('button', { name: 'Enable' }).click();
-  await page.getByText('Source updated.').waitFor();
+  await page
+    .getByText('Source enabled. AI can use it only when indexing is ready.')
+    .waitFor();
   await page.goto(`${app}/app/knowledge`);
+  await page.getByText('Add knowledge', { exact: true }).click();
   await page.getByLabel('Source name').last().fill('P06 UI file');
   await page.getByLabel('TXT, MD, or text PDF').setInputFiles({
     name: 'oversized.txt',
@@ -160,10 +166,13 @@ try {
     .single();
   assert.ifError(file.error);
   await page.getByRole('link', { name: 'P06 UI file' }).click();
-  await page.getByText(/Last indexed/).waitFor({ timeout: 180000 });
+  await page.getByText(/Last successful index/).waitFor({ timeout: 180000 });
   await page.getByText('A customer may request human support').waitFor();
-  page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'Delete' }).click();
+  await page
+    .getByRole('dialog', { name: 'Confirm action' })
+    .getByRole('button', { name: 'Confirm', exact: true })
+    .click();
   await page.waitForURL(/\/app\/knowledge$/);
   const removed = await service
     .from('knowledge_sources')

@@ -41,11 +41,19 @@ test.describe('P12 public route audit', () => {
       await expect(page).toHaveTitle(/SupportSphere/);
 
       const canonical = page.locator('link[rel="canonical"]');
-      if (process.env.NEXT_PUBLIC_APP_URL) {
+      const configured = process.env.NEXT_PUBLIC_APP_URL;
+      const publicHost =
+        configured &&
+        !['localhost', '127.0.0.1'].includes(new URL(configured).hostname);
+      if (publicHost) {
         await expect(canonical, route).toHaveCount(1);
         await expect(canonical).toHaveAttribute('href', /https?:\/\//);
       } else {
         await expect(canonical, route).toHaveCount(0);
+        await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+          'content',
+          /noindex/,
+        );
       }
     }
   });

@@ -1,3 +1,14 @@
+import { assigneeLabel } from '../../../lib/support/presentation';
+import { listSupportMembers } from '../../../lib/support/queries';
+import { ListPagination } from '../../../components/support/list-pagination';
+import {
+  parseListParams,
+  detailHref,
+  type ListParams,
+} from '../../../lib/support/list-navigation';
+import { Disclosure } from '../../../components/shared/disclosure';
+import { StatusChip, Timestamp } from '../../../components/shared/record-state';
+import { statusLabel } from '../../../lib/ui/presentation';
 import Link from 'next/link';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { listTickets } from '../../../lib/support/queries';
@@ -11,7 +22,7 @@ export const metadata = {
 export default async function TicketsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; priority?: string }>;
+  searchParams: Promise<ListParams>;
 }) {
   const { supabase, active } = await getWorkspaceContext();
   if (!active)
@@ -21,12 +32,18 @@ export default async function TicketsPage({
         <p>Tickets will appear here after setup.</p>
       </section>
     );
-  const params = await searchParams;
+  const filters = parseListParams(await searchParams, 'tickets');
+  const params = {
+    q: filters.query,
+    status: filters.status,
+    priority: filters.priority,
+  };
   let result;
+  let members;
   try {
+    members = await listSupportMembers(supabase, active.id);
     result = await listTickets(supabase, active.id, {
-      ...params,
-      query: params.q,
+      ...filters,
     });
   } catch {
     return (
@@ -47,15 +64,22 @@ export default async function TicketsPage({
           </p>
         </div>
         {active.role !== 'viewer' && (
-          <details className="create-disclosure">
-            <summary className="primary-button">Create ticket</summary>
-            <div className="disclosure-panel">
-              <TicketForm />
-            </div>
-          </details>
+          <Disclosure label="Create ticket" primary>
+            <TicketForm />
+          </Disclosure>
         )}
       </div>
       <form className="filter-bar" role="search">
+        {filters.customerId && (
+          <input type="hidden" name="customer" value={filters.customerId} />
+        )}
+        {filters.conversationId && (
+          <input
+            type="hidden"
+            name="conversation"
+            value={filters.conversationId}
+          />
+        )}
         <label className="sr-only" htmlFor="ticket-search">
           Search tickets
         </label>
@@ -91,7 +115,17 @@ export default async function TicketsPage({
         <button className="secondary-button" type="submit">
           Filter
         </button>
+        {(filters.query ||
+          filters.status ||
+          filters.priority ||
+          filters.customerId ||
+          filters.conversationId) && (
+          <Link className="quiet-link" href="/app/tickets">
+            Clear filters
+          </Link>
+        )}
       </form>
+      <ListPagination kind="tickets" filters={filters} count={result.count} />
       {result.rows.length === 0 ? (
         <section className="workspace-card empty-state">
           <h2>
@@ -99,6 +133,9 @@ export default async function TicketsPage({
               ? 'No tickets match these filters'
               : 'No tickets yet'}
           </h2>
+          <Link className="quiet-link" href="/app/tickets">
+            Clear filters
+          </Link>
           <p>Create a ticket from a conversation or start one here.</p>
         </section>
       ) : (
@@ -109,18 +146,21 @@ export default async function TicketsPage({
               : row.customers;
             return (
               <li key={row.id} className="support-row">
-                <Link href={`/app/tickets/${row.id}`}>
+                <Link href={detailHref('tickets', row.id, filters)}>
                   <span className="support-row-top">
                     <strong>
                       #{row.ticket_number} · {row.title}
                     </strong>
-                    <span className={`status-chip status-${row.status}`}>
-                      {row.status.replace('_', ' ')}
-                    </span>
+                    <StatusChip value={row.status} />
                   </span>
                   <span className="support-row-meta">
-                    {customer?.name || 'No requester'} · {row.priority} ·{' '}
-                    {new Date(row.updated_at).toLocaleString()}
+                    {customer?.name || 'No requester'} · Priority:{' '}
+                    {statusLabel(row.priority)} · Owner:{' '}
+                    {assigneeLabel(row.assignee_user_id, members)} ·{' '}
+                    <Timestamp
+                      value={row.updated_at}
+                      timezone={active.timezone}
+                    />
                   </span>
                 </Link>
               </li>

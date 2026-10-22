@@ -1,4 +1,19 @@
+import { assigneeLabel } from '../../../lib/support/presentation';
+import { listSupportMembers } from '../../../lib/support/queries';
+import { ListPagination } from '../../../components/support/list-pagination';
+import {
+  parseListParams,
+  detailHref,
+  type ListParams,
+} from '../../../lib/support/list-navigation';
+import {
+  StatePanel,
+  StatusChip,
+  Timestamp,
+} from '../../../components/shared/record-state';
+import { statusLabel } from '../../../lib/ui/presentation';
 import Link from 'next/link';
+import { PageHeading } from '../../../components/shared/page-heading';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { listConversations } from '../../../lib/support/queries';
 import { InboxRealtime } from '../../../components/support/inbox-realtime';
@@ -11,51 +26,68 @@ export const metadata = {
 export default async function InboxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; priority?: string }>;
+  searchParams: Promise<ListParams>;
 }) {
   const { supabase, active } = await getWorkspaceContext();
   if (!active)
     return (
-      <section className="workspace-card empty-state">
-        <h1>Create a workspace first</h1>
+      <StatePanel title="Create a workspace first" level={1}>
         <p>Your inbox will appear here after setup.</p>
-      </section>
+      </StatePanel>
     );
-  const params = await searchParams;
+  const filters = parseListParams(await searchParams, 'inbox');
+  const params = {
+    q: filters.query,
+    status: filters.status,
+    priority: filters.priority,
+  };
   let result;
+  let members;
   try {
+    members = await listSupportMembers(supabase, active.id);
     result = await listConversations(supabase, active.id, {
-      ...params,
-      query: params.q,
+      ...filters,
     });
   } catch {
     return (
-      <section className="workspace-card error-state">
-        <h1>Inbox unavailable</h1>
+      <StatePanel
+        kind="error"
+        title="Inbox unavailable"
+        level={1}
+        actions={
+          <Link className="secondary-button" href="/app/inbox">
+            Retry
+          </Link>
+        }
+      >
         <p>We could not load conversations. Refresh to retry.</p>
-        <Link className="secondary-button" href="/app/inbox">
-          Retry
-        </Link>
-      </section>
+      </StatePanel>
     );
   }
   return (
     <div className="support-page">
-      <div className="page-heading support-heading">
-        <div>
-          <p className="eyebrow">SUPPORT OPERATIONS</p>
-          <h1>Inbox</h1>
-          <p className="page-intro">
-            Triage customer conversations and keep every reply grounded in a
-            real record.
-          </p>
-        </div>
-        <Link href="/app/customers" className="secondary-button">
-          Customers <span aria-hidden="true">↗</span>
-        </Link>
-      </div>
+      <PageHeading
+        title="Inbox"
+        eyebrow="SUPPORT OPERATIONS"
+        description="Triage customer conversations and keep every reply grounded in a real record."
+        actions={
+          <Link href="/app/customers" className="secondary-button">
+            Customers <span aria-hidden="true">↗</span>
+          </Link>
+        }
+      />
       <InboxRealtime workspaceId={active.id} />
       <form className="filter-bar" role="search">
+        {filters.customerId && (
+          <input type="hidden" name="customer" value={filters.customerId} />
+        )}
+        {filters.conversationId && (
+          <input
+            type="hidden"
+            name="conversation"
+            value={filters.conversationId}
+          />
+        )}
         <label className="sr-only" htmlFor="inbox-search">
           Search conversations
         </label>
@@ -89,21 +121,53 @@ export default async function InboxPage({
         <button className="secondary-button" type="submit">
           Filter
         </button>
+        {(filters.query ||
+          filters.status ||
+          filters.priority ||
+          filters.customerId ||
+          filters.conversationId) && (
+          <Link className="quiet-link" href="/app/inbox">
+            Clear filters
+          </Link>
+        )}
       </form>
+      <ListPagination kind="inbox" filters={filters} count={result.count} />
       {result.rows.length === 0 ? (
-        <section className="workspace-card empty-state">
-          <h2>
-            {params.q || params.status || params.priority
-              ? 'No conversations match these filters'
-              : 'Your inbox is clear'}
-          </h2>
+        <StatePanel
+          title={
+            filters.page > 0
+              ? 'No records on this page'
+              : params.q || params.status || params.priority
+                ? 'No conversations match these filters'
+                : 'Your inbox is clear'
+          }
+          actions={
+            <Link
+              href={
+                filters.query ||
+                filters.status ||
+                filters.priority ||
+                filters.customerId ||
+                filters.conversationId
+                  ? '/app/inbox'
+                  : '/app/customers'
+              }
+              className="primary-button"
+            >
+              {filters.query ||
+              filters.status ||
+              filters.priority ||
+              filters.customerId ||
+              filters.conversationId
+                ? 'Clear filters'
+                : 'Open customers'}
+            </Link>
+          }
+        >
           <p>
             Create a customer, then start a conversation to begin support work.
           </p>
-          <Link href="/app/customers" className="primary-button">
-            Open customers
-          </Link>
-        </section>
+        </StatePanel>
       ) : (
         <ul className="support-list">
           {result.rows.map((row) => {
@@ -112,20 +176,20 @@ export default async function InboxPage({
               : row.customers;
             return (
               <li key={row.id} className="support-row">
-                <Link href={`/app/inbox/${row.id}`}>
+                <Link href={detailHref('inbox', row.id, filters)}>
                   <span className="support-row-top">
                     <strong>{row.subject}</strong>
-                    <span className={`status-chip status-${row.status}`}>
-                      {row.status}
-                    </span>
+                    <StatusChip value={row.status} />
                   </span>
                   <span className="support-row-meta">
                     {customer?.name || customer?.email || 'Unknown customer'} ·{' '}
-                    {row.channel} · {row.priority}
+                    {row.channel} · Priority: {statusLabel(row.priority)} ·
+                    Owner: {assigneeLabel(row.assignee_user_id, members)}
                   </span>
-                  <time dateTime={row.updated_at}>
-                    {new Date(row.updated_at).toLocaleString()}
-                  </time>
+                  <Timestamp
+                    value={row.updated_at}
+                    timezone={active.timezone}
+                  />
                 </Link>
               </li>
             );

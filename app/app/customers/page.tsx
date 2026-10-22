@@ -1,3 +1,11 @@
+import { ListPagination } from '../../../components/support/list-pagination';
+import {
+  parseListParams,
+  detailHref,
+  type ListParams,
+} from '../../../lib/support/list-navigation';
+import { Disclosure } from '../../../components/shared/disclosure';
+import { Timestamp } from '../../../components/shared/record-state';
 import Link from 'next/link';
 import { getWorkspaceContext } from '../../../lib/workspaces/context';
 import { listCustomers } from '../../../lib/support/queries';
@@ -11,7 +19,7 @@ export const metadata = {
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<ListParams>;
 }) {
   const { supabase, active } = await getWorkspaceContext();
   if (!active)
@@ -21,10 +29,15 @@ export default async function CustomersPage({
         <p>Your customer directory will appear here after setup.</p>
       </section>
     );
-  const params = await searchParams;
+  const filters = parseListParams(await searchParams, 'customers');
+  const params = {
+    q: filters.query,
+    status: filters.status,
+    priority: filters.priority,
+  };
   let result;
   try {
-    result = await listCustomers(supabase, active.id, params.q);
+    result = await listCustomers(supabase, active.id, params.q, filters.page);
   } catch {
     return (
       <section className="workspace-card error-state">
@@ -45,12 +58,9 @@ export default async function CustomersPage({
           </p>
         </div>
         {active.role !== 'viewer' && (
-          <details className="create-disclosure">
-            <summary className="primary-button">Add customer</summary>
-            <div className="disclosure-panel">
-              <CustomerForm />
-            </div>
-          </details>
+          <Disclosure label="Add customer" primary>
+            <CustomerForm />
+          </Disclosure>
         )}
       </div>
       <form className="filter-bar" role="search">
@@ -66,19 +76,32 @@ export default async function CustomersPage({
         <button className="secondary-button" type="submit">
           Search
         </button>
+        {(filters.query || filters.status || filters.priority) && (
+          <Link className="quiet-link" href="/app/customers">
+            Clear filters
+          </Link>
+        )}
       </form>
+      <ListPagination kind="customers" filters={filters} count={result.count} />
       {result.rows.length === 0 ? (
         <section className="workspace-card empty-state">
           <h2>
-            {params.q ? 'No customers match this search' : 'No customers yet'}
+            {filters.page > 0
+              ? 'No records on this page'
+              : params.q
+                ? 'No customers match this search'
+                : 'No customers yet'}
           </h2>
+          <Link className="quiet-link" href="/app/customers">
+            Clear filters
+          </Link>
           <p>Add your first customer to start a support conversation.</p>
         </section>
       ) : (
         <ul className="support-list">
           {result.rows.map((row) => (
             <li key={row.id} className="support-row">
-              <Link href={`/app/customers/${row.id}`}>
+              <Link href={detailHref('customers', row.id, filters)}>
                 <span className="support-row-top">
                   <strong>{row.name || 'Unnamed customer'}</strong>
                   <span className="support-count">
@@ -87,7 +110,10 @@ export default async function CustomersPage({
                 </span>
                 <span className="support-row-meta">
                   {row.company || 'Independent'} · Last seen{' '}
-                  {new Date(row.last_seen_at).toLocaleDateString()}
+                  <Timestamp
+                    value={row.last_seen_at}
+                    timezone={active.timezone}
+                  />
                 </span>
               </Link>
             </li>

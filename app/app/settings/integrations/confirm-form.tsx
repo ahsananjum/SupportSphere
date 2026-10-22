@@ -1,6 +1,8 @@
 'use client';
 
-import { useActionState, type FormEvent, type ReactNode } from 'react';
+import { useActionState, type ReactNode } from 'react';
+import { ConfirmationForm } from '../../../../components/shared/confirmation-form';
+import { FormFeedback } from '../../../../components/shared/form-feedback';
 import { initialFormState, type FormState } from '../../../../lib/action-state';
 
 export function ConfirmForm({
@@ -12,24 +14,12 @@ export function ConfirmForm({
   children: ReactNode;
   message: string;
 }) {
-  const [state, submit] = useActionState(action, initialFormState);
-  function confirm(event: FormEvent<HTMLFormElement>) {
-    if (!window.confirm(message)) event.preventDefault();
-  }
+  const [state, submit, pending] = useActionState(action, initialFormState);
   return (
-    <form action={submit} onSubmit={confirm}>
+    <ConfirmationForm action={submit} message={message}>
       <input type="hidden" name="confirm" value="on" />
       {children}
-      {state.message && (
-        <p className="form-error" role="alert">
-          {state.message}
-        </p>
-      )}
-      {state.success && (
-        <p className="form-success" role="status">
-          {state.success}
-        </p>
-      )}
-    </form>
+      <FormFeedback state={state} pending={pending} />
+    </ConfirmationForm>
   );
 }

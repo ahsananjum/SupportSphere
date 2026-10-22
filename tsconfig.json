@@ -14,15 +14,26 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
-    "paths": { "@/*": ["./*"] }
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "npm:@supabase/supabase-js@2.117.2": [
+        "./node_modules/@supabase/supabase-js/dist/index.d.mts"
+      ]
+    }
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next-u0/types/**/*.ts",
+    ".next-u0/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules", "supabase/functions"]
 }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getWorkspaceContext } from '../../../../lib/workspaces/context';
+import { auditActorLabel } from '../../../../lib/ui/automated-action';
 
 export const metadata: Metadata = {
   title: 'Security settings',
@@ -19,6 +20,10 @@ const auditLabels: Record<string, string> = {
   'invitation.created': 'Invitation created',
   'invitation.resent': 'Invitation resent',
   'invitation.revoked': 'Invitation revoked',
+  'automation.rule_created': 'Automation rule created',
+  'automation.rule_updated': 'Automation rule updated',
+  'webhook.delivery_retried': 'Webhook delivery retried',
+  'webhook.endpoint_created': 'Webhook endpoint created',
 };
 export default async function SecuritySettingsPage() {
   const { supabase, active } = await getWorkspaceContext();
@@ -39,11 +44,27 @@ export default async function SecuritySettingsPage() {
       .eq('workspace_id', active.id),
     supabase
       .from('audit_logs')
-      .select('id,action,created_at,actor_user_id')
+      .select(
+        'id,action,created_at,actor_user_id,target_type,target_id,metadata',
+      )
       .eq('workspace_id', active.id)
       .order('created_at', { ascending: false })
       .limit(20),
   ]);
+  const actorIds = [
+    ...new Set(
+      (audit.data ?? [])
+        .map((event) => event.actor_user_id)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const { data: actors } = actorIds.length
+    ? await supabase
+        .from('profiles')
+        .select('id,display_name,email_normalized')
+        .in('id', actorIds)
+    : { data: [] };
+  const actorById = new Map((actors ?? []).map((actor) => [actor.id, actor]));
   return (
     <div className="settings-page">
       <div className="page-heading">
@@ -88,6 +109,15 @@ export default async function SecuritySettingsPage() {
                           .replaceAll('_', ' ')
                           .replaceAll('.', ' · ')}
                     </strong>
+                    <p>
+                      {auditActorLabel(
+                        event.actor_user_id,
+                        event.actor_user_id
+                          ? actorById.get(event.actor_user_id)
+                          : null,
+                      )}{' '}
+                      · {event.target_type} {event.target_id?.slice(0, 8) ?? ''}
+                    </p>
                     <time dateTime={event.created_at}>
                       {new Date(event.created_at).toLocaleString('en-US', {
                         dateStyle: 'medium',
